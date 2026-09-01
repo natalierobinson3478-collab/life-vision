@@ -10340,7 +10340,11 @@
   // The four keys that ARE the board. A write to one of these while a fixture
   // or sample board is loaded is the accident this block exists to prevent.
   const LS_LIVE_BOARD = ["lifevision.state.v1", "lifevision.draft.v1",
-                         "lifevision.lastrun.v1", "lifevision.name.v1"];
+                         "lifevision.lastrun.v1", "lifevision.name.v1",
+                         // the account's board as this device last saw it
+                         // (2026-09-01, the phone's own copy): a fixture
+                         // must not be able to pose as the last sync either
+                         "lifevision.mirror.v1"];
   // Published to storage, not just held in this window, because the write that
   // actually did the damage came from ANOTHER TAB: a live page sitting open
   // through a run, holding board state from before it, flushing a debounced
@@ -30483,12 +30487,25 @@
   }
   async function saveState() {
     logCompanionWrite();
+    // On the offline road the mirror takes the save and the reconnect
+    // carries it up; the account is not asked, so no toast can be wrong.
+    if (offlineBoard) { mirrorWrite(); offlineDirty = true; return { ok: true, offline: true }; }
     const run = () => store.save(serializeState())
       .catch(err => ({ ok: false, reason: err.message }));
     const mine = (saveInFlight ?? Promise.resolve()).then(run, run);
     saveInFlight = mine;
     const r = await mine;
     if (saveInFlight === mine) saveInFlight = null;
+    if (r.ok) mirrorWrite();
+    else if (store !== localStore && looksOffline(r.reason)) {
+      // The network went mid-session: step onto the offline road with the
+      // change kept, rather than a toast that says the account refused it.
+      console.warn("save failed, going offline:", r.reason);
+      offlineBoard = true; offlineDirty = true;
+      mirrorWrite();
+      offlineBar();
+      return { ok: true, offline: true };
+    }
     if (!r.ok) {
       console.warn("save failed:", r.reason);
       if (r.reason === "not_signed_in") showSignedOutWarning();
@@ -30503,12 +30520,19 @@
 
   async function restoreState() {
     let state;
+    // A device that says it is offline does not ask the account at all: the
+    // road is the mirror (below), and it is taken before the load can fail.
+    if (store !== localStore && typeof navigator !== "undefined" && navigator.onLine === false) {
+      return bootOffline();
+    }
     try {
       state = await store.load();
     } catch (err) {
       // A failed load must BLOCK: rendering an empty board here lets the very
       // next save write that emptiness over the real one on the server.
+      // Unless the failure is the network itself, which is the offline road.
       console.warn("load failed:", err.message);
+      if (store !== localStore && looksOffline(err.message)) return bootOffline();
       showLoadFailure(err.message);
       return false;
     }
@@ -30580,7 +30604,13 @@
           }
         }
       }
-      if (applyState(state)) { renderAll(); return true; }
+      if (applyState(state)) {
+        renderAll();
+        // The account answered: this is the board the phone keeps for the
+        // next time it cannot.
+        mirrorWrite();
+        return true;
+      }
       // Empty localStorage isn't necessarily a first visit: the browser pane's
       // storage dies with the pane. run-local.py keeps dev-snapshot.json; if it
       // has a copy, bring it back and carry on as if nothing happened.
@@ -30655,6 +30685,100 @@
     });
   }
 
+  // ---------- THE PHONE'S OWN COPY OF THE BOARD (2026-09-01) ----------
+  // sw.js keeps the PAGE on the device; this keeps the BOARD. A signed-in
+  // open fetches the board from the account and, until today, a fetch that
+  // failed put up the "couldn't load" wall, which is the right answer when
+  // the server is wrong and the wrong answer when the phone is simply in a
+  // tunnel. So every successful cloud load and save leaves a MIRROR here:
+  // the account's board as this device last saw it, under its own key, so
+  // the rescue road above (which reads lifevision.state.v1 as "the board
+  // from the local-only days") keeps its meaning untouched.
+  //
+  // OFFLINE is a road, not a wall. No network, or a load that dies the way
+  // a missing network dies, boots the mirror instead, under a bar that says
+  // so. Changes made on that road are kept in the mirror and carried up
+  // when the network returns; if nothing was changed, the account's copy is
+  // taken instead, since it may be newer. Carrying up is the app's ordinary
+  // last-writer-wins save, no cleverer than any other save; a board edited
+  // on the desktop while the phone was offline AND edited on the phone is
+  // the one case this does not resolve, and DECISIONS names it.
+  const MIRROR_KEY = "lifevision.mirror.v1";
+  let offlineBoard = false;   // this window booted, or fell back, onto the mirror
+  let offlineDirty = false;   // and has changes the account has not received
+  function mirrorRead() {
+    try { return JSON.parse(localStorage.getItem(MIRROR_KEY) || "null"); }
+    catch (e) { return null; }
+  }
+  function mirrorWrite(uid) {
+    if (store === localStore) return;   // the local store IS this device's copy
+    try {
+      const prev = mirrorRead();
+      localStorage.setItem(MIRROR_KEY, JSON.stringify({
+        uid: uid || (prev && prev.uid) || null, at: Date.now(), state: serializeState() }));
+    } catch (e) {}
+  }
+  function mirrorClear() { try { localStorage.removeItem(MIRROR_KEY); } catch (e) {} }
+  // What a missing network looks like from inside a failed call: the
+  // browser's own word for it (Chrome's "Failed to fetch", Safari's "Load
+  // failed"), or the device saying outright that it is offline.
+  function looksOffline(reason) {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
+    return /failed to fetch|load failed|network ?error|network request failed|fetch failed|internet connection appears to be offline/i
+      .test(String(reason || ""));
+  }
+  function offlineBar() {
+    if (document.getElementById("offlineBar")) return;
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="fresh-bar" id="offlineBar" role="status" aria-label="you're offline">
+        <span>you're offline. this is your board as of its last sync, and anything
+          you change here is kept and saved to your account when you're back.</span>
+        <button class="brushed-link" id="offlineRetry" type="button">try now</button>
+      </div>`);
+    document.getElementById("offlineRetry").addEventListener("click", () => reconnectBoard());
+  }
+  function offlineBarHide() {
+    const el = document.getElementById("offlineBar");
+    if (el) el.remove();
+  }
+  // The offline road: the mirror, or the wall with the honest reason.
+  function bootOffline() {
+    const m = mirrorRead();
+    if (!(m && m.state && applyState(m.state))) {
+      showLoadFailure("no connection, and this device has no copy of your board yet", true);
+      return false;
+    }
+    renderAll();
+    hideLoadFailure();
+    offlineBoard = true;
+    offlineBar();
+    return true;
+  }
+  // Back on the network: changes go up, or the account's copy comes down.
+  let reconnecting = null;
+  function reconnectBoard() {
+    if (!offlineBoard) return Promise.resolve(false);
+    if (reconnecting) return reconnecting;
+    reconnecting = (async () => {
+      if (offlineDirty) {
+        const r = await store.save(serializeState());
+        if (!r.ok) return false;      // still out of reach; the bar stays
+        offlineDirty = false; offlineBoard = false;
+        mirrorWrite();
+        offlineBarHide();
+        showToast("back online. your changes are in your account now.");
+        return true;
+      }
+      offlineBoard = false;
+      await restoreState();           // a dead network re-enters the road itself
+      if (offlineBoard) return false;
+      offlineBarHide();
+      return true;
+    })().finally(() => { reconnecting = null; });
+    return reconnecting;
+  }
+  window.addEventListener("online", () => { setTimeout(() => { reconnectBoard(); }, 800); });
+
   // ---------- blocking persistence screens ----------
   // Same register as the analysis failures: a paper card that says what
   // happened and what to do, never a silent empty board.
@@ -30667,13 +30791,21 @@
     document.body.appendChild(el);
     return el;
   }
-  function showLoadFailure(reason) {
+  function showLoadFailure(reason, offline) {
     const el = persistOverlay("loadFailOverlay");
-    el.innerHTML = `<div class="persist-card">
-        <h2>couldn't load your board</h2>
-        <p>The server didn't answer properly, so there is nothing safe to show.
+    // Two different truths behind one card: a server that answered wrongly,
+    // or a phone with no network and nothing kept yet. The second is not a
+    // fault and must not read like one.
+    const why = offline
+      ? `<p>there's no connection right now, and this device doesn't have a copy
+           of your board yet. connect once and it will keep one for next time.
+           your goals are safe in your account.</p>`
+      : `<p>The server didn't answer properly, so there is nothing safe to show.
            your goals are still there \u2014 opening an empty board now would risk
-           saving over them, so this screen stays up instead.</p>
+           saving over them, so this screen stays up instead.</p>`;
+    el.innerHTML = `<div class="persist-card">
+        <h2>${offline ? "you're offline" : "couldn't load your board"}</h2>
+        ${why}
         <p class="persist-reason">${escHtml(reason || "")}</p>
         <div class="persist-actions"><button class="btn-solid" id="loadRetry">try again</button></div>
       </div>`;
@@ -35190,6 +35322,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     journalKeys: () => Object.keys(ciJournal).sort(),
     setDig(d) { ciDig = d || null; },
     serializeState, applyState, saveState, restoreState,
+    // The phone's own copy of the board: the mirror, the road, the way back.
+    mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
+    offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
     analyzeThemes, detectPatterns, prioritizeAreas, generateGoals, draftPlan, detectTensions,
     // The wheel step, so the harness can drive the real controls and check
     // that what this step WRITES is unchanged by the redesign.
@@ -36016,8 +36151,14 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     sb.auth.onAuthStateChange(async (event, session) => {
       renderAccount();
       if (event === "SIGNED_IN" || (event === "INITIAL_SESSION" && session)) {
+        // The mirror belongs to ONE account. A different person signing in
+        // on this device must not be offered the last one's board.
+        const m = mirrorRead();
+        if (m && m.uid && session && session.user && m.uid !== session.user.id) mirrorClear();
         await restoreState(); boot();
+        if (session && session.user && !offlineBoard) mirrorWrite(session.user.id);
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+        if (event === "SIGNED_OUT") mirrorClear();
         openAuth(true);
       }
     });
@@ -36481,6 +36622,24 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // Listener first, paint second: even if a paint throws, resizes keep working.
   let t; window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(render,180)});
   try { render(); } catch (e) { setTimeout(render, 500); }
+})();
+</script>
+<script>
+// THE PHONE'S OWN COPY (2026-09-01). sw.js, beside this page on the
+// published site, keeps the page and its drawings on the device so the icon
+// opens with no signal and takes new publishes quietly. It is registered
+// ONLY where the app is the app: never the workshop at localhost:8731, whose
+// whole point is that the file changes under you and must never be served
+// from a copy; never a plain file:// open; never an insecure LAN address
+// (the browser refuses those itself). A localhost on any OTHER port is a
+// deliberate rehearsal of the published copy and registers like the site.
+(function () {
+  if (!("serviceWorker" in navigator)) return;
+  if (location.port === "8731") return;
+  if (location.protocol !== "https:" && location.hostname !== "localhost") return;
+  navigator.serviceWorker.register("sw.js").catch(e => {
+    console.warn("[the phone's copy] not kept on this device:", e && e.message);
+  });
 })();
 </script>
 </body>
