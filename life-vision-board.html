@@ -3299,6 +3299,16 @@
     background: rgba(233,212,170,0.55); border: 1.5px solid rgba(42,38,25,0.85);
     color: var(--ink); }
   .when-pop { background: var(--paper); border: 1px solid var(--line); }
+  /* THE ROW'S BOX (2026-09-01): the move picker's shell with the title on
+     top. The field IS the title, in place — no label above it (the line
+     says what it is by holding the words), the same voice the row speaks. */
+  .tw-row-pop .tw-pop-title { display: block; width: 100%; box-sizing: border-box;
+    font-family: inherit; font-size: inherit; color: var(--ink);
+    background: none; border: none; border-bottom: 1px solid var(--line);
+    padding: 2px 0 5px; margin: 0 0 4px; outline: none; }
+  /* Armed delete darkens the way the discovery menus' does. */
+  .tw-row-pop .mp-opt.arm { background: rgba(70,49,34,0.08); }
+  .tw-row-pop .mp-opt.arm .mp-a { color: #524136; font-weight: 600; }
   /* THE TWO DOORS. The difference between them is stated, not implied:
      one is done here because it is state, the other is a door because it
      is authoring. The door carries the app's arrow so it reads as one. */
@@ -23476,7 +23486,12 @@
     // one occurrence, this week only, expiring at the week turn — so it is
     // the same map with one more value it may hold, rather than a second
     // mechanism for un-dating something.
-    if (toISO === "any" && toISO !== fromISO) moves[fromISO] = "any";
+    // "off" IS A DESTINATION TOO (2026-09-01, the row's box): "not this
+    // Tuesday" for one occurrence of a repeating thing. Same kind of write
+    // as a move to a day or to the lane — this week only, expiring at the
+    // week turn, the standing schedule untouched — so next week the day is
+    // simply back. occurrenceSlotsFor is the one reader that honours it.
+    if ((toISO === "any" || toISO === "off") && toISO !== fromISO) moves[fromISO] = toISO;
     else if (toISO && toISO !== fromISO && inWeek.indexOf(toISO) >= 0) moves[fromISO] = toISO;
     else delete moves[fromISO];
     if (!Object.keys(moves).length) delete rec.moves;
@@ -23561,6 +23576,18 @@
     const key = wk || weekKeyOf();
     const sched = scheduledDatesFor(m, goalId, key);
     const origins = scheduleOriginsFor(m, goalId, key);
+    // AN OCCURRENCE TAKEN OFF THIS WEEK (moves[origin] === "off") leaves
+    // both lists here, and only here — the raw schedule keeps the key so
+    // pruneMoves does not eat the very move that says "off", and the pair
+    // is dropped in step so nothing downstream goes out of alignment.
+    // Count and hours read slots, so the week's load drops with the day,
+    // exactly as a whole-week skip already does.
+    {
+      const mv = movesFor(goalId, m && m.id, key);
+      for (let i = origins.length - 1; i >= 0; i--) {
+        if (mv[String(origins[i])] === "off") { sched.splice(i, 1); origins.splice(i, 1); }
+      }
+    }
     // A DATED OCCURRENCE MOVED TO THE LANE IS FLOATING THIS WEEK
     // (2026-09-01). Its origin is a date, so the origin test alone said
     // "dated" and the dated branch ran — which matches completions to
@@ -26427,9 +26454,20 @@
       const as = () => ({ gid: Number(btn.dataset.goal), mid: btn.dataset.mech });
       const hold = e => {
         e.stopPropagation();
+        const same = twHeld && twHeld.mid === btn.dataset.mech
+          && twGoalKey(twHeld.gid) === twGoalKey(btn.dataset.goal);
         twSelectMech(btn.dataset.goal, btn.dataset.mech);
         twHover = null;
         twPaintSelection();
+        // THE ROW'S BOX RIDES THE HOLD (2026-09-01): choosing a row opens
+        // its box, choosing it again or tapping away closes it. Read-only
+        // weeks look, they do not edit.
+        if (!twRO) {
+          if (!same) openRowOptions(btn,
+            twGoalKey(btn.dataset.goal) === "" ? null : Number(btn.dataset.goal),
+            btn.dataset.mech);
+          else if (twRowPopClose) twRowPopClose();
+        }
       };
       btn.addEventListener("click", hold);
       btn.addEventListener("pointerenter", () => twPreview(as()));
@@ -26518,6 +26556,152 @@
   }
   // REMOVED 2026-08-27: wireRowEditor — the row's expanded edit state and the
   // day picker it opened are not interactions this page has any more.
+  // AND A SMALLER DOOR CAME BACK (owner ruling, 2026-09-01: "if i click on
+  // the to do list item then maybe a little box lowers with a few options
+  // to edit the task, change the dates ... i dont want to add to much").
+  // Not the old edit state: the anchored popover recipe openMovePicker
+  // already uses — one box at a time, outside tap closes, Escape closes —
+  // holding exactly four things: the title in place, push to tomorrow,
+  // change the day, delete. Tying work to a goal is deliberately NOT here
+  // (workshop only, ruled, test 145), by the owner's own choice this round.
+  let twRowPopClose = null;         // the open box's cleanup, if one is open
+  function openRowOptions(anchor, gid, mid) {
+    if (twRowPopClose) twRowPopClose();
+    document.querySelectorAll(".when-pop, .move-pop").forEach(p => p.remove());
+    const g = gid == null ? null : goals.find(x => x.id === gid);
+    const m = g ? (g.mechanisms || []).find(x => x.id === mid)
+                : reminderList().find(x => x.id === mid);
+    if (!m) return null;
+    const isRem = gid == null;
+    const oneOff = isRem && !m.schedule;       // an errand, dated or not
+    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
+    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
+    const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
+    // THE OCCURRENCE THE BOX MEANS: the nearest open one, today or ahead,
+    // else the earliest open one — the same reading order the checkbox has.
+    const nearestOpen = () => {
+      const eff = scheduledDatesFor(m, gid, wk);
+      const raw = scheduleOriginsFor(m, gid, wk);
+      let pick = -1;
+      eff.forEach((d, i) => {
+        if (d && d >= today && !completionsAt(m, d) && (pick < 0 || d < eff[pick])) pick = i;
+      });
+      if (pick < 0) eff.forEach((d, i) => { if (pick < 0 && d && !completionsAt(m, d)) pick = i; });
+      return pick < 0 ? null : { date: eff[pick], from: raw[pick] };
+    };
+    const due = oneOff ? (!m.date || m.date <= today)
+      : (() => { const no = nearestOpen(); return !!no && no.date <= today; })();
+    const canPush = due && (oneOff || tomorrowInWeek || !isRem);
+    const repeating = !isRem || !!m.schedule;
+    const title = appVoice(m.weekLabel ?? m.label, wroteIt(m));
+    const pop = document.createElement("div");
+    pop.className = "when-pop move-pop tw-row-pop";
+    pop.setAttribute("role", "dialog");
+    pop.innerHTML = `
+      <input id="twEditTitle" class="tw-pop-title" type="text" autocomplete="off"
+        value="${escHtml(title)}" aria-label="rename this">
+      ${canPush ? `<button type="button" class="mp-opt" id="rpPush">
+        <span class="mp-a">${oneOff || tomorrowInWeek ? "push to tomorrow" : "push to next week"}</span>
+        <span class="mp-b">this week bends, the rhythm is untouched</span>
+      </button>` : ``}
+      <button type="button" class="mp-opt" id="rpWhen">
+        <span class="mp-a">change the day</span>
+        <span class="mp-b">${isRem ? "pick the day it belongs to" : "this week, or the standing plan"}</span>
+      </button>
+      ${repeating ? `<button type="button" class="mp-opt tw-pop-danger" id="rpOffDay">
+        <span class="mp-a">not this day</span>
+        <span class="mp-b">just this one, next week is untouched</span>
+      </button>` : ``}
+      <button type="button" class="mp-opt tw-pop-danger" id="rpDrop">
+        <span class="mp-a">${repeating ? "delete the whole repeat" : "delete"}</span>
+        <span class="mp-b">${repeating ? "everywhere, though what is done stays done" : "for good"}</span>
+      </button>`;
+    const cleanup = () => {
+      // The title commits on the way out, whatever closed the box.
+      twEditCommitTitle();
+      const renamed = appVoice(m.weekLabel ?? m.label, wroteIt(m)) !== title;
+      twEditing = null;
+      twRowPopClose = null;
+      pop.remove();
+      document.removeEventListener("pointerdown", onOutside, true);
+      document.removeEventListener("keydown", onKey, true);
+      if (renamed) renderThisWeek();
+    };
+    const done = () => { cleanup(); renderThisWeek(); };
+    const onOutside = e => {
+      if (!pop.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) cleanup();
+    };
+    const onKey = e => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      const i2 = pop.querySelector("#twEditTitle");
+      if (i2) i2.value = title;               // Escape means never mind
+      cleanup();
+    };
+    twEditing = { key: (gid == null ? "" : gid) + "|" + mid };
+    const inp = pop.querySelector("#twEditTitle");
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
+    const push = pop.querySelector("#rpPush");
+    if (push) push.addEventListener("click", () => {
+      if (oneOff) { m.date = tomorrow; saveState(); return done(); }
+      if (!tomorrowInWeek) { skipThisWeek(gid, mid, true); return done(); }
+      const no = nearestOpen();
+      if (no) {
+        if (completionsAt(m, no.date)) moveCompletion(gid, mid, no.date, tomorrow);
+        else moveOccurrence(gid, mid, no.from, tomorrow);
+      }
+      done();
+    });
+    pop.querySelector("#rpWhen").addEventListener("click", () => {
+      if (!isRem) { cleanup(); openMovePicker(anchor, g, m, () => renderThisWeek()); return; }
+      // A reminder's days, in place: seven chips, one tap, done.
+      if (pop.querySelector(".mp-days")) return;
+      const row = document.createElement("div");
+      row.className = "when-pop-row mp-days";
+      row.innerHTML = wd.map((iso, i) =>
+        `<button type="button" class="ci-chip wp-day${(oneOff ? m.date === iso : false) ? " on" : ""}"
+          data-iso="${iso}">${TW_DAYS[i]}</button>`).join("");
+      pop.querySelector("#rpWhen").after(row);
+      row.querySelectorAll(".wp-day").forEach(b => b.addEventListener("click", () => {
+        const iso = b.dataset.iso;
+        if (oneOff) { m.date = iso; saveState(); return done(); }
+        const no = nearestOpen();
+        if (no) moveOccurrence(null, mid, no.from, iso);
+        done();
+      }));
+    });
+    const off = pop.querySelector("#rpOffDay");
+    if (off) off.addEventListener("click", () => {
+      const no = nearestOpen();
+      if (no) moveOccurrence(gid, mid, no.from, "off");
+      done();
+    });
+    // DELETE ARMS FIRST — the two-step the discovery menus already use.
+    const drop = pop.querySelector("#rpDrop");
+    drop.addEventListener("click", () => {
+      if (!drop.classList.contains("arm")) {
+        drop.classList.add("arm");
+        drop.querySelector(".mp-b").textContent = "tap again, and it is gone";
+        setTimeout(() => { if (drop.isConnected) drop.classList.remove("arm"); }, 4000);
+        return;
+      }
+      if (isRem) removeReminder(mid);
+      else { m.dropped = true; saveState(); }
+      done();
+    });
+    document.body.appendChild(pop);
+    const r = anchor.getBoundingClientRect();
+    const pw = Math.min(300, innerWidth - 16);
+    pop.style.width = pw + "px";
+    pop.style.left = Math.max(8, Math.min(innerWidth - pw - 8, r.left - 30)) + "px";
+    pop.style.top = (r.bottom + window.scrollY + 6) + "px";
+    setTimeout(() => {
+      document.addEventListener("pointerdown", onOutside, true);
+      document.addEventListener("keydown", onKey, true);
+    }, 0);
+    twRowPopClose = cleanup;
+    return pop;
+  }
 
   // THE CAPTURE, COMMITTED. Enter files it and LEAVES THE FIELD OPEN: capture
   // arrives in bursts, and a field that closes after one item makes the

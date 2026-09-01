@@ -1,0 +1,29 @@
+{
+  "_readme": "The narrator's script — one voice, two outputs. Each line's `text` IS the on-screen caption AND the words spoken aloud; they can never differ because they are one field. Audio files live at narrator/audio/<id>-<hash8>.mp3 where hash8 is djb2 of the text — edit a line here and its old audio silently stops matching (caption-only until `run-local.py --narrate` regenerates). Register: 7th-8th grade, one sentence at a time, warm and plain, zero system-speak — no 'analysis', 'generating', 'processing'. The narrator is a doorman, not a friend: it introduces, asks, fills waits, and hands off. It never chats.",
+  "lines": [
+    { "id": "s-entry-open", "step": "entry",
+      "text": "Talk or type. Messy is perfect." },
+    { "id": "s-themes-open", "step": "themes",
+      "text": "Let me read what you wrote. This takes about half a minute." },
+    { "id": "s-themes-ready", "step": "themes",
+      "text": "Here's what I heard — six patterns, in your own words. Pick the three that feel most true." },
+    { "id": "s-wheel-open", "step": "wheel",
+      "text": "You picked three patterns. Here's how I read each area of your life from what you wrote — fix any I got wrong." },
+    { "id": "s-capacity-open", "step": "capacity",
+      "text": "Time, money, who's counting on you. Everything gets sized to this." },
+    { "id": "s-dig-open", "step": "dig",
+      "text": "A few follow-ups. Skip any — silence is an answer too." },
+    { "id": "s-goals-open", "step": "goals",
+      "text": "This is the part where I think. Give me a few minutes — I'm reading everything you told me." },
+    { "id": "s-goals-long", "step": "goals",
+      "text": "Still here, still thinking. The big reads take a while." },
+    { "id": "s-quarters-open", "step": "quarters",
+      "text": "Now I'll lay out the road for each goal. About a minute." },
+    { "id": "s-quarters-ready", "step": "quarters",
+      "text": "The road for each goal. This quarter is set; the rest comes into focus at the check-ins." },
+    { "id": "s-habits-open", "step": "habits",
+      "text": "Last part — the small weekly things that get each step done." },
+    { "id": "s-habits-ready", "step": "habits",
+      "text": "Here's the week I drafted. Save it and it becomes your list." }
+  ]
+}
