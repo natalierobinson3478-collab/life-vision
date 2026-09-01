@@ -18494,11 +18494,30 @@
 
   // "Start over blank", extracted so the help menu and the empty board's
   // returning state (item 77) run the identical routine.
+  // Starting over means the FIRST page, not the middle of the road (owner,
+  // 2026-09-01): the name is asked again, the film replays, and the film's
+  // exit walks into a fresh discovery. It used to jump straight into
+  // openCheckin(), whose plan doors swallowed the tap on a board that still
+  // had goals — quarterly not open, week door shut, bare return — so on the
+  // phone the button read as broken. The goals themselves still stand until
+  // the new run saves; the arming text promises exactly that.
+  let startOverRoad = false;
   function startOverBlank() {
     resetDiscovery();
     clearDraft();
     hasOnboarded = false; quarterlyDue = true; weeklyDue = true; checkinDue = true;
-    openCheckin();
+    setName("");
+    try { localStorage.removeItem(WELCOMED_KEY); } catch (e) {}
+    if (profileSeen.introFilm) {
+      delete profileSeen.introFilm;
+      try { localStorage.setItem(SEEN_KEY, JSON.stringify(profileSeen)); } catch (e) {}
+    }
+    startOverRoad = true;
+    renderAll();
+    // A demo never shows the name page (maybeWelcome gates on DEMO), so it
+    // walks straight into the fresh discovery, in the test namespace.
+    if (DEMO) { openCheckin(); return; }
+    maybeWelcome();
   }
 
   // Item 77: an empty board is TWO states. First visit (never onboarded)
@@ -18673,6 +18692,10 @@
         // Item 94 (owner ruling): the film exits to the WELCOME NOTE with
         // its two choices — the quiz and add-your-own. The caterpillar only
         // recommends; nothing advances on the person's behalf.
+        // A start over is the one exception: the person ASKED to walk the
+        // whole road again, so the film carries on into the fresh discovery
+        // (openCheckin consumes the flag and skips its plan doors).
+        if (startOverRoad) openCheckin();
       };
       const again = () => {                      // Replay tears down and re-runs
         if (gone) return;
@@ -28926,6 +28949,16 @@
     if (userName || hasOnboarded || DEMO || welcomed) return;
     const overlay = document.getElementById("welcomeOverlay");
     const input = document.getElementById("welcomeName");
+    // Start over walks this road again in one session; the listeners are
+    // wired once, and a return visit just clears the line and reopens.
+    if (overlay.dataset.wired) {
+      input.value = "";
+      input.dispatchEvent(new Event("input"));
+      openBookPage(overlay);
+      setTimeout(() => input.focus(), 120);
+      return;
+    }
+    overlay.dataset.wired = "1";
     const remember = () => { try { localStorage.setItem(WELCOMED_KEY, "1"); } catch (e) {} };
     // Item 91: a cross-dissolve, not a cut. Both this page and the film sit
     // on the same painted canvas (the app is hidden under either), so the
@@ -28944,12 +28977,16 @@
       const played = maybeWelcomeFilm();
       softLeave();
       if (!played) showToast(`Good to meet you, ${userName}.`);
+      // On the start-over road a film that can't play must not strand the
+      // person on their old board: walk on into the fresh discovery.
+      if (!played && startOverRoad) openCheckin();
     };
     document.getElementById("welcomeSkip").addEventListener("click", () => {
       remember();
       // Skipping the name skips nothing else: the film is the companion
       // introduction, not a reward for naming (owner ruling, 2026-08-23).
-      maybeWelcomeFilm(); softLeave();
+      const played = maybeWelcomeFilm(); softLeave();
+      if (!played && startOverRoad) openCheckin();
     });
     // The door back in that briefly lived here went with the front door: the
     // account page now comes BEFORE this sheet on any device without a
@@ -34677,6 +34714,15 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     };
   }
 
+  // Dev shortcuts: ?jump=goals opens straight on the review screen (only useful
+  // with a sample intake loaded, since a real run has nothing to generate from).
+  // ?jump=dig opens the retest at "One layer down", the step before generation.
+  // Declared BEFORE the boot roads below: the demo branch calls boot()
+  // synchronously, and boot reads JUMP — with the const still further down,
+  // every ?demo boot died in the temporal dead zone and took the rest of the
+  // top level (?fresh, the account row) with it.
+  const JUMP = new URLSearchParams(location.search).get("jump");
+
   if (sb && !DEMO && !lsNamespace) {
     // THE FRONT DOOR (owner ruling, 2026-09-01). Sign-in happens exactly once
     // per device, so it happens FIRST: a session boots the board, and no
@@ -34740,11 +34786,6 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     writeLastOpen(todayKey());
   }
 
-  // Dev shortcuts: ?jump=goals opens straight on the review screen (only useful
-  // with a sample intake loaded, since a real run has nothing to generate from).
-  // ?jump=dig opens the retest at "One layer down", the step before generation.
-  const JUMP = new URLSearchParams(location.search).get("jump");
-
   // Item 108: a plan is a plan however it was built. Manual-mode boards
   // (goals, no discovery) run the same loops as coached ones.
   function runsAPlan() { return hasOnboarded || goals.length > 0; }
@@ -34753,6 +34794,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // empty board goes back through the discovery (as a retest, so saving
     // adopts), never into a weekless week sheet.
     if (!goals.length && hasOnboarded) { openRetest(); return; }
+    // A start over is the one time a board WITH goals goes back to the very
+    // beginning — the plan doors below are for plans in progress, and they
+    // were silently swallowing this road (nothing due, bare return).
+    if (startOverRoad) { startOverRoad = false; openFreshDiscovery(); return; }
     // Onboarding only (owner ruling, block 2): a signed-up person's
     // quarterly review and weekly close each have their own sheet — the
     // old step flows are gone, not just unreachable.
@@ -34762,6 +34807,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       if (weeklyDue && d.show) { openWeekSheet(d.week); return; }
       return;
     }
+    openFreshDiscovery();
+  }
+
+  // The fresh discovery, from the top — onboarding's own open, shared by
+  // the first visit and the start-over road.
+  function openFreshDiscovery() {
     ciRetest = false;
     ciSteps = buildOnboardingSteps();
     ciStepIdx = 0;
