@@ -513,6 +513,13 @@
   .pm-skip u { text-decoration: underline; text-underline-offset: 3px; }
   .pm-skip:hover { color: var(--ink); }
   .pm-line.has-ink .pm-skip { opacity: 0; pointer-events: none; }
+  /* the door back in is its own quiet line under the flower, not a note
+     hung off the writing line the way skip is. The sheet gets the room the
+     way the name page already takes it: bottom padding, so the torn paper
+     paints under the new line instead of the mask cutting it off. */
+  .pm-return-signin { position: static; display: block; margin: 14px auto 0;
+    font-size: var(--t-label); }
+  #welcomeOverlay .pm-sheet { padding-bottom: calc(var(--rule) * 1.2); }
   .wf-one .pm-line { width: 100%; margin: 0;
     border-bottom: 1px dashed rgba(63,79,49,0.4); }
   /* The name is written AT the line, not floated mid-cell: full question
@@ -7302,7 +7309,12 @@
   /* align-items START, not center: when the label wraps to three lines the
      metadata stays on the label's FIRST line rather than floating to the
      middle of the block. */
-  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap; }
+  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap;
+    /* SWIPES (2026-09-01): pan-y keeps the sheet scrolling under a thumb
+       while a sideways drag stays the row's own; the transition is the
+       snap back home when a swipe lets go short of meaning it. */
+    touch-action: pan-y; transition: transform 0.18s ease; }
+  .tw-row.tw-swiping { transition: none; }
   /* Phase 5 (the "Ru…" fix + the sliver's room): on the phone the row
      RE-LAYS — the tick and the full label on line one, the when/dots/
      sliver as a quiet second line, right-aligned. Same objects, re-laid;
@@ -9750,6 +9762,12 @@
                autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" /><span class="pm-ghost" aria-hidden="true"><i class="pm-caret"></i>type your first name</span><button
                class="pm-skip" id="welcomeSkip" type="button"><span class="pm-skip-or">or </span><u>skip for now</u></button></span>
         <div class="empty-seed" id="wfSeed" aria-hidden="true"></div>
+        <!-- THE DOOR BACK IN (2026-09-01). A fresh device shows this page
+             first, and before this line the only sign-in lived in a book the
+             newcomer flow has not drawn yet: a person with a board already in
+             their account had no way to say so. Quiet, under the flower, and
+             only shown when a cloud exists to sign into. -->
+        <button class="pm-skip pm-return-signin" id="welcomeSignIn" type="button" hidden><u>already have a board? sign in</u></button>
       </div>
     </div>
     <div class="pm-actions pm-actions-corner">
@@ -24581,9 +24599,13 @@
   // opens the SAME edit state, focused on whatever was touched. One surface,
   // several entry points, and no icon standing in for any of it.
   //
-  // NO SWIPE AND NO LONG-PRESS. Both are invisible on a desktop and
-  // undiscoverable on a phone: a gesture nobody performs is a feature nobody
-  // has.
+  // NO SWIPE AND NO LONG-PRESS — AMENDED 2026-09-01 (owner ruling, and
+  // DECISIONS.md): the rows now take a swipe, left to push to tomorrow,
+  // right to open the box with delete armed. The old sentence stands where
+  // it was really pointing: a gesture may never be the ONLY door. Every
+  // action a swipe performs is a visible option in the row's box, so the
+  // gestures are shortcuts and nothing is gated behind the invisible.
+  // Long-press remains nothing.
   // A PLUS, A FIGURE AND A MINUS — nothing else. The figure is the same
   // `minsText` the row prints, so the control and the row can never word the
   // same number differently. The floor is one step: zero minutes is not a
@@ -25592,6 +25614,10 @@
 
   // title, the "board →" link, and the help menu.
   function renderThisWeek() {
+    // A RENDER DESTROYS THE ROW A BOX WAS ANCHORED TO, so the box goes
+    // first (committing its title on the way out). twRowPopClose nulls
+    // itself before it re-renders, so this cannot recurse.
+    if (twRowPopClose) twRowPopClose();
     // ---- ONE RULE, AT THE TOP: A WEEK THAT IS NOT THIS ONE IS A RECORD ----
     // Every handler that CHANGES something is simply not wired when the
     // sheet is showing another week. Not wired-and-guarded: six guards is
@@ -26475,6 +26501,72 @@
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
     });
+    // ---- SWIPES ON A ROW (owner ruling, 2026-09-01: "if i swipe right it
+    // deletes, if i swipe left it does something else", and left is push
+    // to tomorrow). THE NO-SWIPE RULING IS OVERTURNED FOR THIS PAGE, and
+    // on its own terms: it said a gesture nobody performs is a feature
+    // nobody has, and these are SHORTCUTS — every action a swipe performs
+    // is also a visible option in the row's box, so nothing is gated
+    // behind the invisible. The recipe is the strip pebble drag's:
+    // document-level capture listeners, a threshold before it counts, no
+    // re-render mid-gesture. Swipe right does not delete OUTRIGHT: it
+    // opens the row's box with delete already armed, so a repeating thing
+    // still gets its "just this day, or the whole repeat" ask and a slip
+    // of the thumb costs nothing.
+    if (!twRO) mount.querySelectorAll(".tw-sections .tw-row").forEach(rowEl => {
+      const mid = rowEl.dataset.mech;
+      if (!mid) return;
+      const rgid = twGoalKey(rowEl.dataset.goal) === "" ? null : Number(rowEl.dataset.goal);
+      let sw = null;
+      const onMove = e => {
+        if (!sw) return;
+        const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+        if (!sw.on) {
+          // mostly vertical means a scroll: stand down and let it happen
+          if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
+          if (!(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 2)) return;
+          sw.on = true;
+          rowEl.classList.add("tw-swiping");
+        }
+        sw.dx = dx;
+        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(96, dx)) + "px)";
+      };
+      const end = commit => {
+        document.removeEventListener("pointermove", onMove, true);
+        document.removeEventListener("pointerup", onUp, true);
+        document.removeEventListener("pointercancel", onCancel, true);
+        const was = sw; sw = null;
+        rowEl.classList.remove("tw-swiping");
+        rowEl.style.transform = "";
+        if (!commit || !was || !was.on) return;
+        // the click that trails a finished swipe is not a tap on the row
+        const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        document.addEventListener("click", swallow, { capture: true, once: true });
+        setTimeout(() => document.removeEventListener("click", swallow, true), 250);
+        if (was.dx <= -64) {
+          if (twPushToTomorrow(rgid, mid)) renderThisWeek();
+        } else if (was.dx >= 64) {
+          const lbl = rowEl.querySelector(".tw-row-label");
+          const box = openRowOptions(lbl || rowEl, rgid, mid);
+          if (box) {
+            const drop = box.querySelector("#rpDrop");
+            if (drop) {
+              drop.classList.add("arm");
+              drop.querySelector(".mp-b").textContent = "tap it, and it is gone";
+            }
+          }
+        }
+      };
+      const onUp = () => end(true);
+      const onCancel = () => end(false);
+      rowEl.addEventListener("pointerdown", e => {
+        if (e.button != null && e.button !== 0) return;
+        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
+        document.addEventListener("pointermove", onMove, true);
+        document.addEventListener("pointerup", onUp, true);
+        document.addEventListener("pointercancel", onCancel, true);
+      });
+    });
     // Item 40: the companion reacts to a TICK, never an untick — each call
     // site checks which way the toggle went before saying anything.
     // tickOccurrence says what it did: one occurrence, and whether that tap
@@ -26564,6 +26656,35 @@
   // holding exactly four things: the title in place, push to tomorrow,
   // change the day, delete. Tying work to a goal is deliberately NOT here
   // (workshop only, ruled, test 145), by the owner's own choice this round.
+  // PUSH TO TOMORROW — one rule, shared by the box and the left swipe. An
+  // errand is re-dated; a scheduled thing's nearest open occurrence moves,
+  // this week only; a tomorrow beyond the week means next week, and only a
+  // goal's commitment can be pushed there (a standing reminder has no skip).
+  function twPushToTomorrow(gid, mid) {
+    const g = gid == null ? null : goals.find(x => x.id === gid);
+    const m = g ? (g.mechanisms || []).find(x => x.id === mid)
+                : reminderList().find(x => x.id === mid);
+    if (!m) return false;
+    const oneOff = gid == null && !m.schedule;
+    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
+    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
+    if (oneOff) { m.date = tomorrow; saveState(); return true; }
+    if (wd.indexOf(tomorrow) < 0) {
+      if (gid == null) return false;
+      skipThisWeek(gid, mid, true);
+      return true;
+    }
+    const eff = scheduledDatesFor(m, gid, wk);
+    const raw = scheduleOriginsFor(m, gid, wk);
+    let pick = -1;
+    eff.forEach((dd, i) => {
+      if (dd && dd >= today && !completionsAt(m, dd) && (pick < 0 || dd < eff[pick])) pick = i;
+    });
+    if (pick < 0) eff.forEach((dd, i) => { if (pick < 0 && dd && !completionsAt(m, dd)) pick = i; });
+    if (pick < 0) return false;
+    moveOccurrence(gid, mid, raw[pick], tomorrow);
+    return true;
+  }
   let twRowPopClose = null;         // the open box's cleanup, if one is open
   function openRowOptions(anchor, gid, mid) {
     if (twRowPopClose) twRowPopClose();
@@ -26577,8 +26698,8 @@
     const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
     const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
     const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
-    // THE OCCURRENCE THE BOX MEANS: the nearest open one, today or ahead,
-    // else the earliest open one — the same reading order the checkbox has.
+    // THE OCCURRENCE THE BOX IS ABOUT: the nearest open one, today or
+    // ahead, else the earliest open one — the checkbox's own reading order.
     const nearestOpen = () => {
       const eff = scheduledDatesFor(m, gid, wk);
       const raw = scheduleOriginsFor(m, gid, wk);
@@ -26642,16 +26763,7 @@
     const inp = pop.querySelector("#twEditTitle");
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
     const push = pop.querySelector("#rpPush");
-    if (push) push.addEventListener("click", () => {
-      if (oneOff) { m.date = tomorrow; saveState(); return done(); }
-      if (!tomorrowInWeek) { skipThisWeek(gid, mid, true); return done(); }
-      const no = nearestOpen();
-      if (no) {
-        if (completionsAt(m, no.date)) moveCompletion(gid, mid, no.date, tomorrow);
-        else moveOccurrence(gid, mid, no.from, tomorrow);
-      }
-      done();
-    });
+    if (push) push.addEventListener("click", () => { twPushToTomorrow(gid, mid); done(); });
     pop.querySelector("#rpWhen").addEventListener("click", () => {
       if (!isRem) { cleanup(); openMovePicker(anchor, g, m, () => renderThisWeek()); return; }
       // A reminder's days, in place: seven chips, one tap, done.
@@ -28810,6 +28922,17 @@
       // introduction, not a reward for naming (owner ruling, 2026-08-23).
       maybeWelcomeFilm(); softLeave();
     });
+    // THE DOOR BACK IN: the auth panel opens OVER this page, which stays
+    // where it is. A person who closes the panel without signing in has lost
+    // nothing; one who signs in leaves through the emailed link and comes
+    // back as their board, which never reaches this page at all.
+    const backIn = document.getElementById("welcomeSignIn");
+    if (backIn && sb) {
+      backIn.hidden = false;
+      backIn.addEventListener("click", () => {
+        if (window.__openAuth) window.__openAuth();
+      });
+    }
     const go = document.getElementById("welcomeGo");
     // One flower, yours: writing your name on the line above it blooms it,
     // petal by petal; clearing the line folds it closed again.
@@ -29152,6 +29275,29 @@
     }
     hideLoadFailure();
     try {
+      // THE FIRST SIGN-IN MOVES THE BOARD UP, NEVER DOWN (2026-09-01). This
+      // device may hold a real board from the local-only days, and the account
+      // someone has just signed into may hold nothing at all. Rendering the
+      // cloud's emptiness would put a blank page over the real board, and the
+      // very next save would write that blankness up, which is the exact
+      // accident the load-must-block rule above exists to prevent. When the
+      // cloud is provably empty and this device's copy is a board someone has
+      // actually built, the local copy is the truth and the cloud receives it.
+      // A test namespace never migrates: an empty fixture is a correct start.
+      if (store === supabaseStore && state && !lsNamespace && !DEMO
+          && !state.profile.has_onboarded && !(state.goals || []).length) {
+        let localReal = null;
+        try { localReal = JSON.parse(localStorage.getItem(LOCAL_KEY) || "null"); } catch (e) {}
+        if (localReal && localReal.profile && localReal.profile.has_onboarded
+            && applyState(localReal)) {
+          renderAll();
+          const up = await store.save(serializeState());
+          showToast(up.ok
+            ? "your board is in your account now, it follows you anywhere you sign in."
+            : "your board is here, but it hasn't reached your account yet, the next change tries again.");
+          return true;
+        }
+      }
       if (applyState(state)) { renderAll(); return true; }
       // Empty localStorage isn't necessarily a first visit: the browser pane's
       // storage dies with the pane. run-local.py keeps dev-snapshot.json; if it
