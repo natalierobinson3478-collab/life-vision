@@ -840,12 +840,8 @@
   /* THE NAME, WRITTEN ROUND THE GATE. It takes the title's face and ink, so
      it is the same voice the heading was — only its path changed. */
   .mg-name-path { fill: none; stroke: none; }
-  .mg-name { font-family: var(--voice-hand); font-weight: 400; letter-spacing: 0.02em; }
-  /* the eucalyptus greens, so the name belongs to the growth on the ring
-     rather than to the ink of the stroke */
-  .mg-name-wash { fill: #557F6B; opacity: 0.34; filter: url(#wash); mix-blend-mode: multiply; }
-  .mg-name-core { fill: #40614F; opacity: 0.80; mix-blend-mode: multiply; }
-  .mg-name-grain { fill: #4F7A6A; opacity: 0.26; filter: url(#granulate); mix-blend-mode: multiply; }
+  .mg-name { font-family: var(--voice-hand); font-weight: 400; fill: var(--ink);
+    letter-spacing: 0.02em; }
   /* THE HEADING IS STILL THERE, and that is deliberate: a curved SVG label is
      not a heading to a screen reader, and the board must keep an h1. It is
      taken out of the flow and clipped rather than display:none — which would
@@ -7302,12 +7298,7 @@
   /* align-items START, not center: when the label wraps to three lines the
      metadata stays on the label's FIRST line rather than floating to the
      middle of the block. */
-  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap;
-    /* SWIPES (2026-09-01): pan-y keeps the sheet scrolling under a thumb
-       while a sideways drag stays the row's own; the transition is the
-       snap back home when a swipe lets go short of meaning it. */
-    touch-action: pan-y; transition: transform 0.18s ease; }
-  .tw-row.tw-swiping { transition: none; }
+  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap; }
   /* Phase 5 (the "Ru…" fix + the sliver's room): on the phone the row
      RE-LAYS — the tick and the full label on line one, the when/dots/
      sliver as a quiet second line, right-aligned. Same objects, re-laid;
@@ -7851,12 +7842,7 @@
      tier is precedented here rather than new. */
   .lv-vision-line { display: inline-block; max-width: 640px; background: none; border: none;
     font-family: var(--voice-hand); font-style: italic;
-    /* THE READING SIZE ON A REAL SCREEN (owner, 2026-08-28). It sat at the
-       small tier and read small on a desktop. It steps up to --t-read here and
-       the ≤900px rule below keeps the small tier, so ANY GIVEN VIEWPORT still
-       renders one of the three — which a clamp between them could not promise,
-       because a clamp produces the values in between. */
-    font-size: var(--t-read); line-height: 1.48; color: var(--ink-soft); padding: 4px 8px; }
+    font-size: var(--t-label); line-height: 1.48; color: var(--ink-soft); padding: 4px 8px; }
   .lv-vision-set { cursor: default; }
   /* THE PLACEHOLDER IS THE SAME OBJECT IN ITS EMPTY STATE, so it is set the
      same way — it had gone upright at reading size, which is why an unwritten
@@ -7988,13 +7974,6 @@
     .lv-actions-row { position: sticky; bottom: 0; z-index: 12; margin-top: 24px;
       padding: 12px 0 calc(10px + env(safe-area-inset-bottom));
       background: linear-gradient(to top, var(--bg) 68%, rgba(237,229,209,0)); }
-    /* AN EMPTY ROW IS NOT A BAR. The row usually holds nothing (the pills it
-       was built for are seasonal, the focus proposal and little else), and
-       sticky + the gradient painted a bare cream band drifting over whatever
-       it passed — it sat across the cat's middle. The paint and the stickiness
-       go; the height STAYS, because the shelf below is spaced through this row
-       in flow, and display:none walked the cat up into the petal captions. */
-    .lv-actions-row:empty { position: static; background: none; }
   }
 
   /* ---- LITTLE WINS EVERYWHERE — the weekly check-in sheet. One page: the
@@ -11426,19 +11405,10 @@
     // toward the centre by most of its own height, which is what keeps a large
     // name inside the ring without making the name small to achieve it. On the
     // top arc "down" is inward, so one value works the whole way round.
-    // PAINTED, NOT INKED. The name was flat ink on a page where everything else
-    // is pigment sitting in paper, which is what made it read as type dropped on
-    // a drawing. Three passes of the SAME run, in the same greens the eucalyptus
-    // uses: a soft wide body through the wash filter, a stronger core over it,
-    // and granulation on top. The layers are identical text on the identical
-    // path, so they cannot drift apart — and the middle one carries no filter,
-    // which is what keeps the letterforms readable under all that weather.
-    const run = (cls, extra) => `<text class="mg-name ${cls}"`
-      + ` style="font-size:${size.toFixed(1)}px${extra || ""}" dy="0.80em">`
+    return `<path id="mgn${uid}" class="mg-name-path" d="M ${pts.join(" L ")}"/>`
+      + `<text class="mg-name" style="font-size:${size.toFixed(1)}px" dy="0.80em">`
       + `<textPath href="#mgn${uid}" startOffset="50%" text-anchor="middle">`
       + escHtml(text) + `</textPath></text>`;
-    return `<path id="mgn${uid}" class="mg-name-path" d="M ${pts.join(" L ")}"/>`
-      + run("mg-name-wash") + run("mg-name-core") + run("mg-name-grain");
   }
 
   function mgWater(cx, cy, rx, ry, level, seed) {
@@ -14388,12 +14358,7 @@
     // (rx ≈ 0.27 of the stage, ry ≈ 0.56 of rx) and .lv-vision-open is then
     // held inside the chord, which is the direction that cannot run away.
     const W = Math.round(Math.min(1000, ar.width * 0.98));
-    // THE FLOOR IS WIDER THAN A PHONE. 206 exists so the gate cannot pinch on
-    // a middling window, but 2·206 is more than any phone's stage, and the
-    // viewBox clips at W — the ring showed up cut flat at both screen edges.
-    // The stage is the harder bound: the ring, its brush and a little air must
-    // fit inside W, so W/2 − 16 caps whatever the floor asks for.
-    const rx = Math.round(Math.min(300, W / 2 - 16, Math.max(206, W * 0.275)));
+    const rx = Math.round(Math.min(300, Math.max(206, W * 0.275)));
     // ---- THE HEIGHT IS DERIVED FROM THE WORDS, NOT FROM A RATIO ----------
     // A fixed ry meant the water sat at a fixed FRACTION of it, so the gap
     // between the last line of the vision and the water's surface grew and
@@ -14441,23 +14406,14 @@
     //
     //   band     = waterTop − featureBottom
     //   waterTop = cy + ry·LEVEL,  and ry·LEVEL = ry − DEEP
-    //   featureB = cy − ry·SY + DROP
-    //   ⇒ band   = ry·(1 + SY) − DEEP − DROP
+    //   featureB = cy − ry·SY + PLANK
+    //   ⇒ band   = ry·(1 + SY) − DEEP − PLANK
     //   centred, with PAD above and below ⇒ band = wordsH + 2·PAD
-    //   ⇒ ry = (wordsH + 2·PAD + DEEP + DROP) / (1 + SY)
+    //   ⇒ ry = (wordsH + 2·PAD + DEEP + PLANK) / (1 + SY)
     //
     // PAD is the only free number left and it means what it says: the air above
     // the title and below the vision, equal to each other by construction.
-    // THE FEATURE'S BOTTOM IS ITS BRACKETS, NOT ITS PLANK (owner, 2026-08-28).
-    // The scrolled brackets hang well below the plank — the lower one sits at
-    // legDrop·0.72 and reaches 8 further — so centring against the plank left
-    // the vision looking high, because the thing the eye reads as the bottom of
-    // the feature is the bracket. standW is the REQUESTED width: the fit loop
-    // only ever shrinks it, so measuring against the request is conservative —
-    // the real gap can only be larger than the one solved for, never smaller.
-    const DEEP = 68, PAD = 16, SY = 0.50;
-    const standW0 = rx * 0.66;
-    const DROP = Math.max(29, standW0 * 0.3024 + 8);
+    const DEEP = 68, PAD = 16, SY = 0.50, PLANK = 7;
     const visEl = block.querySelector(".lv-vision-line");
     const visBottom = (visEl && visEl.offsetParent)
       ? visEl.getBoundingClientRect().bottom - ar.top : wordsBottom;
@@ -14470,7 +14426,7 @@
       ? visEl.getBoundingClientRect().top - ar.top : wordsTop;
     const wordsH = Math.max(34, visBottom - visTop);
     const ry = Math.round(Math.max(118, Math.min(rx * 1.6,
-      (wordsH + 2 * PAD + DEEP + DROP) / (1 + SY))));
+      (wordsH + 2 * PAD + DEEP + PLANK) / (1 + SY))));
     const H = Math.round(ry * 2 + 34);
     const cx = W / 2, cy = H * 0.5;
     // the words sit above the gate's centre; the water takes the foot
@@ -14485,7 +14441,7 @@
     // HEAD IS NOT A FRACTION ANY MORE. It is the feature's own bottom plus the
     // pad — which is what "centred between them" means, once the height has
     // been solved to make the band the right size.
-    const HEAD = Math.round(ry * (1 - SY) + 17 + DROP + PAD);
+    const HEAD = Math.round(ry * (1 - SY) + 17 + PLANK + PAD);
     // THE TITLE IS OUT OF THE COLUMN, so the padding that used to move it moves
     // the VISION instead. The h1 stays in the document — a curved SVG label is
     // not a heading to a screen reader — and is taken out of the flow and
@@ -14517,7 +14473,7 @@
     // so these are a REQUEST rather than a size: if the ellipse cannot take
     // them at this height they come back down, which is what makes asking for
     // more safe rather than a gamble.
-    let mtW = rx * 0.60, standW = standW0, sx = 0.42;
+    let mtW = rx * 0.60, standW = rx * 0.66, sx = 0.42;
     const standY = cy - ry * SY;
     for (let k = 0; k < 60; k++) {
       const peakH = mtW * mtH, halfSpan = Math.max(standW * 0.53 + 12, mtW * 0.80);
@@ -24619,13 +24575,9 @@
   // opens the SAME edit state, focused on whatever was touched. One surface,
   // several entry points, and no icon standing in for any of it.
   //
-  // NO SWIPE AND NO LONG-PRESS — AMENDED 2026-09-01 (owner ruling, and
-  // DECISIONS.md): the rows now take a swipe, left to push to tomorrow,
-  // right to open the box with delete armed. The old sentence stands where
-  // it was really pointing: a gesture may never be the ONLY door. Every
-  // action a swipe performs is a visible option in the row's box, so the
-  // gestures are shortcuts and nothing is gated behind the invisible.
-  // Long-press remains nothing.
+  // NO SWIPE AND NO LONG-PRESS. Both are invisible on a desktop and
+  // undiscoverable on a phone: a gesture nobody performs is a feature nobody
+  // has.
   // A PLUS, A FIGURE AND A MINUS — nothing else. The figure is the same
   // `minsText` the row prints, so the control and the row can never word the
   // same number differently. The floor is one step: zero minutes is not a
@@ -25634,10 +25586,6 @@
 
   // title, the "board →" link, and the help menu.
   function renderThisWeek() {
-    // A RENDER DESTROYS THE ROW A BOX WAS ANCHORED TO, so the box goes
-    // first (committing its title on the way out). twRowPopClose nulls
-    // itself before it re-renders, so this cannot recurse.
-    if (twRowPopClose) twRowPopClose();
     // ---- ONE RULE, AT THE TOP: A WEEK THAT IS NOT THIS ONE IS A RECORD ----
     // Every handler that CHANGES something is simply not wired when the
     // sheet is showing another week. Not wired-and-guarded: six guards is
@@ -26521,72 +26469,6 @@
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
     });
-    // ---- SWIPES ON A ROW (owner ruling, 2026-09-01: "if i swipe right it
-    // deletes, if i swipe left it does something else", and left is push
-    // to tomorrow). THE NO-SWIPE RULING IS OVERTURNED FOR THIS PAGE, and
-    // on its own terms: it said a gesture nobody performs is a feature
-    // nobody has, and these are SHORTCUTS — every action a swipe performs
-    // is also a visible option in the row's box, so nothing is gated
-    // behind the invisible. The recipe is the strip pebble drag's:
-    // document-level capture listeners, a threshold before it counts, no
-    // re-render mid-gesture. Swipe right does not delete OUTRIGHT: it
-    // opens the row's box with delete already armed, so a repeating thing
-    // still gets its "just this day, or the whole repeat" ask and a slip
-    // of the thumb costs nothing.
-    if (!twRO) mount.querySelectorAll(".tw-sections .tw-row").forEach(rowEl => {
-      const mid = rowEl.dataset.mech;
-      if (!mid) return;
-      const rgid = twGoalKey(rowEl.dataset.goal) === "" ? null : Number(rowEl.dataset.goal);
-      let sw = null;
-      const onMove = e => {
-        if (!sw) return;
-        const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
-        if (!sw.on) {
-          // mostly vertical means a scroll: stand down and let it happen
-          if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
-          if (!(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 2)) return;
-          sw.on = true;
-          rowEl.classList.add("tw-swiping");
-        }
-        sw.dx = dx;
-        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(96, dx)) + "px)";
-      };
-      const end = commit => {
-        document.removeEventListener("pointermove", onMove, true);
-        document.removeEventListener("pointerup", onUp, true);
-        document.removeEventListener("pointercancel", onCancel, true);
-        const was = sw; sw = null;
-        rowEl.classList.remove("tw-swiping");
-        rowEl.style.transform = "";
-        if (!commit || !was || !was.on) return;
-        // the click that trails a finished swipe is not a tap on the row
-        const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
-        document.addEventListener("click", swallow, { capture: true, once: true });
-        setTimeout(() => document.removeEventListener("click", swallow, true), 250);
-        if (was.dx <= -64) {
-          if (twPushToTomorrow(rgid, mid)) renderThisWeek();
-        } else if (was.dx >= 64) {
-          const lbl = rowEl.querySelector(".tw-row-label");
-          const box = openRowOptions(lbl || rowEl, rgid, mid);
-          if (box) {
-            const drop = box.querySelector("#rpDrop");
-            if (drop) {
-              drop.classList.add("arm");
-              drop.querySelector(".mp-b").textContent = "tap it, and it is gone";
-            }
-          }
-        }
-      };
-      const onUp = () => end(true);
-      const onCancel = () => end(false);
-      rowEl.addEventListener("pointerdown", e => {
-        if (e.button != null && e.button !== 0) return;
-        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
-        document.addEventListener("pointermove", onMove, true);
-        document.addEventListener("pointerup", onUp, true);
-        document.addEventListener("pointercancel", onCancel, true);
-      });
-    });
     // Item 40: the companion reacts to a TICK, never an untick — each call
     // site checks which way the toggle went before saying anything.
     // tickOccurrence says what it did: one occurrence, and whether that tap
@@ -26676,35 +26558,6 @@
   // holding exactly four things: the title in place, push to tomorrow,
   // change the day, delete. Tying work to a goal is deliberately NOT here
   // (workshop only, ruled, test 145), by the owner's own choice this round.
-  // PUSH TO TOMORROW — one rule, shared by the box and the left swipe. An
-  // errand is re-dated; a scheduled thing's nearest open occurrence moves,
-  // this week only; a tomorrow beyond the week means next week, and only a
-  // goal's commitment can be pushed there (a standing reminder has no skip).
-  function twPushToTomorrow(gid, mid) {
-    const g = gid == null ? null : goals.find(x => x.id === gid);
-    const m = g ? (g.mechanisms || []).find(x => x.id === mid)
-                : reminderList().find(x => x.id === mid);
-    if (!m) return false;
-    const oneOff = gid == null && !m.schedule;
-    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
-    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
-    if (oneOff) { m.date = tomorrow; saveState(); return true; }
-    if (wd.indexOf(tomorrow) < 0) {
-      if (gid == null) return false;
-      skipThisWeek(gid, mid, true);
-      return true;
-    }
-    const eff = scheduledDatesFor(m, gid, wk);
-    const raw = scheduleOriginsFor(m, gid, wk);
-    let pick = -1;
-    eff.forEach((dd, i) => {
-      if (dd && dd >= today && !completionsAt(m, dd) && (pick < 0 || dd < eff[pick])) pick = i;
-    });
-    if (pick < 0) eff.forEach((dd, i) => { if (pick < 0 && dd && !completionsAt(m, dd)) pick = i; });
-    if (pick < 0) return false;
-    moveOccurrence(gid, mid, raw[pick], tomorrow);
-    return true;
-  }
   let twRowPopClose = null;         // the open box's cleanup, if one is open
   function openRowOptions(anchor, gid, mid) {
     if (twRowPopClose) twRowPopClose();
@@ -26718,8 +26571,8 @@
     const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
     const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
     const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
-    // THE OCCURRENCE THE BOX IS ABOUT: the nearest open one, today or
-    // ahead, else the earliest open one — the checkbox's own reading order.
+    // THE OCCURRENCE THE BOX MEANS: the nearest open one, today or ahead,
+    // else the earliest open one — the same reading order the checkbox has.
     const nearestOpen = () => {
       const eff = scheduledDatesFor(m, gid, wk);
       const raw = scheduleOriginsFor(m, gid, wk);
@@ -26758,12 +26611,8 @@
         <span class="mp-b">${repeating ? "everywhere, though what is done stays done" : "for good"}</span>
       </button>`;
     const cleanup = () => {
-      // The title commits on the way out, whatever closed the box — but
-      // only if the person actually typed. Committing an untouched field
-      // against whatever board is live by then is how a fixture swap (or
-      // any later state change) would get a rename nobody made.
-      const i0 = pop.querySelector("#twEditTitle");
-      if (i0 && i0.value !== title) twEditCommitTitle();
+      // The title commits on the way out, whatever closed the box.
+      twEditCommitTitle();
       const renamed = appVoice(m.weekLabel ?? m.label, wroteIt(m)) !== title;
       twEditing = null;
       twRowPopClose = null;
@@ -26773,23 +26622,10 @@
       if (renamed) renderThisWeek();
     };
     const done = () => { cleanup(); renderThisWeek(); };
-    // A BOX SWEPT AWAY BY ANOTHER PICKER (they clear ".when-pop" nodes
-    // wholesale) must not leave its document listeners behind: a stale
-    // capture-phase Escape handler ate the chapter editor's own Escape.
-    // Both handlers first check the node is still on the page, and a swept
-    // box detaches quietly — no title commit off a board that has moved on.
-    const detach = () => {
-      twEditing = null;
-      if (twRowPopClose === cleanup) twRowPopClose = null;
-      document.removeEventListener("pointerdown", onOutside, true);
-      document.removeEventListener("keydown", onKey, true);
-    };
     const onOutside = e => {
-      if (!pop.isConnected) return detach();
       if (!pop.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) cleanup();
     };
     const onKey = e => {
-      if (!pop.isConnected) return detach();
       if (e.key !== "Escape") return;
       e.stopPropagation();
       const i2 = pop.querySelector("#twEditTitle");
@@ -26800,7 +26636,16 @@
     const inp = pop.querySelector("#twEditTitle");
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
     const push = pop.querySelector("#rpPush");
-    if (push) push.addEventListener("click", () => { twPushToTomorrow(gid, mid); done(); });
+    if (push) push.addEventListener("click", () => {
+      if (oneOff) { m.date = tomorrow; saveState(); return done(); }
+      if (!tomorrowInWeek) { skipThisWeek(gid, mid, true); return done(); }
+      const no = nearestOpen();
+      if (no) {
+        if (completionsAt(m, no.date)) moveCompletion(gid, mid, no.date, tomorrow);
+        else moveOccurrence(gid, mid, no.from, tomorrow);
+      }
+      done();
+    });
     pop.querySelector("#rpWhen").addEventListener("click", () => {
       if (!isRem) { cleanup(); openMovePicker(anchor, g, m, () => renderThisWeek()); return; }
       // A reminder's days, in place: seven chips, one tap, done.
@@ -33981,11 +33826,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       status.textContent = `Signed in as ${session.user.email}. Your goals sync across your devices.`;
       emailField.style.display = "none"; sendBtn.style.display = "none"; outBtn.style.display = "";
     } else {
-      status.textContent = walled
-        ? "we'll email you a sign-in link, no password to remember. "
-          + "your board saves to your account from the very first word."
-        : "We'll email you a sign-in link, no password to remember. "
-          + "Until you sign in, nothing is saved between refreshes.";
+      status.textContent = "We'll email you a sign-in link, no password to remember. "
+        + "Until you sign in, nothing is saved between refreshes.";
       emailField.style.display = ""; sendBtn.style.display = ""; outBtn.style.display = "none";
     }
     tornify(authOverlay.querySelector(".modal"));
