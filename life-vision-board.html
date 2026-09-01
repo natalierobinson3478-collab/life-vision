@@ -6771,9 +6771,16 @@
   #thisWeekMount .tw-strip-svg:focus, #thisWeekMount .tw-strip-svg:focus-visible {
     outline: none; }
 
-  /* THE STRIP IS THE SCHEDULE, so its pebbles are controls. */
-  .tw-stone[data-mech] { cursor: pointer; }
+  /* THE STRIP IS THE SCHEDULE, so its pebbles are controls.
+     `touch-action: none` is what makes the drag work with a finger at all —
+     without it the browser reads a touch-drag on a pebble as a page pan and
+     scrolls the sheet under the hand while the pebble tries to follow it. */
+  .tw-stone[data-mech] { cursor: pointer; touch-action: none; }
   .tw-strip-mount.dragging .tw-stone[data-mech] { cursor: grabbing; }
+  /* THE HALO IS THE HANDLE. A pebble's drawn path is ~15px across on a
+     phone; this invisible twin over it is what a finger actually grabs.
+     Transparent fill, no ink, never lit or quiet — it has no look to have. */
+  .tw-stone.hit { fill: transparent; stroke: none; pointer-events: all; }
   /* PICKED UP: the pebble you are carrying darkens a little so the hand can
      see which one it has. No shadow and no scale — it is a stone on paper. */
   .tw-stone.lifted { opacity: 1; filter: saturate(1.25); }
@@ -25561,20 +25568,31 @@
     // a proportion of each axis, so a tall pebble is a tall stone rather
     // than a stretched circle with stretched dents.
     const d = twStonePath(cx, cy, r, seed);
-    const at = it ? ` data-goal="${it.gid}" data-mech="${escHtml(it.mid)}"`
+    const dataAt = it ? ` data-goal="${it.gid}" data-mech="${escHtml(it.mid)}"`
       + ` data-cat="${escHtml(it.cat || "")}"`
       + ` data-date="${it.date || ""}" data-from="${it.from || it.date || ""}"`
-      + ` data-slot="${it.slot == null ? "" : it.slot}" data-done="${it.done ? 1 : 0}"`
-      + ` tabindex="0" role="button"` : ``;
+      + ` data-slot="${it.slot == null ? "" : it.slot}" data-done="${it.done ? 1 : 0}"` : ``;
+    // The drawn paths keep the keyboard; the halo below is finger-only.
+    const at = dataAt ? dataAt + ` tabindex="0" role="button"` : ``;
+    // THE HALO IS THE HANDLE. The drawn stone is ~15px across on a phone,
+    // which is smaller than a fingertip, so every pebble gets an invisible
+    // twin drawn LAST (on top): wider by a thumb's margin, taller by almost
+    // nothing, because columns have room sideways and a pile stacks its
+    // stones 3.2 apart vertically. It carries the same data-* identity, so
+    // the drag wiring and the twins query pick it up without knowing it
+    // exists. No tabindex — two tab stops per pebble would be one too many.
+    const hit = dataAt
+      ? `<path class="tw-stone hit" d="${twStonePath(cx, cy, r + 2, seed, TW_STONE_R + 6)}"${dataAt}/>`
+      : ``;
     // WHAT IS LIT IS NOT DECIDED HERE. twPaintSelection owns that, for every
     // pebble, row and petal at once — this used to compute it a second time
     // from twFocus/twFilter, which is exactly the duplicate mechanism the
     // one-selection rule exists to prevent.
     // INK ONLY ACCUMULATES: hollow with a faint wash until done, filled after.
     return done
-      ? `<path class="tw-stone done ${cls}" d="${d}"${at}/>`
+      ? `<path class="tw-stone done ${cls}" d="${d}"${at}/>` + hit
       : `<path class="tw-stone wash ${cls}" d="${d}"${at}/>`
-        + `<path class="tw-stone edge ${cls}" d="${d}"${at}/>`;
+        + `<path class="tw-stone edge ${cls}" d="${d}"${at}/>` + hit;
   }
 
   // THE LANE TAKES WHAT ITS WORD NEEDS AND NO MORE, so it costs the seven
@@ -25737,6 +25755,12 @@
     const focusG = previewGoals ? null : active.find(g => g.id === focusGoalId);
 
     const focusedId = document.activeElement && document.activeElement.id;
+    // A RENDER MUST NOT MOVE THE PAPER. The rebuild empties the sheet for a
+    // moment, the overlay's scroll gets clamped to the shorter page, and
+    // nothing put it back — so every drop and every tick ended with a jump.
+    // Read where the reader was; put them back once the page has its height.
+    const twOv = document.getElementById("thisWeekOverlay");
+    const twScroll = twOv ? twOv.scrollTop : 0;
     const weekBudget = (() => {
       const intake = buildIntake();
       return (intake.capacity && intake.capacity.statedHours)
@@ -26246,7 +26270,11 @@
       let drag = null;
       const onMove = e => {
         if (!drag) return;
-        if (!drag.moved && (Math.abs(e.clientX - drag.x) > 4 || Math.abs(e.clientY - drag.y) > 4)) {
+        // A THUMB WOBBLES. A finger resting on a pebble drifts a few pixels
+        // just by being a finger, so touch gets a wider gate than a mouse
+        // before a tap stops being a tap.
+        const gate = e.pointerType === "touch" ? 6 : 4;
+        if (!drag.moved && (Math.abs(e.clientX - drag.x) > gate || Math.abs(e.clientY - drag.y) > gate)) {
           drag.moved = true;
           stripMount.classList.add("dragging");
           drag.twins.forEach(x => x.classList.add("lifted"));
@@ -26259,9 +26287,25 @@
           drag.twins.forEach(x => x.setAttribute("transform", `translate(${dx} ${dy})`));
         }
       };
+      // THE BROWSER CAN TAKE THE POINTER BACK. When a gesture turns into a
+      // scroll or the tab loses the touch, pointerup never arrives —
+      // pointercancel does. Without this the drag state, the document
+      // listeners, the lifted ink and the last translate all stay stuck,
+      // which is a pebble hanging mid-air with nothing holding it. Same
+      // rule every other drag surface in this file already follows.
+      const onCancel = () => {
+        document.removeEventListener("pointermove", onMove, true);
+        document.removeEventListener("pointerup", onUp, true);
+        document.removeEventListener("pointercancel", onCancel, true);
+        if (!drag) return;
+        const d = drag; drag = null;
+        stripMount.classList.remove("dragging");
+        d.twins.forEach(x => { x.classList.remove("lifted"); x.removeAttribute("transform"); });
+      };
       const onUp = e => {
         document.removeEventListener("pointermove", onMove, true);
         document.removeEventListener("pointerup", onUp, true);
+        document.removeEventListener("pointercancel", onCancel, true);
         if (!drag) return;
         const d = drag; drag = null;
         stripMount.classList.remove("dragging");
@@ -26333,6 +26377,7 @@
           try { el.setPointerCapture(e.pointerId); } catch (err) {}
           document.addEventListener("pointermove", onMove, true);
           document.addEventListener("pointerup", onUp, true);
+          document.addEventListener("pointercancel", onCancel, true);
         });
         el.addEventListener("keydown", e => {
           if (e.key !== "Enter" && e.key !== " ") return;
@@ -26764,6 +26809,11 @@
       const back = document.getElementById(focusedId);
       if (back) back.focus();
     }
+    // ...and every reader keeps theirs. The strip has its height by now, so
+    // the page is back to full length and the old position exists again. A
+    // fresh open captures 0 (a hidden overlay reads scrollTop as 0), so
+    // opening the book still starts at the top of the page.
+    if (twOv && twScroll) twOv.scrollTop = twScroll;
   }
 
   // THE EDIT STATE'S WIRING. Every control writes immediately; nothing here
