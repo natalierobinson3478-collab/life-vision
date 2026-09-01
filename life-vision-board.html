@@ -34062,7 +34062,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // save rule, the quiet-gate, and setters the harness drives DOM-free.
     chooseCompanion, freshCompanion, propDrawable, companionLineOk, companionVoiceSuggestion,
     companionLines: () => COMPANION_LINES, resolveCompanionOnSave, pickCompanionLine,
-    arrivalDecision, speechState, pickArrivalLine, quarterCatchUp, setClockOffset,
+    // appNow and todayKey ride out beside the offset that bends them
+    // (2026-09-01): the harness kept deriving "the app's today" from the
+    // wall clock, which disagrees whenever the clock is pinned AND every
+    // night before 04:00 — todayKey turns at DAY_TURN_HOUR, not midnight,
+    // and no expectation built outside it can know that.
+    arrivalDecision, speechState, pickArrivalLine, quarterCatchUp, setClockOffset, appNow, todayKey,
     // UT1d seams: the dial-born dig sheet, drivable without the discovery.
     digDialHtml, wireDigDial,
     // UT1.5 seams: the capture's tone read (hard by default), the week's
