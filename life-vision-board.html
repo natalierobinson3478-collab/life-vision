@@ -9840,8 +9840,18 @@
       <label for="authEmail">email</label>
       <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" />
     </div>
+    <!-- The code path exists because of phones: the app on a home screen and
+         the browser an emailed link opens are two separate copies that do not
+         share a session, so the link signs in the wrong one. A code typed HERE
+         lands the session in the copy that asked. -->
+    <div class="field" id="authCodeField" style="display:none;">
+      <label for="authCode">code from the email</label>
+      <input id="authCode" inputmode="numeric" autocomplete="one-time-code"
+             maxlength="6" placeholder="123456" />
+    </div>
     <div class="modal-actions">
       <button class="btn-solid" id="authSend">email me a link</button>
+      <button class="btn-solid" id="authVerify" style="display:none;">sign me in</button>
       <button class="btn-cancel" id="authSignOut" style="display:none;">sign out</button>
     </div>
   </div>
@@ -33885,7 +33895,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
 
   // required: the front-door form. No close, no Esc (the keydown map skips a
   // hidden closer), front-door words. A successful sign-in leaves this page
-  // through the emailed link's full reload, so the flag never goes stale.
+  // through the emailed link's full reload, or through the typed code below,
+  // which closes it by hand, so the flag never goes stale.
   async function openAuth(required) {
     const session = await currentSession();
     const status = document.getElementById("authStatus");
@@ -33893,6 +33904,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     const sendBtn = document.getElementById("authSend");
     const outBtn = document.getElementById("authSignOut");
     const closeBtn = document.getElementById("authClose");
+    // The code half of the form only exists between "email me a link" and the
+    // sign-in it grants; every fresh open starts back at the email line.
+    document.getElementById("authCodeField").style.display = "none";
+    document.getElementById("authVerify").style.display = "none";
+    document.getElementById("authCode").value = "";
     const walled = !!required && !session;
     if (closeBtn) closeBtn.style.display = walled ? "none" : "";
     authOverlay.dataset.required = walled ? "1" : "";
@@ -34419,9 +34435,36 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     btn.disabled = false; btn.textContent = "Email me a link";
     if (error) { showToast("couldn't send the link: " + error.message); return; }
     document.getElementById("authStatus").textContent =
-      `Check ${email}, the link signs you in and brings you straight back here.`;
+      `Check ${email}, then type the code from that email here and you're in.`;
     document.getElementById("authEmailField").style.display = "none";
     btn.style.display = "none";
+    document.getElementById("authCodeField").style.display = "";
+    document.getElementById("authVerify").style.display = "";
+    document.getElementById("authCode").focus();
+  });
+
+  // The typed code is the phone's road in: verifyOtp lands the session in
+  // THIS copy of the app, no hop through another browser. The emailed link
+  // still works too, for anyone reading their email on the same browser.
+  async function verifyAuthCode() {
+    const email = document.getElementById("authEmail").value.trim();
+    const code = document.getElementById("authCode").value.trim();
+    if (!code) { showToast("type the code from the email first."); return; }
+    const btn = document.getElementById("authVerify");
+    btn.disabled = true; btn.textContent = "Checking…";
+    const { error } = await sb.auth.verifyOtp({ email, token: code, type: "email" });
+    btn.disabled = false; btn.textContent = "sign me in";
+    if (error) {
+      showToast("that code didn't match, check the newest email and try again.");
+      return;
+    }
+    // SIGNED_IN fires from here and boots the board; the wall just needs to
+    // step aside, since there is no full reload on this road.
+    closeBookPage(authOverlay);
+  }
+  document.getElementById("authVerify").addEventListener("click", verifyAuthCode);
+  document.getElementById("authCode").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); verifyAuthCode(); }
   });
 
   document.getElementById("authSignOut").addEventListener("click", async () => {
