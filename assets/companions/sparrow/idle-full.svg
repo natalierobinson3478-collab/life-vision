@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- sparrow, idle-full: grown and sleek: longer tail, full breast patch, a neater wing. -->
+  <defs>
+    <filter id="rough-sparrow-idle-full" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-sparrow-idle-full)">
+
+    <path d="M12 76 L88 76" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M33 71 C27 60 34 48 47 46 C60 44 70.5 51 69 61.5 C67.5 70 58.5 74.5 50 73.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M47 46 C45 37 51 30.5 59.5 33 C66.5 35 66.5 43.5 62 47.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M62.5 39 L71.5 41.5 L62.5 43.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" stroke-linejoin="round"/>
+      <circle cx="57" cy="38.5" r="1.5" fill="#3a3626"/>
+    </g>
+    <path d="M38.5 57 C43 51.5 55 51.5 59.5 59.5 C55 66.5 43 66.5 38.5 57Z" stroke="#3a3626" stroke-width="1.4" fill="#a9876a" fill-opacity=".55"/>
+    <path class="c-wing" d="M43 55 C50 53.5 57.5 56 61 61" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path class="c-tail" d="M33 71 C26 74 20.5 72 17 67" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M33 68 C27.5 69.5 23 68 20 64" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M46.5 74 L46.5 79.5 M55 73.5 L55 79.5 M43 79.5 L50 79.5 M51.5 79.5 L59 79.5" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="64" cy="42" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

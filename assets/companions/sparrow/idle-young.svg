@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- sparrow, idle-young: a fledgling: a round fluff ball, stubby tail, gappy beak, on the line. -->
+  <defs>
+    <filter id="rough-sparrow-idle-young" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-sparrow-idle-young)">
+
+    <path class="c-ground" d="M16 74 L84 74" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M37 70 C32 60 38 50 50 49 C61 48 68.5 55 66.5 63.5 C65 70.5 57 74 49 73" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M50 49 C48.5 42 54 37 61 39 C67 41 66.5 48.5 62 51.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M63.5 43.5 L70.5 46 L63 47.8" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" stroke-linejoin="round"/>
+      <circle cx="58.5" cy="44" r="1.6" fill="#3a3626"/>
+    </g>
+    <path class="c-wing" d="M41 60 C45 56 53 56 57 61.5 C53 67 45 67 41 60Z" stroke="#3a3626" stroke-width="1.4" fill="#a9876a" fill-opacity=".45"/>
+    <path d="M40 55 c-1.6 1.5 -2 3.4 -1.5 5 M46 51.5 c-1.6 1.5 -2 3.4 -1.5 5 M56 53 c1.6 1.2 2.2 3 2 4.6" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path class="c-tail" d="M37 70 C33.5 71 31 70 29.5 68" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M48 73 L48 78 M55 72.5 L55 78 M45 78 L51 78 M52.5 78 L58.5 78" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="70.5" cy="46" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

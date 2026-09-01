@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cat, returning: asleep in a full curl, tail over the nose. -->
+  <defs>
+    <filter id="rough-cat-returning" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-cat-returning)">
+
+    <path d="M22 80 L80 80" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M24 76 C20 62 30 52 48 52 C66 52 78 60 76 70 C74 78 64 80 56 80" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M34 66 C32 58 40 54 48 56 C54 58 56 64 52 68" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M38 58 L36 50 L43 55" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M48 56 L52 49 L45 54" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <g class="c-eyes"><path d="M40 62 c1 1 2 1 3 0 M46 62 c1 1 2 1 3 0" stroke="#3a3626" stroke-width="1.4" fill="none" stroke-linecap="round"/></g>
+    </g>
+    <path d="M56 80 C40 82 30 76 34 70 C36 66 44 66 46 70" stroke="#5a4a3a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M60 40 c3 -3 6 0 3 3 M66 32 c3 -3 6 0 3 3" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".45"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="36" cy="64" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

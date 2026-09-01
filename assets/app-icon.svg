@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="ring"><ellipse cx="256" cy="262" rx="168" ry="150"/></clipPath>
+  </defs>
+  <!-- paper -->
+  <rect width="512" height="512" fill="#F3E6C8"/>
+  <ellipse cx="120" cy="90" rx="150" ry="120" fill="#D8CCAD" opacity="0.45"/>
+  <ellipse cx="420" cy="440" rx="170" ry="130" fill="#C9BD9C" opacity="0.40"/>
+  <ellipse cx="440" cy="80" rx="120" ry="100" fill="#CBC2A6" opacity="0.35"/>
+  <!-- inside the gate: lighter paper -->
+  <ellipse cx="256" cy="262" rx="168" ry="150" fill="#F7ECD3"/>
+  <!-- water -->
+  <g clip-path="url(#ring)">
+    <rect x="60" y="318" width="392" height="120" fill="#BAD2CC" opacity="0.85"/>
+    <rect x="60" y="318" width="392" height="10" fill="#9FBFB7" opacity="0.7"/>
+    <ellipse cx="216" cy="352" rx="26" ry="5" fill="none" stroke="#7FA69C" stroke-width="3" opacity="0.6"/>
+    <ellipse cx="300" cy="376" rx="18" ry="4" fill="none" stroke="#7FA69C" stroke-width="3" opacity="0.5"/>
+  </g>
+  <!-- the feature: plank, cap, waterfall -->
+  <g>
+    <path d="M 262 156 q 30 -14 62 -2 q 6 2 4 8 q -34 10 -66 2 q -4 -6 0 -8 Z" fill="#9FB49B"/>
+    <rect x="252" y="168" width="88" height="7" rx="3" fill="#3A3A2E"/>
+    <rect x="284" y="175" width="24" height="146" fill="#BAD2CC" opacity="0.9"/>
+    <path d="M 288 175 v 143 M 296 175 v 143 M 304 175 v 143" stroke="#8FB3AB" stroke-width="2.4" fill="none" opacity="0.8"/>
+    <path d="M 262 175 v 20 h 14 M 330 175 v 20 h -14" stroke="#6B6B5A" stroke-width="3.4" fill="none"/>
+  </g>
+  <!-- the ensō ring, brushy: two offset strokes -->
+  <ellipse cx="256" cy="262" rx="168" ry="150" fill="none" stroke="#3A3A2E" stroke-width="13"/>
+  <ellipse cx="257" cy="260" rx="163" ry="146" fill="none" stroke="#3A3A2E" stroke-width="5" opacity="0.55"/>
+  <!-- eucalyptus along the upper-left of the ring -->
+  <g fill="#557F6B">
+    <circle cx="118" cy="164" r="9" opacity="0.75"/><circle cx="140" cy="146" r="11" opacity="0.6"/>
+    <circle cx="163" cy="132" r="9" opacity="0.8"/><circle cx="187" cy="122" r="12" opacity="0.55"/>
+    <circle cx="211" cy="114" r="9" opacity="0.7"/><circle cx="128" cy="186" r="7" opacity="0.55"/>
+    <circle cx="152" cy="160" r="6" opacity="0.9"/><circle cx="176" cy="144" r="7" opacity="0.65"/>
+    <circle cx="200" cy="134" r="6" opacity="0.85"/><circle cx="234" cy="108" r="8" opacity="0.6"/>
+  </g>
+  <!-- two koi -->
+  <g fill="#C77F5A" opacity="0.9">
+    <ellipse cx="222" cy="368" rx="13" ry="5.5"/>
+    <path d="M 209 368 l -8 -4 v 8 Z"/>
+  </g>
+  <g fill="#D9A06B" opacity="0.85">
+    <ellipse cx="294" cy="388" rx="11" ry="4.6"/>
+    <path d="M 305 388 l 8 -4 v 8 Z"/>
+  </g>
+</svg>

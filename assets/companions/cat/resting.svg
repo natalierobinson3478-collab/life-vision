@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cat, resting: curled low, head up on the coil, eyes half. -->
+  <defs>
+    <filter id="rough-cat-resting" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-cat-resting)">
+
+    <path d="M20 82 L80 82" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M26 80 C22 68 30 58 46 58 C62 58 74 64 74 74 C74 79 68 82 60 82" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M34 72 C32 64 38 60 46 62 C52 64 54 70 50 74" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M36 64 L33 56 L41 61" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M46 62 L50 55 L43 60" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <g class="c-eyes"><path d="M40 68 l3 0 M46 68 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/></g>
+    </g>
+    <path d="M60 82 C70 80 78 72 70 66 C66 64 64 68 66 72" stroke="#5a4a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M30 68 c-2 2 -2.5 4.5 -1.5 7 M54 60 c2.5 .5 4 2 4.5 4.5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+
+  </g>
+</svg>

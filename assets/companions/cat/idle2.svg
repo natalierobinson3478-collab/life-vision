@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cat, idle2: sitting, tail wrapped the other way, head turned left this time. -->
+  <defs>
+    <filter id="rough-cat-idle2" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-cat-idle2)">
+
+    <path d="M24 84 L76 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M38 38 C32 44 29 50 27.5 56 C21 59 18.5 69 23 77 C26.5 82.5 34 84 41 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M40 63 C32 63.5 27.5 70 30.5 78" stroke="#3a3626" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M50 40 C52.5 46 54 52 54.5 58" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M54.5 58 C55.5 66 56 76 55.5 84 M47.5 62 C48 69 48 77 47.5 84" stroke="#3a3626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M44 84 L51 84 M52 84 L59 84" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M47 42 c3 1 4.5 3 5 6 M52 52 c2.5 1 3.5 3 3.5 5.5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M26 62 c-3 .5 -4.5 2.5 -5 5 M28 72 c-2.5 .5 -4 2 -4.5 4" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <g class="c-head">
+      <path d="M49.5 36 C52 27.5 47.5 21 40 21.5 C32.5 22 29 29 31.5 37" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M48.5 26.5 L51.5 16.5 L43.5 21.5" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M34.5 24.5 L30 15.5 L38.5 20" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <g class="c-eyes"><path d="M34.5 30 l3 0 M30.5 30.5 l2.5 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/></g>
+      <path d="M46 34 C49 34 50.5 35.5 50.5 37.5" stroke="#5a4a3a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </g>
+    <path d="M26 80 C24 84.5 30 86.5 39 86.5 C48 86.5 56 86 61 85" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path class="c-tail-tip" d="M61 85 C65.5 84 67.5 81 65.5 78" stroke="#5a4a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="33" cy="32" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

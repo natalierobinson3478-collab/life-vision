@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40">
+  <!-- prop: postcard — a postcard, stamp corner and two address lines. -->
+  <defs>
+    <filter id="rough-prop-postcard" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-prop-postcard)">
+
+    <path d="M8 11 L52 9 L53 30 L9 32 Z" stroke="#3a3626" stroke-width="1.3" fill="#efe6c9"/>
+    <path d="M44 12.5 L50 12.2 L50.3 18 L44.3 18.3 Z" stroke="#3a3626" stroke-width="1" fill="none" opacity=".7"/>
+    <path d="M13 20 L34 19 M13 24.5 L30 23.6" stroke="#3a3626" stroke-width=".8" opacity=".5"/>
+    <path d="M31 12 C31 16 31 22 31.5 28" stroke="#3a3626" stroke-width=".7" opacity=".35"/>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- plant, returning: leaning toward the light. Fine. Nothing droops here. -->
+  <defs>
+    <filter id="rough-plant-returning" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-plant-returning)">
+
+    <path d="M34 62 L66 62 L62.5 88 L38 88 Z" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".55" stroke-linejoin="round"/>
+    <path d="M31.5 62 L68.5 62" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <path class="c-stem" d="M50 62 C51 50 54 40 60 32" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path class="c-leaf" d="M51.5 52 C43 50 38 44 38.5 37.5 C46 38.5 51 43 51.5 52Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf2" d="M54 44 C62.5 42.5 68 36.5 67.5 29.5 C60 31 55 36.5 54 44Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf3" d="M60 32 C55 30.5 52.5 26 53.5 21 C59 22.5 61.5 27 60 32Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path d="M40 63.5 c2 -3 5 -3 6 0" stroke="#3a3626" stroke-width="1.2" fill="#6f7f5c" fill-opacity=".7"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="50" cy="34" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

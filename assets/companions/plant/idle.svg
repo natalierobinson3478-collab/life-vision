@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- potted plant, idle: it doesn't move. A clay pot, one bending stem,
+       three sage leaves at different sizes on different sides, and one tiny
+       starter leaf resting on the pot rim (ticks add more of these). -->
+  <defs>
+    <filter id="rough-plant" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-plant)">
+    <!-- pot, clay -->
+    <path d="M34 62 L66 62 L62.5 88 L38 88 Z" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".55" stroke-linejoin="round"/>
+    <!-- rim -->
+    <path d="M31.5 62 L68.5 62" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- stem, leaning a little -->
+    <path class="c-stem" d="M50 62 C50 50 48 40 52.5 29.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- three leaves, sage, none matching -->
+    <path class="c-leaf" d="M49.5 52 C40 52 34 46 34 39.5 C42 39.5 48 44 49.5 52Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf2" d="M51 44 C60 44 66.5 38 66.5 31 C58 31 52 36 51 44Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf3" d="M52.5 29.5 C46.5 29.5 42.5 25.5 42.5 20.5 C48.5 20.5 52.5 24.5 52.5 29.5Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <!-- leaf veins, faint -->
+    <path d="M37 42 C42 44 46 47 48.5 50.5 M63 33.5 C58 35.5 54 38.5 51.8 42 M45 23 C48 25 50.5 27 52 29" stroke="#3a3626" stroke-width=".9" fill="none" stroke-linecap="round" opacity=".45"/>
+    <!-- the starter leaf resting on the rim -->
+    <path class="c-rim-leaf" d="M40 63.5 c2 -3 5 -3 6 0" stroke="#3a3626" stroke-width="1.2" fill="#6f7f5c" fill-opacity=".7"/>
+    <!-- hidden until a behaviour asks: a falling water drop, a weekly bud -->
+    <circle class="c-drop" cx="58" cy="34" r="1.6" fill="#6f7f5c" fill-opacity=".8" opacity="0"/>
+    <path class="c-bud" d="M46 33 c1.5 -2.5 4 -2.5 5 0" stroke="#3a3626" stroke-width="1.1" fill="#6f7f5c" fill-opacity=".7" opacity="0"/>
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="52" cy="24" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

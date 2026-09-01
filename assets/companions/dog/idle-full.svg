@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- dog, idle-full: grown and settled: broader chest, the same steady eyes on you. -->
+  <defs>
+    <filter id="rough-dog-idle-full" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-dog-idle-full)">
+
+    <path d="M22 84 L78 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M30 84 C25 66 32 53 46 49 C58 45 69 50 73 61 C77 71.5 73 80 68.5 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M46 49 C42 37 48 28.5 58.5 28.5 C69 28.5 73 39 66.5 49" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M46.5 34 C40 36.5 36 45 38.5 51.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <path class="c-ear-far" d="M69 34.5 C75.5 37 77.5 45.5 73 51.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <g class="c-eyes"><circle cx="54" cy="39.5" r="1.6" fill="#3a3626"/><circle cx="62.5" cy="39" r="1.6" fill="#3a3626"/></g>
+      <path d="M57 44 C55.5 44 54.5 45 54.5 46.5 C56.5 47.5 60.5 47.5 62 46.5 C62 45 61 44 59 44Z" fill="#3a3626"/>
+      <path d="M58.5 47 L58.5 50 M55.5 51 c2 2 4.2 2 6 0" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    </g>
+    <path d="M43 66 C41.5 72 41.5 78.5 43 84 M57 66.5 C58.5 72 58.5 78.5 58 84" stroke="#3a3626" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M47 58 c-2.5 1 -3.6 3 -3.2 5.4 M52 62 c-2.2 1 -3.2 2.8 -3 5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <g class="c-tail"><path d="M68.5 84 C79 82 87 73.5 89 64.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="58" cy="46" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- moth, resting: wings held flat and low, antennae relaxed. -->
+  <defs>
+    <filter id="rough-moth-resting" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-moth-resting)">
+
+    <path d="M18 68 L82 68" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M50 67 C50 61.5 49 57 50 52.5" stroke="#3a3626" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <g class="c-wing-l"><path d="M50 58.5 C41 55 30.5 56 24.5 61 C31 65.5 41.5 66 50 62.5Z" stroke="#3a3626" stroke-width="1.4" fill="#efe6c9" fill-opacity=".9"/></g>
+    <g class="c-wing-r"><path d="M50 58 C59 54.5 69.5 55.5 75.5 60.5 C69 65 58.5 65.5 50 62Z" stroke="#3a3626" stroke-width="1.4" fill="#efe6c9" fill-opacity=".9"/></g>
+    <circle cx="36.5" cy="60.5" r="1.8" stroke="#3a3626" stroke-width="1" fill="none"/>
+    <circle cx="63.5" cy="60" r="1.8" stroke="#3a3626" stroke-width="1" fill="none"/>
+    <g class="c-ant"><path d="M49 52.5 L46 48 M51 52.5 L54 48 M46 48 c-2 0 -3.5 -1 -4 -3 M54 48 c2 0 3.5 -1 4 -3" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>
+
+  </g>
+</svg>

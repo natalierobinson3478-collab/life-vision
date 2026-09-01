@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- sparrow, resting: fluffed into a ball on the line, legs tucked away. -->
+  <defs>
+    <filter id="rough-sparrow-resting" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-sparrow-resting)">
+
+    <path d="M14 74 L86 74" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M33 71 C28 60 35 49 49 47.5 C62 46 71 53 69 63 C67.5 70.5 59 74.5 49 74" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M47 47.5 C46 41.5 51 37 58 38.5 C64 40 65 46.5 61 50" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M61.5 43.5 L68.5 45.5 L61.5 47" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" stroke-linejoin="round"/>
+    <path d="M55.5 44 l2.5 0" stroke="#3a3626" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M40 60 C44 55.5 54 55.5 58 62 C54 68 44 68 40 60Z" stroke="#3a3626" stroke-width="1.4" fill="#a9876a" fill-opacity=".5"/>
+    <path d="M38 55 c-2 2 -2.5 4 -2 6 M44 51 c-2 2 -2.5 4 -2 6" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M33 71 C28 72.5 24.5 71 22.5 68" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+
+  </g>
+</svg>

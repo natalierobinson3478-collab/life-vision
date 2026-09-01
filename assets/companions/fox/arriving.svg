@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- fox, arriving: trotting in, tail streaming behind. -->
+  <defs>
+    <filter id="rough-fox-arriving" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-fox-arriving)">
+
+    <path d="M14 78 L86 78" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M32 70 C30 60 38 53 50 52 L64 53 C70 55 72 62 68 69" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M64 53 C61 44 65 36 74 34.5 L81.5 44 L68 51" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linejoin="round"/>
+      <path class="c-ear" d="M64 40.5 L60.5 27 L70.5 36.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M72.5 36 L78 25 L76.5 38" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path d="M70 43 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="81.5" cy="44" r="1.5" fill="#3a3626"/>
+    </g>
+    <path d="M36 66 L32 78 M44 68 L47 78 M58 68 L55 78 M66 66 L70 77" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <g class="c-tail"><path d="M32 66 C22 64 12 58 12 48 C12 42 20 42 20 48 C20 54 26 60 34 61" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 48 C12 44 15.5 42 18.5 43.5" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linecap="round"/></g>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="85" cy="47" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cat, idle-full: the grown idle, fuller: plumier point tail, deeper ruff, taller sit. -->
+  <defs>
+    <filter id="rough-cat-idle-full" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-cat-idle-full)">
+
+    <path d="M24 84 L80 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M64 34 C71 41 74.5 48 76 55 C83 58.5 86 69 81 78 C77 83 69 84.5 61 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M62 62 C71 62.5 76 70 72.5 79" stroke="#3a3626" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M51 37 C48 44 46.5 51 46 58" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M46 58 C45 67 44.5 76 45 84 M53.5 62 C53 70 53 77 53.5 84" stroke="#3a3626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M41.5 84 L49.5 84 M50.5 84 L58 84" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M54.5 39 c-3.2 1 -5 3.2 -5.5 6.5 M49 50 c-2.8 1 -4 3 -4 5.8 M47.5 60 c-2.6 1 -3.6 3 -3.6 5.4" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M77 60 c3.2 .5 5 2.6 5.5 5.2 M75 71 c2.8 .5 4.3 2.2 4.8 4.4" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <g class="c-head">
+      <path d="M51.5 33 C49 24 54 17 62 17.5 C70 18 73.5 25.5 71 33.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M52.5 23 L49.5 12.5 L58 17.5" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M67.5 20.5 L72.5 11.5 L64 16" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <g class="c-eyes"><path d="M62 26.5 l3 0 M68.5 27 l2.6 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/></g>
+      <path d="M55.5 30.5 C52.5 30.5 51 32 51 34" stroke="#5a4a3a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </g>
+    <path d="M78 81 C81 85.5 74 88 64 88 C54 88 45 87 39.5 85.5" stroke="#3a3626" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M56 87.5 c-2 1.6 -4.5 2 -6.5 1.4 M66 88 c-1.6 1.6 -3.8 2.2 -5.8 1.8" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path class="c-tail-tip" d="M39.5 85.5 C34 84 32 80.5 34.5 77" stroke="#5a4a3a" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="56" cy="30" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- plant, idle2: the same plant, leaning a little the other way. -->
+  <defs>
+    <filter id="rough-plant-idle2" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-plant-idle2)">
+
+    <path d="M34 62 L66 62 L62.5 88 L38 88 Z" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".55" stroke-linejoin="round"/>
+    <path d="M31.5 62 L68.5 62" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <path class="c-stem" d="M50 62 C50 50 51.5 40 47 30" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path class="c-leaf" d="M50.5 52 C60 52 66 46 66 39.5 C58 39.5 52 44 50.5 52Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf2" d="M49.5 44 C40.5 44 34 38 34 31 C42 31 48 36 49.5 44Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path class="c-leaf3" d="M47 30 C52.5 30 56.5 26 56.5 21 C50.5 21 47 25 47 30Z" stroke="#3a3626" stroke-width="1.4" fill="#6f7f5c" fill-opacity=".7"/>
+    <path d="M40 63.5 c2 -3 5 -3 6 0" stroke="#3a3626" stroke-width="1.2" fill="#6f7f5c" fill-opacity=".7"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="52" cy="26" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

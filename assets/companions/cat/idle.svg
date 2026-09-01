@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- cat, idle: a Balinese sitting in three-quarter rear view, head turned
+       away. A sitting cat's actual shape — small high head on a longer neck,
+       sloped back, one big visible haunch, straight front legs, tail curled
+       around the front paws with a point-coloured tip. Long-hair breaks at
+       the ruff, chest and haunch. The parts carry classes (c-head, c-ear,
+       c-eyes, c-tail-tip) so the idle behaviours can move them. -->
+  <defs>
+    <filter id="rough-cat" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-cat)">
+    <!-- ground -->
+    <path d="M26 84 L78 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- back: from the neck, sloping down-right into the haunch -->
+    <path d="M64 38 C70 44 73 50 74.5 56 C81 59 83.5 69 79 77 C75.5 82.5 68 84 61 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- visible haunch: the thigh arc over the body -->
+    <path d="M62 63 C70 63.5 74.5 70 71.5 78" stroke="#3a3626" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".55"/>
+    <!-- chest and longer neck, down the front -->
+    <path d="M52 40 C49.5 46 48 52 47.5 58" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- front legs, straight, slightly apart -->
+    <path d="M47.5 58 C46.5 66 46 76 46.5 84" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M54.5 62 C54 69 54 77 54.5 84" stroke="#3a3626" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <!-- paw marks at the ground -->
+    <path d="M43 84 L50.5 84 M51.5 84 L58 84" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- long-hair breaks: ruff, chest, haunch -->
+    <path d="M55 42 c-3 1 -4.5 3 -5 6" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M50 52 c-2.5 1 -3.5 3 -3.5 5.5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M76 62 c3 .5 4.5 2.5 5 5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M74 72 c2.5 .5 4 2 4.5 4" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- head, small and high, turned away-right -->
+    <g class="c-head">
+      <path d="M52.5 36 C50 27.5 54.5 21 62 21.5 C69.5 22 73 29 70.5 37" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <!-- ears, point-coloured; the near ear larger -->
+      <path class="c-ear" d="M53.5 26.5 L50.5 16.5 L58.5 21.5" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M67.5 24.5 L72 15.5 L63.5 20" stroke="#3a3626" stroke-width="1.6" fill="#5a4a3a" stroke-linejoin="round"/>
+      <!-- dash eyes, far side — it is looking away -->
+      <g class="c-eyes">
+        <path d="M62.5 30 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M69 30.5 l2.5 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+      </g>
+      <!-- muzzle shadow, the near-side point -->
+      <path d="M56 34 C53 34 51.5 35.5 51.5 37.5" stroke="#5a4a3a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </g>
+    <!-- tail: down from the haunch, curled around the front paws, tip up -->
+    <path d="M76 80 C78 84.5 72 86.5 63 86.5 C54 86.5 46 86 41 85" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path class="c-tail-tip" d="M41 85 C36.5 84 34.5 81 36.5 78" stroke="#5a4a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="54" cy="34.5" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

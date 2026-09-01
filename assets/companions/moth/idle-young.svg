@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- moth, idle-young: a caterpillar on the page edge — the moth before the moth. -->
+  <defs>
+    <filter id="rough-moth-idle-young" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-moth-idle-young)">
+
+    <path class="c-ground" d="M18 70 L82 70" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M34 68 C36 63.5 40 62.5 43 65 C45 61.5 50 61 52.5 64 C54.5 60.5 59.5 60.5 61.5 64 C64 62 67.5 63.5 68 67" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" fill-opacity=".85" stroke-linecap="round"/>
+    <path d="M34 68 L68 68.5" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M43 65 L43.5 68 M52.5 64 L52.5 68 M61.5 64 L61.5 68.2" stroke="#3a3626" stroke-width=".9" stroke-linecap="round" opacity=".5"/>
+    <circle cx="66" cy="65.5" r="1.2" fill="#3a3626"/>
+    <g class="c-ant"><path d="M67.5 63.5 L69.5 59.5 M69.5 59.5 c1.5 -.5 2.5 -1.5 2.5 -3" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>
+    <path d="M38 70 L38 71.5 M46 70 L46 71.5 M56 70 L56 71.5 M63 70 L63 71.5" stroke="#3a3626" stroke-width=".9" stroke-linecap="round" opacity=".6"/>
+
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="68.5" cy="66.5" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

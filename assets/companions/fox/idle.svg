@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- fox, idle: standing, alert, per the reference — wedge head up-right,
+       big clay ears, pale cream chest, the long brush tail carried low with
+       a cream tip. Dot eye and a dash muzzle. The book arrives with the
+       props in Part 2; here it stands on a faint ground line. -->
+  <defs>
+    <filter id="rough-fox" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-fox)">
+    <!-- ground -->
+    <path d="M16 80 L84 80" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- back and rump -->
+    <path d="M30 78 C26 66 32 56 44 54 L62 54 C68.5 56 70.5 64 66 72" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- wedge head, lifted -->
+    <g class="c-head">
+    <path d="M62 54 C58 44 62 35.5 72 34 L80.5 44 L66 52" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linejoin="round"/>
+    <!-- big ears, clay -->
+    <path class="c-ear" d="M62 40 L58 25.5 L68.5 35.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+    <path class="c-ear-far" d="M70.5 35.5 L76.5 23.5 L74.5 37.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+    <!-- dash eye and nose dot -->
+    <path d="M68 42 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <circle cx="80.5" cy="44" r="1.5" fill="#3a3626"/>
+    </g>
+    <!-- pale chest -->
+    <path d="M56 52 C60 55.5 63.5 58 66 58.5 C63 63 58 64.5 54 62" stroke="#3a3626" stroke-width="1.2" fill="#efe6c9" fill-opacity=".85" stroke-linecap="round" opacity=".8"/>
+    <!-- legs, uneven on purpose -->
+    <path d="M34 62 L34 78 M44 64 L44.5 78 M60 66 L60 78 M66 72 L65.5 78" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- paws -->
+    <path d="M30.5 78 L38 78 M40.5 78 L48 78 M56.5 78 L69.5 78" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <!-- brush tail, low and long, clay with a cream tip -->
+    <g class="c-tail">
+    <path d="M30 64 C20 60 10.5 50 14 40 C18 34 26 38 24 44 C22 50 26 56 32 58.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14 40 C15.5 36 20 35.5 22.5 38" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linecap="round"/>
+    </g>
+    <!-- belly fur break -->
+    <path d="M48 56 C46 62 46 68 48 72" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="81" cy="45" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

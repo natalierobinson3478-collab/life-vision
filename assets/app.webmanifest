@@ -1,0 +1,14 @@
+{
+  "name": "life vision",
+  "short_name": "life vision",
+  "description": "a life of creativity, laid out as a painted board",
+  "start_url": "../life-vision-board.html",
+  "scope": "../",
+  "display": "standalone",
+  "background_color": "#EDE5D1",
+  "theme_color": "#EDE5D1",
+  "icons": [
+    { "src": "app-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

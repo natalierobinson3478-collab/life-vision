@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- dog, arriving: trotting in, tail high, looking at you already. -->
+  <defs>
+    <filter id="rough-dog-arriving" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-dog-arriving)">
+
+    <path d="M14 78 L86 78" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M30 70 C28 60 36 53 48 52 L60 53 C67 55 69.5 62 66 69" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M60 53 C56 43 61 34 71 34 C79 34 82 43 77 52" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M61 39 C56 41 53.5 47.5 56 53" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <path class="c-ear-far" d="M78 39.5 C82.5 42 83.5 48.5 80 53" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <g class="c-eyes"><circle cx="66.5" cy="43.5" r="1.6" fill="#3a3626"/><circle cx="73.5" cy="43.5" r="1.6" fill="#3a3626"/></g>
+      <path d="M69 48 C67.5 48 66.8 49 66.8 50.2 C68.5 51 71.5 51 73 50.2 C73 49 72.2 48 70.8 48Z" fill="#3a3626"/>
+    </g>
+    <path d="M34 66 L30 78 M42 68 L45 78 M56 68 L53 78 M63 66 L67 77" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <g class="c-tail"><path d="M30 62 C24 56 22 48 27 43" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="70" cy="50" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

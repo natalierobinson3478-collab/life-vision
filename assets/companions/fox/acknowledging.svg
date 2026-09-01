@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- fox, acknowledging: standing, near ear cocked high, head swung toward you. -->
+  <defs>
+    <filter id="rough-fox-acknowledging" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-fox-acknowledging)">
+
+    <path d="M16 80 L84 80" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M30 78 C26 66 32 56 44 54 L62 54 C68.5 56 70.5 64 66 72" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M62 54 C57 46 60 37 70 34.5 L79 42 L66 52" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linejoin="round"/>
+      <path class="c-ear" d="M61.5 40 L59 24 L69 34" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M70.5 34.5 L77.5 24.5 L74.5 37" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path d="M66.5 41.5 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="79" cy="42" r="1.5" fill="#3a3626"/>
+    </g>
+    <path d="M56 52 C60 55.5 63.5 58 66 58.5" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M34 62 L34 78 M44 64 L44.5 78 M60 66 L60 78 M66 72 L65.5 78" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M30.5 78 L38 78 M40.5 78 L48 78 M56.5 78 L69.5 78" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <g class="c-tail"><path d="M30 64 C20 60 10.5 50 14 40 C18 34 26 38 24 44 C22 50 26 56 32 58.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14 40 C15.5 36 20 35.5 22.5 38" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linecap="round"/></g>
+
+  </g>
+</svg>

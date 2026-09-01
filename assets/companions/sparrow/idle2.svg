@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- sparrow, idle2: head down, pecking at the ruling. -->
+  <defs>
+    <filter id="rough-sparrow-idle2" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-sparrow-idle2)">
+
+    <path d="M14 76 L86 76" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M37 70 C32 61 37 51 49 49 C60 47 68.5 53 67 62 C66 69 58 73.5 50 72.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M49 49 C44 45 42 52 44.5 58 C46.5 62.5 51 64 55 62" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path d="M44 62 L38.5 68.5 L46.5 65.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" stroke-linejoin="round"/>
+      <circle cx="47.5" cy="57.5" r="1.5" fill="#3a3626"/>
+    </g>
+    <path d="M42 58 C46 54.5 54 55 58 60.5 C54 66 46 66 42 58Z" stroke="#3a3626" stroke-width="1.4" fill="#a9876a" fill-opacity=".5"/>
+    <path d="M37 70 C31 72 26.5 70 24 66" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M49 73 L49 78.5 M57 72.5 L57 78.5 M45.5 78.5 L52 78.5 M53.5 78.5 L60.5 78.5" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+
+  </g>
+  <!-- G2d: the head anchor — speech places from here -->
+  <circle class="c-mouth" cx="44" cy="64" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

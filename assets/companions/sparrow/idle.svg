@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- sparrow, idle: perched on a ruled line, head tilted like it just heard
+       something. Dot eye, clay beak and breast patch — the only fills. The
+       tail kicks up-left; the two stick legs land off-centre on purpose. -->
+  <defs>
+    <filter id="rough-sparrow" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-sparrow)">
+    <!-- the ruled line it perches on -->
+    <path d="M14 76 L86 76" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- body: round, chest fuller on the right -->
+    <path d="M35 71 C30 61 36 50 48 48 C60 46 69.5 52 68 62 C66.5 70 58 74.5 50 73.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- head, tilted toward you -->
+    <g class="c-head">
+    <path d="M48 48 C46 39.5 52 33.5 60 35.5 C66.5 37.5 66.5 45.5 62 49.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- beak, clay -->
+    <path d="M62.5 41.5 L70.5 43.5 L62.5 45.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" stroke-linejoin="round"/>
+    <!-- dot eye -->
+    <circle cx="57.5" cy="41" r="1.5" fill="#3a3626"/>
+    </g>
+    <!-- breast patch, clay, soft -->
+    <path d="M40 58 C44 53.5 54 53.5 58 60 C54 66 44 66 40 58Z" stroke="#3a3626" stroke-width="1.4" fill="#a9876a" fill-opacity=".5"/>
+    <!-- wing crease -->
+    <path class="c-wing" d="M44 56 C50 55 56 57 59 61" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- tail, up-left -->
+    <path class="c-tail" d="M35 71 C29 73 24.5 71 22 67" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M35 68.5 C30 69.5 26.5 68 24.5 65" stroke="#3a3626" stroke-width="1.1" fill="none" stroke-linecap="round" opacity=".5"/>
+    <!-- stick legs and feet, off-centre -->
+    <path d="M47 74 L47 79.5 M55 73.5 L55 79.5" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M43.5 79.5 L50 79.5 M51.5 79.5 L58.5 79.5" stroke="#3a3626" stroke-width="1.4" stroke-linecap="round"/>
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="70.5" cy="43.5" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

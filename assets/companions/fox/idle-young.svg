@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- fox, idle-young: a kit: compact sit, ears far too big, a short brush wrapped round. -->
+  <defs>
+    <filter id="rough-fox-idle-young" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-fox-idle-young)">
+
+    <path class="c-ground" d="M28 80 L74 80" stroke="#3a3626" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M58 52 C63 57 65.5 63 66 69 C69 72 69.5 76 66.5 79 C63.5 81 57 81 53 80" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <path d="M47.5 54 C46 60 45.5 66 45.5 71 M45.5 71 C45 75 45 78 45.5 80 M51.5 73 C51.3 76 51.3 78 51.5 80" stroke="#3a3626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M42.5 80 L48.5 80 M49.5 80 L55.5 80" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M46 51 C42.5 41.5 47 33 56 32.5 L64.5 40.5 L52.5 49.5" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linejoin="round"/>
+      <path class="c-ear" d="M46.5 39 L42 21.5 L53 32.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path class="c-ear-far" d="M56 32 L64 18 L61.5 33.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".65" stroke-linejoin="round"/>
+      <path d="M53.5 39.5 l2.8 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/>
+      <circle cx="64.5" cy="40.5" r="1.4" fill="#3a3626"/>
+    </g>
+    <g class="c-tail"><path d="M64 79 C58 82 50 81 48 77.5 C47 74.5 51 73 53.5 75.5" stroke="#3a3626" stroke-width="1.8" fill="#a9876a" fill-opacity=".55" stroke-linecap="round"/>
+    <path d="M53.5 75.5 C55.5 74 58 74.5 58.5 76.5" stroke="#3a3626" stroke-width="1.6" fill="#efe6c9" stroke-linecap="round"/></g>
+
+  </g>
+  <!-- item 98: where speech leaves the face; scraps and bubbles anchor here -->
+  <circle class="c-mouth" cx="68.5" cy="43" r="0.1" fill="none" stroke="none" aria-hidden="true"/>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- dog, resting: flat out, head on paws, eyes half-open on you. -->
+  <defs>
+    <filter id="rough-dog-resting" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="3.4" numOctaves="3" seed="4" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="0.18" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g filter="url(#rough-dog-resting)">
+
+    <path d="M14 80 L86 80" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M22 78 C20 70 27 63 40 62 L56 63 C64 65 67 71 64.5 76.5 C63 79.5 58 80 53 80" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <g class="c-head">
+      <path d="M56 64 C54 58 58 53 65 53 C72 53 75.5 59 73 66 C71.5 71 66 73.5 60 72.5" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <path class="c-ear" d="M58 57 C53.5 59 51.5 64 53.5 68" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <path class="c-ear-far" d="M71.5 57.5 C75.5 60 76.5 64.5 74 68.5" stroke="#3a3626" stroke-width="1.6" fill="#a9876a" fill-opacity=".5" stroke-linecap="round"/>
+      <g class="c-eyes"><path d="M61.5 62.5 l3 0 M67.5 62.5 l3 0" stroke="#3a3626" stroke-width="1.6" stroke-linecap="round"/></g>
+      <path d="M64 67 C63 67 62.5 67.7 62.5 68.5 C64 69.2 66.5 69.2 67.7 68.5 C67.7 67.7 67 67 66 67Z" fill="#3a3626"/>
+    </g>
+    <path d="M52 78.5 L74 78.5 M56 74 C60 76.5 66 77.5 71 76.5" stroke="#3a3626" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/>
+    <g class="c-tail"><path d="M22 74 C17 72 14 68 14.5 63" stroke="#3a3626" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>
+
+  </g>
+</svg>
