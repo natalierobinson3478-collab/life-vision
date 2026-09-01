@@ -7326,23 +7326,18 @@
        snap back home when a swipe lets go short of meaning it. */
     touch-action: pan-y; transition: transform 0.18s ease; }
   .tw-row.tw-swiping { transition: none; }
-  /* Phase 5 (the "Ru…" fix + the sliver's room): on the phone the row
-     RE-LAYS — the tick and the full label on line one, the when/dots/
-     sliver as a quiet second line, right-aligned. Same objects, re-laid;
-     never a miniature desktop row. */
+  /* THE PHONE ROW IS ONE LINE (owner, 2026-09-01: "i hate the separation
+     between tasks and the hours falling under. maybe we need to get rid of
+     the time since the pebbles show that"). This supersedes the Phase 5
+     re-lay, which wrapped the metadata onto its own ruled line and made
+     every task read as two rows. The HOURS leave the phone row entirely,
+     the strip's pebble already carries them as its size, and the little a
+     meta can still hold (daily, next week, the unplaced stone) keeps its
+     seat at the right end of the row's own line. Desktop keeps the figure:
+     it has the room, and the hours stepper needs a door somewhere. */
   @media (max-width: 640px) {
-    /* A WRAPPED ROW IS EXACTLY TWO LEADS. row-gap: 2px and
-       padding-bottom: 4px made it lead + 2 + lead + 4, so every row after
-       the first walked off the ruling and the metadata rendered with a rule
-       through it. On a ruled sheet the gap is 0 or a lead — never a number
-       chosen by eye. */
-    /* NARROW: the checkbox and the title hold the first line together, and
-       the metadata — duration, days, pin — wraps beneath them as one group. The old
-       rule gave .tw-tick the whole line, which was right when the title
-       lived INSIDE it and is wrong now that the title is its own element. */
-    .tw-row { flex-wrap: wrap; row-gap: 0; padding-bottom: 0; }
-    .tw-row .tw-row-label { flex: 1 1 auto; }
-    .tw-row .tw-meta { margin-left: 0; width: 100%; }
+    .tw-row .tw-per { display: none; }
+    .tw-row .tw-row-label { flex: 1 1 auto; min-width: 0; }
   }
   /* THE CHECKBOX IS A CHECKBOX, not the row. It grew to fill the line when
      the title lived inside it; the title is its own element now, so the box
@@ -24526,7 +24521,14 @@
     const pw = Math.min(300, innerWidth - 16);
     pop.style.width = pw + "px";
     pop.style.left = Math.max(8, Math.min(innerWidth - pw - 8, r.left - 30)) + "px";
-    pop.style.top = (r.bottom + window.scrollY + 6) + "px";
+    // THE BOX IS position: fixed, so it speaks viewport coordinates and
+    // window.scrollY has no business in its top (the page that scrolls here
+    // is the overlay, never the window — the term was 0 by luck). AND IT IS
+    // CLAMPED TO THE SCREEN: on a phone, a row low on the page used to open
+    // the box mostly below the viewport — the top line visible, the options
+    // off-screen where a thumb finds them by accident and the eye never does.
+    pop.style.top = (r.bottom + 6) + "px";
+    pop.style.top = Math.max(8, Math.min(innerHeight - pop.offsetHeight - 8, r.bottom + 6)) + "px";
     setTimeout(() => {
       document.addEventListener("pointerdown", onOutside, true);
       document.addEventListener("keydown", onKey, true);
@@ -26708,9 +26710,16 @@
         if (!sw) return;
         const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
         if (!sw.on) {
-          // mostly vertical means a scroll: stand down and let it happen
-          if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
-          if (!(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 2)) return;
+          // mostly vertical means a scroll: stand down and let it happen.
+          // EARLY — at 10px, before a thumb has said anything else. The old
+          // 14 let a diagonal scroll keep auditioning as a swipe.
+          if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
+          // A SWIPE IS DELIBERATE (owner, 2026-09-01: "super glitchy going
+          // up and down and left and right"). A thumb scrolling a phone
+          // wanders sideways for free, and at 28px-and-twice-dy the wander
+          // was sliding rows and, at 64, quietly pushing work to tomorrow.
+          // Arming now takes 36px travelling almost flat.
+          if (!(Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 2.5)) return;
           sw.on = true;
           rowEl.classList.add("tw-swiping");
         }
@@ -26729,9 +26738,12 @@
         const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
         document.addEventListener("click", swallow, { capture: true, once: true });
         setTimeout(() => document.removeEventListener("click", swallow, true), 250);
-        if (was.dx <= -64) {
+        // COMMITTING TAKES MORE THAN ARMING. 64 was one wobble past the old
+        // 28px arm; the action lands at 72, most of the cap, so a swipe
+        // that lets go early snaps home having done nothing.
+        if (was.dx <= -72) {
           if (twPushToTomorrow(rgid, mid)) renderThisWeek();
-        } else if (was.dx >= 64) {
+        } else if (was.dx >= 72) {
           const lbl = rowEl.querySelector(".tw-row-label");
           const box = openRowOptions(lbl || rowEl, rgid, mid);
           if (box) {
@@ -27014,7 +27026,14 @@
     const pw = Math.min(300, innerWidth - 16);
     pop.style.width = pw + "px";
     pop.style.left = Math.max(8, Math.min(innerWidth - pw - 8, r.left - 30)) + "px";
-    pop.style.top = (r.bottom + window.scrollY + 6) + "px";
+    // THE BOX IS position: fixed, so it speaks viewport coordinates and
+    // window.scrollY has no business in its top (the page that scrolls here
+    // is the overlay, never the window — the term was 0 by luck). AND IT IS
+    // CLAMPED TO THE SCREEN: on a phone, a row low on the page used to open
+    // the box mostly below the viewport — the top line visible, the options
+    // off-screen where a thumb finds them by accident and the eye never does.
+    pop.style.top = (r.bottom + 6) + "px";
+    pop.style.top = Math.max(8, Math.min(innerHeight - pop.offsetHeight - 8, r.bottom + 6)) + "px";
     setTimeout(() => {
       document.addEventListener("pointerdown", onOutside, true);
       document.addEventListener("keydown", onKey, true);
