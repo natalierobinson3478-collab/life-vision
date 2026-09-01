@@ -1756,6 +1756,9 @@
     cursor: pointer; }
   .empty-self-link u { text-decoration: underline; text-underline-offset: 3px; }
   .empty-self-link:hover { color: var(--ink); }
+  /* the account naming itself on an empty board (2026-09-01) */
+  .empty-account-line { margin: 18px 0 0; font-size: 12.5px; letter-spacing: 0.02em;
+    color: var(--ink-soft, #6b6b5c); opacity: 0.8; }
 
   .discover-strong { color: var(--ink); font-weight: 600; }
   /* Phase 4: menus are PAPER — the torn scrap, the sheet's soft lift,
@@ -6924,6 +6927,18 @@
     font-family: inherit; font-size: var(--t-label); font-weight: 600; color: var(--ink-muted); }
   .tw-parked-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
   .tw-parked-link:focus-visible { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
+  /* LATER FOLDS TO A LINE (2026-09-01, DECISIONS.md). Same voice as the
+     parked line above: quiet type, no chrome, a count and a door. The
+     receipt line for a pulled row is thinner than a row on purpose,
+     it is a receipt, not a second row (test 143's every-row-once law). */
+  .tw-later-line { margin-top: calc(var(--lead) * 1); }
+  .tw-later-link { background: none; border: none; padding: 6px 0; cursor: pointer;
+    font-family: inherit; font-size: var(--t-label); font-weight: 600; color: var(--ink-muted); }
+  .tw-later-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .tw-later-link:focus-visible { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
+  .tw-later-item { margin-top: 2px; }
+  .tw-pull-line { margin: 0 0 calc(var(--lead) * 0.5); }
+  .tw-later-inweek { font-size: var(--t-label); color: var(--ink-muted); padding: 4px 0; }
   /* ---- THIS-WEEK'S PAPER IS PAPER (owner, 2026-08-28) ----
      "I don't know why the theme for this book is like white."
      Because it was translucent. `--paper-sheet` is 0.82 alpha app-wide, and
@@ -7298,7 +7313,12 @@
   /* align-items START, not center: when the label wraps to three lines the
      metadata stays on the label's FIRST line rather than floating to the
      middle of the block. */
-  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap; }
+  .tw-row { display: flex; align-items: flex-start; gap: 10px; min-height: var(--lead); flex-wrap: nowrap;
+    /* SWIPES (2026-09-01): pan-y keeps the sheet scrolling under a thumb
+       while a sideways drag stays the row's own; the transition is the
+       snap back home when a swipe lets go short of meaning it. */
+    touch-action: pan-y; transition: transform 0.18s ease; }
+  .tw-row.tw-swiping { transition: none; }
   /* Phase 5 (the "Ru…" fix + the sliver's room): on the phone the row
      RE-LAYS — the tick and the full label on line one, the when/dots/
      sliver as a quiet second line, right-aligned. Same objects, re-laid;
@@ -13865,6 +13885,17 @@
   // out of twEditing so that changing your mind about the week is not the
   // same weight as renaming the thing.
   let twUnskipping = null;               // key
+  // WHETHER THE FOOT'S LATER LINE IS OPEN. Transient like its neighbours:
+  // it survives re-renders within a visit, never persists, and resets on
+  // the sheet's open — the line folds again the way a path clears.
+  let twLaterOpen = false;
+  // WHEN THE WEEK READS MOSTLY DONE the later line warms its words: same
+  // line, same place, a standing door and never a dismissable prompt
+  // (Law 5 — a dismissal would have to be permanent, so nothing here is
+  // offered as one). The threshold is a named number: the week's done
+  // hours over its planned hours, from twAreaHours, or a week with
+  // nothing planned at all.
+  const TW_PULL_AHEAD_AT = 0.7;
   // ---------- ONE SELECTION, THREE DOORS (2026-08-27) ----------
   // A petal, a row and a pebble all write THE SAME state. Choosing any one
   // clears the others; the pivot clears all of it. There is no second
@@ -14211,7 +14242,11 @@
       const k = ROSE_AREAS.indexOf(g.category) >= 0 ? g.category : null;
       if (!k) return;
       weeklyWorkFor(g, { wk: wkA }).forEach(r => {
-        if (r.early) return;
+        // A PULLED ROW IS THE PERSON COMMITTING THE HOURS (2026-09-01,
+        // DECISIONS.md "later folds to a line"), so the capacity line and
+        // the unspoken remainder both count it this week. Unpulled early
+        // prep stays out: those hours belong to a later chapter.
+        if (r.early && !r.pulled) return;
         const m = r.m;
         // A REMINDER IS NOT HOURS. It has no duration and no goal, so it
         // contributes nothing here and nothing to anything downstream of
@@ -18516,6 +18551,25 @@
         startOverBlank();
       });
     }
+    // THE ACCOUNT NAMES ITSELF ON AN EMPTY BOARD (2026-09-01). The account
+    // pill hides with the pills row when there are no goals, so a device
+    // signed into the WRONG account showed a blank first visit with nothing
+    // on screen to say whose emptiness it was — a night was spent finding
+    // that out. One quiet line; a type area, so the audit counts it.
+    let acct = emptyState.querySelector("#emptyAccountLine");
+    if (!acct) {
+      acct = document.createElement("p");
+      acct.id = "emptyAccountLine";
+      acct.className = "empty-account-line";
+      acct.setAttribute("data-type-area", "empty/account");
+      emptyState.appendChild(acct);
+    }
+    currentSession().then(s => {
+      if (!acct.isConnected) return;
+      acct.textContent = s
+        ? "this device is signed in as " + s.user.email
+        : (sb ? "this device is not signed in." : "");
+    }).catch(() => {});
   }
 
 
@@ -19158,15 +19212,40 @@
   // It announces itself once per load now, and names the button that clears
   // it. Silent is the one thing it must not be.
   if (devClockOffset) {
-    const shown = new Date(Date.now() + devClockOffset);
-    console.warn(`[dev clock] the app thinks it is ${shown.toDateString()}, offset `
-      + `${Math.round(devClockOffset / 86400000)} day(s). Dev panel → "clock reset" clears it.`);
-    setTimeout(() => {
-      try {
-        showToast(`the app clock is set to ${shown.toLocaleDateString(undefined,
-          { weekday: "long", month: "short", day: "numeric" })}, dev panel · clock reset`);
-      } catch (e) {}
-    }, 900);
+    // STALE BY CONSTRUCTION on a plain load (2026-09-01, the same rule as the
+    // dev-run marker): a walkthrough that jumps the clock keeps ?dev in its
+    // address, and a run carries its marker beside it. A pinned clock on a
+    // load with neither is a leftover from a finished session — one sat for
+    // six days reading Aug 26 over a person's real board, with a banner
+    // naming a reset button that wasn't even on their screen. Clear it and
+    // say so; the announce-only banner stays for genuine dev loads.
+    // The URL and the namespace are the whole test: a resumable run keeps
+    // ?dev/?test in its address, and the plain-URL-with-a-marker case is
+    // healed by the dev tools themselves (which drop the clock alongside).
+    // No marker probe here — the strip check rightly refuses to ship the
+    // marker's name inside production code.
+    let devish = false;
+    try {
+      const qs = new URLSearchParams(location.search);
+      devish = qs.has("dev") || qs.has("demo") || qs.has("test") || !!lsNamespace;
+    } catch (e) {}
+    if (!devish) {
+      try { localStorage.removeItem("lifevision.devclock.v1"); } catch (e) {}
+      devClockOffset = 0;
+      setTimeout(() => {
+        try { showToast("a leftover test clock was cleared, the app is back on today."); } catch (e) {}
+      }, 900);
+    } else {
+      const shown = new Date(Date.now() + devClockOffset);
+      console.warn(`[dev clock] the app thinks it is ${shown.toDateString()}, offset `
+        + `${Math.round(devClockOffset / 86400000)} day(s). Dev panel → "clock reset" clears it.`);
+      setTimeout(() => {
+        try {
+          showToast(`the app clock is set to ${shown.toLocaleDateString(undefined,
+            { weekday: "long", month: "short", day: "numeric" })}, dev panel · clock reset`);
+        } catch (e) {}
+      }, 900);
+    }
   }
   function appNow() { return new Date(Date.now() + devClockOffset); }
   // Harness-only: move the app clock without a reload (the journey suite).
@@ -23008,7 +23087,13 @@
         rows.push({ m, early: false, forMonth: null, skipped });
       } else if (sketchIds.has(m.drivesObjectiveId) || laterIds.has(m.drivesObjectiveId)) {
         const tgt = objs.find(o => o.id === (m.unlocksObjectiveId || m.drivesObjectiveId));
-        rows.push({ m, early: true, skipped,
+        // PULLED FORWARD, OR ALREADY BEING DONE. The pull record is the
+        // person's word for one week; a completion in the week is evidence
+        // of the same decision (the owner had ticked one of these before
+        // there was a word for it), so either reads as pulled. Both expire
+        // with the week they live in, returning the row to later.
+        const pulled = isPulled(g.id, m.id, wkW) || doneCountOf(m, g.id, wkW) > 0;
+        rows.push({ m, early: true, skipped, pulled,
                     forMonth: tgt && tgt.hardDate ? monthOf(tgt.hardDate) : null });
       }
     });
@@ -23392,6 +23477,25 @@
   const isSkipped = (goalId, mechId, wk) => {
     const week = weeklyTicks[wk || weekKeyOf()] || {};
     return !!((week[goalId] || {})[mechId] || {}).skip;
+  };
+  // PULLING IS THE SKIP'S MIRROR (2026-09-01, DECISIONS.md "later folds
+  // to a line"). Week-scoped, living in the week record beside rec.skip
+  // and expiring with it — "into this week" needs no field on the
+  // commitment and cannot become a permanent promotion. An early-prep row
+  // with a pull is this week's row: it buckets, draws stones and counts
+  // hours like any other, and next week it is back in later.
+  function pullForward(goalId, mechId, on) {
+    const wk = weekKeyOf();
+    const week = weeklyTicks[wk] = weeklyTicks[wk] || {};
+    const forGoal = week[goalId] = week[goalId] || {};
+    const rec = forGoal[mechId] = forGoal[mechId] || {};
+    if (on) rec.pull = true; else delete rec.pull;
+    saveState();
+    return !!rec.pull;
+  }
+  const isPulled = (goalId, mechId, wk) => {
+    const week = weeklyTicks[wk || weekKeyOf()] || {};
+    return !!((week[goalId] || {})[mechId] || {}).pull;
   };
   // "not doing this" is not deletion: the commitment and everything already
   // completed against it stay in the data, it simply stops asking.
@@ -24575,9 +24679,13 @@
   // opens the SAME edit state, focused on whatever was touched. One surface,
   // several entry points, and no icon standing in for any of it.
   //
-  // NO SWIPE AND NO LONG-PRESS. Both are invisible on a desktop and
-  // undiscoverable on a phone: a gesture nobody performs is a feature nobody
-  // has.
+  // NO SWIPE AND NO LONG-PRESS — AMENDED 2026-09-01 (owner ruling, and
+  // DECISIONS.md): the rows now take a swipe, left to push to tomorrow,
+  // right to open the box with delete armed. The old sentence stands where
+  // it was really pointing: a gesture may never be the ONLY door. Every
+  // action a swipe performs is a visible option in the row's box, so the
+  // gestures are shortcuts and nothing is gated behind the invisible.
+  // Long-press remains nothing.
   // A PLUS, A FIGURE AND A MINUS — nothing else. The figure is the same
   // `minsText` the row prints, so the control and the row can never word the
   // same number differently. The floor is one step: zero minutes is not a
@@ -25117,7 +25225,7 @@
     // visible without reading the whole week. On Sunday there is no tomorrow
     // inside this week, and the section simply does not render — the next
     // day belongs to next week, and this page does not reach into it.
-    const b = { today: [], tomorrow: [], week: [], later: [], rc: [], noWork: [] };
+    const b = { today: [], tomorrow: [], week: [], later: [], pulledEarly: [], rc: [], noWork: [] };
     // NO TODAY MEANS NO TOMORROW EITHER. `today + 1` off a -1 is 0, which
     // quietly filed every MONDAY row into the tomorrow bucket — a bucket a
     // past week does not render, so Monday's work vanished from the list
@@ -25142,7 +25250,13 @@
         // said about it. So it sorts below even the sunk rows and the row
         // draws itself quiet.
         if (r.skipped) { b.week.push({ g, ...r, sortKey: 1900 }); return; }
-        if (r.early) { b.later.push({ g, ...r }); return; }
+        if (r.early && !r.pulled) { b.later.push({ g, ...r }); return; }
+        // A PULLED ROW IS THIS WEEK'S ROW: it falls through to the
+        // ordinary bucketing below and lives wherever its schedule puts
+        // it. pulledEarly is a SECOND LISTING for the later line's
+        // expansion only — drawn there as a receipt, never as a row, so
+        // the page's every-row-once law (test 143) holds.
+        if (r.early) b.pulledEarly.push({ g, ...r });
         const m = r.m;
         // "IS IT TODAY" IS ASKED OF THE OCCURRENCES, not of the legacy when
         // string. daysFor reads `m.when`, which no longer carries the days —
@@ -25290,9 +25404,16 @@
     twWeekGoals(wkS).filter(g => g.status === "active").forEach(g => {
       const cls = (CATS[g.category] || CATS.Other).cls;
       weeklyWorkFor(g, { wk: wkS }).forEach(r => {
-        if (r.early) return;
+        // EARLY PREP KEEPS ITS STONES ONLY WHEN PULLED (2026-09-01,
+        // superseding the same day's "early prep drops its stones",
+        // DECISIONS.md). That ruling assumed the rows were on the page;
+        // later folds to a line now, and an invisible row must not hold
+        // ground on the strip — the line at the foot is where deferred
+        // work stays visible (Law 3). A PULLED row is this week's row and
+        // draws like any other, in its area's colour.
         const m = r.m;
         if (m.kind === "reminder") return;      // no pebble: it is not hours
+        if (r.early && !r.pulled) return;
         // ONE PEBBLE PER OCCURRENCE, each carrying that occurrence's own
         // duration and its own done-ness. The old version divided a weekly
         // total by the day count to get here, which is the same number by a
@@ -25586,6 +25707,10 @@
 
   // title, the "board →" link, and the help menu.
   function renderThisWeek() {
+    // A RENDER DESTROYS THE ROW A BOX WAS ANCHORED TO, so the box goes
+    // first (committing its title on the way out). twRowPopClose nulls
+    // itself before it re-renders, so this cannot recurse.
+    if (twRowPopClose) twRowPopClose();
     // ---- ONE RULE, AT THE TOP: A WEEK THAT IS NOT THIS ONE IS A RECORD ----
     // Every handler that CHANGES something is simply not wired when the
     // sheet is showing another week. Not wired-and-guarded: six guards is
@@ -25935,9 +26060,37 @@
                 ${weekLive.length ? paint(weekLive) : ``}
                 ${remWeekLive.map(r => twTickRow(null, { m: r.m, _noHold: true })).join("")}
               </section>
-              ${laterRows.length ? `<section class="tw-sec tw-sec-soft" data-type-area="thisweek/section"><span class="tw-caps tw-sec-label">later</span>
-                ${paint(laterRows)}
-              </section>` : ``}
+              ${(() => {
+                // LATER FOLDS TO ONE QUIET LINE (2026-09-01, DECISIONS.md
+                // "later folds to a line"). Law 3: deferral is VISIBLE —
+                // the line renders whenever early rows exist, pulled or
+                // not, so nothing is silently dropped. Tapping it expands
+                // the rows IN PLACE: nothing lifts, nothing pans, the same
+                // ruling the narrowings follow. NOT a .tw-sec — a section
+                // without a label would trip the sections scan (test 143),
+                // and this is a line with a door, not a section.
+                const pulledLater = b.pulledEarly;
+                if (!laterRows.length && !pulledLater.length) return ``;
+                const twDoneSum = ROSE_AREAS.reduce((a, k) => a + twHours.done[k], 0);
+                const ahead = twIsNow() && laterRows.length
+                  && (twCommitted === 0 || twDoneSum / twCommitted >= TW_PULL_AHEAD_AT);
+                const lineText = !laterRows.length ? `later work is in your week`
+                  : ahead ? `you're ahead of your week, pull something forward?`
+                  : `${laterRows.length} set aside for later chapters`;
+                return `<div class="tw-later-line" data-type-area="thisweek/later">
+                  <button class="tw-later-link" id="twLaterLink" type="button"
+                    aria-expanded="${twLaterOpen ? "true" : "false"}">${escHtml(lineText)}</button>
+                  ${twLaterOpen ? laterRows.map(r => `<div class="tw-later-item">
+                      ${twTickRow(r.g, { ...r, _fewState: pinStateOf(r) })}
+                      ${twIsNow() ? `<p class="tw-pull-line"><button class="tw-pull-link brushed-link" type="button"
+                        data-pull-goal="${r.g.id}" data-pull-mech="${escHtml(r.m.id)}">pull into this week</button></p>` : ``}
+                    </div>`).join("")
+                    + pulledLater.map(r => `<div class="tw-later-inweek">${escHtml(
+                        appVoice(r.m.weekLabel ?? r.m.label, wroteIt(r.m)))} · in your week${
+                      twIsNow() ? ` <button class="tw-putback-link brushed-link" type="button"
+                        data-putback-goal="${r.g.id}" data-putback-mech="${escHtml(r.m.id)}">put back</button>` : ``}</div>`).join("") : ``}
+                </div>`;
+              })()}
             </div>`;
           })()}
           <!-- THE ARRANGING STATION, AT THE FOOT. The rose and the list are
@@ -25981,6 +26134,26 @@
     // A4: help lives in one book; pages carry no help chrome.
     const parkedLink = mount.querySelector("#twParkedLink");
     if (parkedLink) parkedLink.addEventListener("click", closeThisWeek);
+    // THE LATER LINE'S DOOR AND ITS TWO PENCILS. The toggle re-renders, so
+    // the expansion is the page's own state, never a second layout; the
+    // pull and its way back both write pullForward and re-render, and both
+    // exist only on the current week (pullForward writes weekKeyOf()).
+    const laterLink = mount.querySelector("#twLaterLink");
+    if (laterLink) laterLink.addEventListener("click", () => {
+      twLaterOpen = !twLaterOpen; renderThisWeek();
+    });
+    if (!twRO) {
+      mount.querySelectorAll(".tw-pull-link").forEach(bl => bl.addEventListener("click", e => {
+        e.stopPropagation();
+        pullForward(Number(bl.dataset.pullGoal), bl.dataset.pullMech, true);
+        renderThisWeek();
+      }));
+      mount.querySelectorAll(".tw-putback-link").forEach(bl => bl.addEventListener("click", e => {
+        e.stopPropagation();
+        pullForward(Number(bl.dataset.putbackGoal), bl.dataset.putbackMech, false);
+        renderThisWeek();
+      }));
+    }
     // TURNING THE PAGE. Both arrows and the week's own name go through
     // twTurn / the current week, and every one of them re-renders — the
     // sheet is a different week now, not a different view of this one.
@@ -26469,6 +26642,72 @@
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
     });
+    // ---- SWIPES ON A ROW (owner ruling, 2026-09-01: "if i swipe right it
+    // deletes, if i swipe left it does something else", and left is push
+    // to tomorrow). THE NO-SWIPE RULING IS OVERTURNED FOR THIS PAGE, and
+    // on its own terms: it said a gesture nobody performs is a feature
+    // nobody has, and these are SHORTCUTS — every action a swipe performs
+    // is also a visible option in the row's box, so nothing is gated
+    // behind the invisible. The recipe is the strip pebble drag's:
+    // document-level capture listeners, a threshold before it counts, no
+    // re-render mid-gesture. Swipe right does not delete OUTRIGHT: it
+    // opens the row's box with delete already armed, so a repeating thing
+    // still gets its "just this day, or the whole repeat" ask and a slip
+    // of the thumb costs nothing.
+    if (!twRO) mount.querySelectorAll(".tw-sections .tw-row").forEach(rowEl => {
+      const mid = rowEl.dataset.mech;
+      if (!mid) return;
+      const rgid = twGoalKey(rowEl.dataset.goal) === "" ? null : Number(rowEl.dataset.goal);
+      let sw = null;
+      const onMove = e => {
+        if (!sw) return;
+        const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+        if (!sw.on) {
+          // mostly vertical means a scroll: stand down and let it happen
+          if (Math.abs(dy) > 14 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
+          if (!(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy) * 2)) return;
+          sw.on = true;
+          rowEl.classList.add("tw-swiping");
+        }
+        sw.dx = dx;
+        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(96, dx)) + "px)";
+      };
+      const end = commit => {
+        document.removeEventListener("pointermove", onMove, true);
+        document.removeEventListener("pointerup", onUp, true);
+        document.removeEventListener("pointercancel", onCancel, true);
+        const was = sw; sw = null;
+        rowEl.classList.remove("tw-swiping");
+        rowEl.style.transform = "";
+        if (!commit || !was || !was.on) return;
+        // the click that trails a finished swipe is not a tap on the row
+        const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        document.addEventListener("click", swallow, { capture: true, once: true });
+        setTimeout(() => document.removeEventListener("click", swallow, true), 250);
+        if (was.dx <= -64) {
+          if (twPushToTomorrow(rgid, mid)) renderThisWeek();
+        } else if (was.dx >= 64) {
+          const lbl = rowEl.querySelector(".tw-row-label");
+          const box = openRowOptions(lbl || rowEl, rgid, mid);
+          if (box) {
+            const drop = box.querySelector("#rpDrop");
+            if (drop) {
+              drop.classList.add("arm");
+              drop.querySelector(".mp-b").textContent = "tap it, and it is gone";
+            }
+          }
+        }
+      };
+      const onUp = () => end(true);
+      const onCancel = () => end(false);
+      rowEl.addEventListener("pointerdown", e => {
+        if (e.button != null && e.button !== 0) return;
+        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
+        document.addEventListener("pointermove", onMove, true);
+        document.addEventListener("pointerup", onUp, true);
+        document.addEventListener("pointercancel", onCancel, true);
+      });
+    });
     // Item 40: the companion reacts to a TICK, never an untick — each call
     // site checks which way the toggle went before saying anything.
     // tickOccurrence says what it did: one occurrence, and whether that tap
@@ -26558,6 +26797,35 @@
   // holding exactly four things: the title in place, push to tomorrow,
   // change the day, delete. Tying work to a goal is deliberately NOT here
   // (workshop only, ruled, test 145), by the owner's own choice this round.
+  // PUSH TO TOMORROW — one rule, shared by the box and the left swipe. An
+  // errand is re-dated; a scheduled thing's nearest open occurrence moves,
+  // this week only; a tomorrow beyond the week means next week, and only a
+  // goal's commitment can be pushed there (a standing reminder has no skip).
+  function twPushToTomorrow(gid, mid) {
+    const g = gid == null ? null : goals.find(x => x.id === gid);
+    const m = g ? (g.mechanisms || []).find(x => x.id === mid)
+                : reminderList().find(x => x.id === mid);
+    if (!m) return false;
+    const oneOff = gid == null && !m.schedule;
+    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
+    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
+    if (oneOff) { m.date = tomorrow; saveState(); return true; }
+    if (wd.indexOf(tomorrow) < 0) {
+      if (gid == null) return false;
+      skipThisWeek(gid, mid, true);
+      return true;
+    }
+    const eff = scheduledDatesFor(m, gid, wk);
+    const raw = scheduleOriginsFor(m, gid, wk);
+    let pick = -1;
+    eff.forEach((dd, i) => {
+      if (dd && dd >= today && !completionsAt(m, dd) && (pick < 0 || dd < eff[pick])) pick = i;
+    });
+    if (pick < 0) eff.forEach((dd, i) => { if (pick < 0 && dd && !completionsAt(m, dd)) pick = i; });
+    if (pick < 0) return false;
+    moveOccurrence(gid, mid, raw[pick], tomorrow);
+    return true;
+  }
   let twRowPopClose = null;         // the open box's cleanup, if one is open
   function openRowOptions(anchor, gid, mid) {
     if (twRowPopClose) twRowPopClose();
@@ -26571,8 +26839,8 @@
     const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
     const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
     const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
-    // THE OCCURRENCE THE BOX MEANS: the nearest open one, today or ahead,
-    // else the earliest open one — the same reading order the checkbox has.
+    // THE OCCURRENCE THE BOX IS ABOUT: the nearest open one, today or
+    // ahead, else the earliest open one — the checkbox's own reading order.
     const nearestOpen = () => {
       const eff = scheduledDatesFor(m, gid, wk);
       const raw = scheduleOriginsFor(m, gid, wk);
@@ -26611,8 +26879,12 @@
         <span class="mp-b">${repeating ? "everywhere, though what is done stays done" : "for good"}</span>
       </button>`;
     const cleanup = () => {
-      // The title commits on the way out, whatever closed the box.
-      twEditCommitTitle();
+      // The title commits on the way out, whatever closed the box — but
+      // only if the person actually typed. Committing an untouched field
+      // against whatever board is live by then is how a fixture swap (or
+      // any later state change) would get a rename nobody made.
+      const i0 = pop.querySelector("#twEditTitle");
+      if (i0 && i0.value !== title) twEditCommitTitle();
       const renamed = appVoice(m.weekLabel ?? m.label, wroteIt(m)) !== title;
       twEditing = null;
       twRowPopClose = null;
@@ -26622,10 +26894,23 @@
       if (renamed) renderThisWeek();
     };
     const done = () => { cleanup(); renderThisWeek(); };
+    // A BOX SWEPT AWAY BY ANOTHER PICKER (they clear ".when-pop" nodes
+    // wholesale) must not leave its document listeners behind: a stale
+    // capture-phase Escape handler ate the chapter editor's own Escape.
+    // Both handlers first check the node is still on the page, and a swept
+    // box detaches quietly — no title commit off a board that has moved on.
+    const detach = () => {
+      twEditing = null;
+      if (twRowPopClose === cleanup) twRowPopClose = null;
+      document.removeEventListener("pointerdown", onOutside, true);
+      document.removeEventListener("keydown", onKey, true);
+    };
     const onOutside = e => {
+      if (!pop.isConnected) return detach();
       if (!pop.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) cleanup();
     };
     const onKey = e => {
+      if (!pop.isConnected) return detach();
       if (e.key !== "Escape") return;
       e.stopPropagation();
       const i2 = pop.querySelector("#twEditTitle");
@@ -26636,16 +26921,7 @@
     const inp = pop.querySelector("#twEditTitle");
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
     const push = pop.querySelector("#rpPush");
-    if (push) push.addEventListener("click", () => {
-      if (oneOff) { m.date = tomorrow; saveState(); return done(); }
-      if (!tomorrowInWeek) { skipThisWeek(gid, mid, true); return done(); }
-      const no = nearestOpen();
-      if (no) {
-        if (completionsAt(m, no.date)) moveCompletion(gid, mid, no.date, tomorrow);
-        else moveOccurrence(gid, mid, no.from, tomorrow);
-      }
-      done();
-    });
+    if (push) push.addEventListener("click", () => { twPushToTomorrow(gid, mid); done(); });
     pop.querySelector("#rpWhen").addEventListener("click", () => {
       if (!isRem) { cleanup(); openMovePicker(anchor, g, m, () => renderThisWeek()); return; }
       // A reminder's days, in place: seven chips, one tap, done.
@@ -26783,6 +27059,7 @@
     // The week strip measures real layout — the overlay must be visible
     // before renderThisWeek runs, same reasoning as the Atlas road.
     twClearSelection();              // a path never survives a reopen
+    twLaterOpen = false;             // ...and neither does the open later line
     openBookPage(document.getElementById("thisWeekOverlay"));
     renderThisWeek();
   }
@@ -29161,7 +29438,8 @@
       else if (r.reason === "fixture_guard")
         showToast("a test run is using this browser \u2014 saving is paused so your board can't be written over.");
       else if (r.reason !== "local_only")
-        showToast("couldn't save \u2014 your changes are still here, but not backed up.");
+        showToast("couldn't save, the account said: " + (r.reason || "no reason given")
+          + ". your changes are still here on this device.");
     }
     return r;
   }
@@ -29188,18 +29466,61 @@
       // cloud is provably empty and this device's copy is a board someone has
       // actually built, the local copy is the truth and the cloud receives it.
       // A test namespace never migrates: an empty fixture is a correct start.
-      if (store === supabaseStore && state && !lsNamespace && !DEMO
-          && !state.profile.has_onboarded && !(state.goals || []).length) {
+      // "Provably empty" INCLUDES the account with no snapshot at all
+      // (2026-09-01, found on the owner's own board): a brand-new row loads
+      // as null, which stepped over both this migration and the rescue road
+      // below it, and the first-visit note sat over a real board all night.
+      const cloudBlank = !state
+        || (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded));
+      if (store === supabaseStore && cloudBlank && !lsNamespace && !DEMO) {
         let localReal = null;
         try { localReal = JSON.parse(localStorage.getItem(LOCAL_KEY) || "null"); } catch (e) {}
+        // THE RESCUE ROAD (2026-09-01, the day the board went missing). This
+        // device's copy can ALSO be gone — an earlier empty cloud rendered
+        // over it, or the storage died with a pane — while run-local's
+        // dev-snapshot.json still holds the real board. Ask this machine's
+        // own server before concluding the account is genuinely new. The
+        // published site has no /api/snapshot, so there this costs one
+        // failed fetch and changes nothing.
+        if (!(localReal && localReal.profile && localReal.profile.has_onboarded)) {
+          const snap = await fetch("/api/snapshot").then(r => r.ok ? r.json() : null).catch(() => null);
+          if (snap && snap.state) {
+            try {
+              const cand = JSON.parse(snap.state);
+              if (cand && cand.profile && cand.profile.has_onboarded) {
+                localReal = cand;
+                if (snap.name) localStorage.setItem(NAME_KEY, snap.name);
+              }
+            } catch (e) {}
+          }
+        }
         if (localReal && localReal.profile && localReal.profile.has_onboarded
             && applyState(localReal)) {
           renderAll();
           const up = await store.save(serializeState());
-          showToast(up.ok
-            ? "your board is in your account now, it follows you anywhere you sign in."
-            : "your board is here, but it hasn't reached your account yet, the next change tries again.");
+          if (up.ok) showToast("your board is in your account now, it follows you anywhere you sign in.");
+          else cloudSaveProblemBar(up.reason);
           return true;
+        }
+      }
+      // THE OFFER (2026-09-01). An account CAN legitimately be onboarded and
+      // empty (item 77's returning state), so no silent restore here — but
+      // when this machine's own server remembers a real board and both the
+      // account and this browser hold none, deciding silently either way is
+      // wrong. Render the empty truth, then ask, in a bar like ?fresh uses.
+      if (store === supabaseStore && state && !lsNamespace && !DEMO
+          && state.profile.has_onboarded && !(state.goals || []).length) {
+        let localHas = null;
+        try { localHas = JSON.parse(localStorage.getItem(LOCAL_KEY) || "null"); } catch (e) {}
+        if (!(localHas && (localHas.goals || []).length)) {
+          const snap = await fetch("/api/snapshot").then(r => r.ok ? r.json() : null).catch(() => null);
+          let cand = null;
+          try { cand = snap && snap.state ? JSON.parse(snap.state) : null; } catch (e) {}
+          if (cand && (cand.goals || []).length && applyState(state)) {
+            renderAll();
+            offerSnapshotBoard(cand, snap);
+            return true;
+          }
         }
       }
       if (applyState(state)) { renderAll(); return true; }
@@ -29229,6 +29550,52 @@
       showToast("couldn't load your saved goals. nothing was lost \u2014 try refreshing.");
     }
     return false;
+  }
+
+  // THE VERDICT BAR (2026-09-01). A cloud save that fails during a rescue
+  // used to say so in a four-second toast and vanish; a night was lost to
+  // not knowing whether the account ever took the board. The bar stays put,
+  // names the account's own reason, and retries on request.
+  function cloudSaveProblemBar(reason) {
+    const old = document.getElementById("cloudSaveBar");
+    if (old) old.remove();
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="fresh-bar" id="cloudSaveBar" role="alertdialog" aria-label="your account didn't take the save">
+        <span>your board is here, but your account refused the save. it said:
+          <b>${escHtml(String(reason || "no reason given"))}</b></span>
+        <button class="btn-solid" id="cloudSaveRetry" type="button">try again</button>
+      </div>`);
+    document.getElementById("cloudSaveRetry").addEventListener("click", async () => {
+      const r = await store.save(serializeState());
+      if (r.ok) {
+        document.getElementById("cloudSaveBar").remove();
+        showToast("saved. your board is in your account now.");
+      } else cloudSaveProblemBar(r.reason);
+    });
+  }
+
+  // The offer's card: same species as the ?fresh bar, and the same manners.
+  // Nothing happens until a person chooses; "keep" just removes the card.
+  function offerSnapshotBoard(cand, snap) {
+    const n = (cand.goals || []).length;
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="fresh-bar" id="snapOfferBar" role="alertdialog" aria-label="bring your board back?">
+        <span>this Mac remembers your board, ${n} goal${n === 1 ? "" : "s"}, but your account came back empty.</span>
+        <button class="btn-solid" id="snapBring" type="button">bring my board back</button>
+        <button class="brushed-link" id="snapKeep" type="button">keep the empty one</button>
+      </div>`);
+    document.getElementById("snapKeep").addEventListener("click", () =>
+      document.getElementById("snapOfferBar").remove());
+    document.getElementById("snapBring").addEventListener("click", async () => {
+      document.getElementById("snapOfferBar").remove();
+      if (!applyState(cand)) { showToast("that copy would not open. nothing changed."); return; }
+      try { if (snap.name) localStorage.setItem(NAME_KEY, snap.name); } catch (e) {}
+      loadName();
+      renderAll();
+      const up = await store.save(serializeState());
+      if (up.ok) showToast("your board is back, and in your account now.");
+      else cloudSaveProblemBar(up.reason);
+    });
   }
 
   // ---------- blocking persistence screens ----------
@@ -33606,6 +33973,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // the trap was a setter with one caller passing one value, and a test
     // that can only reach the push can only ever prove half a door.
     skipThisWeek, isSkipped,
+    // The pull and its way back, exported as a PAIR for the same reason
+    // the skip pair is — plus the named threshold, so the test asserts
+    // the number rather than re-deriving it.
+    pullForward, isPulled, TW_PULL_AHEAD_AT,
     parseWhen, whenLineFor, composeWhen,
     // exported so the harness drives the REAL entry points — the path
     // filter resets in these, and a test that fakes the open would not
