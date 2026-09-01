@@ -26750,10 +26750,23 @@
       if (renamed) renderThisWeek();
     };
     const done = () => { cleanup(); renderThisWeek(); };
+    // A BOX SWEPT AWAY BY ANOTHER PICKER (they clear ".when-pop" nodes
+    // wholesale) must not leave its document listeners behind: a stale
+    // capture-phase Escape handler ate the chapter editor's own Escape.
+    // Both handlers first check the node is still on the page, and a swept
+    // box detaches quietly — no title commit off a board that has moved on.
+    const detach = () => {
+      twEditing = null;
+      if (twRowPopClose === cleanup) twRowPopClose = null;
+      document.removeEventListener("pointerdown", onOutside, true);
+      document.removeEventListener("keydown", onKey, true);
+    };
     const onOutside = e => {
+      if (!pop.isConnected) return detach();
       if (!pop.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) cleanup();
     };
     const onKey = e => {
+      if (!pop.isConnected) return detach();
       if (e.key !== "Escape") return;
       e.stopPropagation();
       const i2 = pop.querySelector("#twEditTitle");
@@ -28519,7 +28532,7 @@
       const session = await currentSession();
       if (!session) return null;
       const uid = session.user.id;
-      const results = await Promise.all([
+      const fetchAll = () => Promise.all([
         sbc.from("profiles").select("*").eq("id", uid).maybeSingle(),
         sbc.from("intakes").select("data").eq("user_id", uid).maybeSingle(),
         sbc.from("goals").select("*").eq("user_id", uid).order("position"),
@@ -28528,7 +28541,17 @@
         sbc.from("checkins").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(2),
         sbc.from("journal_entries").select("day,text").eq("user_id", uid),
       ]);
-      const failed = results.find(r => r.error);
+      let results = await fetchAll();
+      let failed = results.find(r => r.error);
+      // A brand-new session can be stamped a second ahead of the data API's
+      // clock, and the FIRST load after sign-in dies on "JWT issued at
+      // future" — the person's very first sight of their board. Time is the
+      // whole cure, so wait the skew out once before letting the load fail.
+      if (failed && /issued at future/i.test(failed.error.message || "")) {
+        await new Promise(r => setTimeout(r, 2500));
+        results = await fetchAll();
+        failed = results.find(r => r.error);
+      }
       if (failed) throw new Error("load_failed: " + (failed.error.message || failed.error.code || "unknown"));
       const [profile, intake, goalRows, objRows, dismissed, checkins, journalRows] = results;
       const byGoal = {};
