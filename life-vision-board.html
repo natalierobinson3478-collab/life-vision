@@ -513,13 +513,6 @@
   .pm-skip u { text-decoration: underline; text-underline-offset: 3px; }
   .pm-skip:hover { color: var(--ink); }
   .pm-line.has-ink .pm-skip { opacity: 0; pointer-events: none; }
-  /* the door back in is its own quiet line under the flower, not a note
-     hung off the writing line the way skip is. The sheet gets the room the
-     way the name page already takes it: bottom padding, so the torn paper
-     paints under the new line instead of the mask cutting it off. */
-  .pm-return-signin { position: static; display: block; margin: 14px auto 0;
-    font-size: var(--t-label); }
-  #welcomeOverlay .pm-sheet { padding-bottom: calc(var(--rule) * 1.2); }
   .wf-one .pm-line { width: 100%; margin: 0;
     border-bottom: 1px dashed rgba(63,79,49,0.4); }
   /* The name is written AT the line, not floated mid-cell: full question
@@ -9762,12 +9755,6 @@
                autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" /><span class="pm-ghost" aria-hidden="true"><i class="pm-caret"></i>type your first name</span><button
                class="pm-skip" id="welcomeSkip" type="button"><span class="pm-skip-or">or </span><u>skip for now</u></button></span>
         <div class="empty-seed" id="wfSeed" aria-hidden="true"></div>
-        <!-- THE DOOR BACK IN (2026-09-01). A fresh device shows this page
-             first, and before this line the only sign-in lived in a book the
-             newcomer flow has not drawn yet: a person with a board already in
-             their account had no way to say so. Quiet, under the flower, and
-             only shown when a cloud exists to sign into. -->
-        <button class="pm-skip pm-return-signin" id="welcomeSignIn" type="button" hidden><u>already have a board? sign in</u></button>
       </div>
     </div>
     <div class="pm-actions pm-actions-corner">
@@ -26738,8 +26725,12 @@
         <span class="mp-b">${repeating ? "everywhere, though what is done stays done" : "for good"}</span>
       </button>`;
     const cleanup = () => {
-      // The title commits on the way out, whatever closed the box.
-      twEditCommitTitle();
+      // The title commits on the way out, whatever closed the box — but
+      // only if the person actually typed. Committing an untouched field
+      // against whatever board is live by then is how a fixture swap (or
+      // any later state change) would get a rename nobody made.
+      const i0 = pop.querySelector("#twEditTitle");
+      if (i0 && i0.value !== title) twEditCommitTitle();
       const renamed = appVoice(m.weekLabel ?? m.label, wroteIt(m)) !== title;
       twEditing = null;
       twRowPopClose = null;
@@ -28810,7 +28801,12 @@
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   }
 
-  let store = sb ? supabaseStore : localStore;
+  // A DEMO OR TEST PAGE NEVER TALKS TO THE CLOUD (2026-09-01). The night the
+  // real project's keys were filled in, every ?demo and ?test page silently
+  // switched to the Supabase store too, which returns nothing without a
+  // session, so the sample board stopped applying. Namespaced pages keep the
+  // local store they were built on; the guard already fences their keys.
+  let store = (sb && !DEMO && !lsNamespace) ? supabaseStore : localStore;
 
   // The GROUNDING questions (per DEFINITIONS.md: "reality check" is reserved for
   // the world-responds milestone; these are grounding). Asked once, when a
@@ -28922,17 +28918,10 @@
       // introduction, not a reward for naming (owner ruling, 2026-08-23).
       maybeWelcomeFilm(); softLeave();
     });
-    // THE DOOR BACK IN: the auth panel opens OVER this page, which stays
-    // where it is. A person who closes the panel without signing in has lost
-    // nothing; one who signs in leaves through the emailed link and comes
-    // back as their board, which never reaches this page at all.
-    const backIn = document.getElementById("welcomeSignIn");
-    if (backIn && sb) {
-      backIn.hidden = false;
-      backIn.addEventListener("click", () => {
-        if (window.__openAuth) window.__openAuth();
-      });
-    }
+    // The door back in that briefly lived here went with the front door: the
+    // account page now comes BEFORE this sheet on any device without a
+    // session, so by the time a person is asked their name they are already
+    // signed in and their board is already theirs.
     const go = document.getElementById("welcomeGo");
     // One flower, yours: writing your name on the line above it blooms it,
     // petal by petal; clearing the line folds it closed again.
@@ -33894,12 +33883,19 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       : `<span class="account-dot off"></span>Sign in to sync`;
   }
 
-  async function openAuth() {
+  // required: the front-door form. No close, no Esc (the keydown map skips a
+  // hidden closer), front-door words. A successful sign-in leaves this page
+  // through the emailed link's full reload, so the flag never goes stale.
+  async function openAuth(required) {
     const session = await currentSession();
     const status = document.getElementById("authStatus");
     const emailField = document.getElementById("authEmailField");
     const sendBtn = document.getElementById("authSend");
     const outBtn = document.getElementById("authSignOut");
+    const closeBtn = document.getElementById("authClose");
+    const walled = !!required && !session;
+    if (closeBtn) closeBtn.style.display = walled ? "none" : "";
+    authOverlay.dataset.required = walled ? "1" : "";
     if (!sb) {
       status.textContent = "Your goals aren't being saved \u2014 they'll be gone on refresh. "
         + "Saving across your phone and laptop needs a Supabase project; add its URL and anon key to "
@@ -33909,8 +33905,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       status.textContent = `Signed in as ${session.user.email}. Your goals sync across your devices.`;
       emailField.style.display = "none"; sendBtn.style.display = "none"; outBtn.style.display = "";
     } else {
-      status.textContent = "We'll email you a sign-in link, no password to remember. "
-        + "Until you sign in, nothing is saved between refreshes.";
+      status.textContent = walled
+        ? "we'll email you a sign-in link, no password to remember. "
+          + "your board saves to your account from the very first word."
+        : "We'll email you a sign-in link, no password to remember. "
+          + "Until you sign in, nothing is saved between refreshes.";
       emailField.style.display = ""; sendBtn.style.display = ""; outBtn.style.display = "none";
     }
     tornify(authOverlay.querySelector(".modal"));
@@ -34612,10 +34611,21 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     };
   }
 
-  if (sb) {
-    sb.auth.onAuthStateChange(async (event) => {
+  if (sb && !DEMO && !lsNamespace) {
+    // THE FRONT DOOR (owner ruling, 2026-09-01). Sign-in happens exactly once
+    // per device, so it happens FIRST: a session boots the board, and no
+    // session opens the account page in its required form instead, before the
+    // welcome sheet, before the name, before anything a person could lose.
+    // SIGNED_OUT re-arms the same wall. Demo and test pages never see it:
+    // they took the local branch below, the same one they kept when the
+    // cloud's keys were blank.
+    sb.auth.onAuthStateChange(async (event, session) => {
       renderAccount();
-      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") { await restoreState(); boot(); }
+      if (event === "SIGNED_IN" || (event === "INITIAL_SESSION" && session)) {
+        await restoreState(); boot();
+      } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+        openAuth(true);
+      }
     });
   } else {
     // ?demo=full skips the restore entirely and boots the sample board. It is
@@ -34801,6 +34811,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     });
     if (!top) return;
     const btn = document.getElementById(top[1]);
+    // A HIDDEN CLOSER MEANS NOT CLOSABLE. The required account page hides its
+    // X; clicking a display:none button would still fire, so Esc checks that
+    // the closer is actually on the page before pressing it.
+    if (btn && btn.offsetParent === null) return;
     if (btn) btn.click();
   });
 
