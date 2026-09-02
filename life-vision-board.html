@@ -6992,6 +6992,12 @@
   /* The drawn arrows are 16px tall, so the row was 16px tall — the last
      block on the sheet, sitting 3px off the last rule. It takes one rule,
      with the marks centred in it. */
+  /* THE ROCK COLLECTION: finished stones' second home, centred in the
+     open sand above the companion; the line beneath names a tapped one. */
+  .tw-collection { margin-top: calc(var(--lead) * 1); }
+  .tw-collection svg { display: block; margin: 0 auto; }
+  .tw-col-line { text-align: center; font-family: var(--voice-hand); font-style: italic;
+    font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0; }
   .tw-turn-row { display: flex; justify-content: space-between; align-items: center;
     height: var(--lead); margin-top: 0; }
   .tw-turn { background: none; border: none; padding: 0 4px; cursor: pointer;
@@ -14236,6 +14242,10 @@
       el.classList.toggle("lit", !!sel && on);
       el.classList.toggle("quiet", !!sel && !on);
     });
+    // The collection's naming line follows the selection: nothing chosen,
+    // nothing said.
+    const colLine0 = mount.querySelector("#twColLine");
+    if (colLine0 && !sel) colLine0.textContent = "";
     // THE DAY WORD ITSELF SAYS WHICH DAY IS BEING ASKED ABOUT. It is the
     // control, so it has to show its own state — otherwise the sheet dims
     // and nothing on the page says why.
@@ -26411,6 +26421,18 @@
             ${twCanFwd() ? `<button class="tw-turn tw-turn-fwd" type="button" id="twTurnFwd"
               aria-label="the week after">${DRAWN_TURN("fwd")}</button>` : `<span class="tw-turn-gap"></span>`}
           </div>
+          <!-- THE ROCK COLLECTION (2026-09-02, owner: "when we finish a
+               task, it should show in this blank space where the
+               companion is, like a little rock collection. and be filled
+               in. and if you click it still shows which one it belonged
+               to"). The strip's done-disappears rule gets its other half:
+               a finished occurrence's stone leaves its day and lands
+               here, FILLED, in the open sand the companion keeps. Live
+               week only — a past week is a record and keeps its stones on
+               the strip. Built after injection, like the strip, because
+               it lays stones to a measured width. -->
+          <div class="tw-collection" id="twCollectionMount" data-type-area="thisweek/collection"></div>
+          <p class="tw-col-line" id="twColLine" data-type-area="thisweek/colline"></p>
         </div></div>
       </div>
     </div>`;
@@ -26961,6 +26983,78 @@
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
     });
+    // ---- THE ROCK COLLECTION: where finished stones land ----
+    // Derived the way the strip derives, from the same walk with the same
+    // skips, keeping exactly the slots the live strip drops: the done
+    // ones. One source of stones, two homes — the day while it waits, the
+    // collection once it is finished.
+    const colMount = mount.querySelector("#twCollectionMount");
+    if (colMount) {
+      const doneStones = [];
+      if (twIsNow()) {
+        const wkC = weekKeyOf();
+        twWeekGoals(wkC).filter(g => g.status === "active").forEach(g => {
+          const cls = (CATS[g.category] || CATS.Other).cls;
+          weeklyWorkFor(g, { wk: wkC }).forEach(r2 => {
+            const m2 = r2.m;
+            if (m2.kind === "reminder") return;
+            if (r2.early && !r2.pulled) return;
+            occurrenceSlotsFor(m2, g.id, wkC).forEach((sl, n) => {
+              if (!sl.done) return;
+              doneStones.push({ cls, cat: g.category, gid: g.id, mid: m2.id,
+                mins: minutesOf(m2, g.id, wkC), date: sl.date || "", from: sl.origin,
+                slot: n, done: true });
+            });
+          });
+        });
+      }
+      if (!doneStones.length) {
+        colMount.innerHTML = "";
+      } else {
+        const CW = colMount.clientWidth || 320;
+        const perRow = Math.max(4, Math.floor((CW - 48) / 22));
+        const rows = Math.ceil(doneStones.length / perRow);
+        const parts = doneStones.map((it, k) => {
+          const row = Math.floor(k / perRow);
+          const inRow = Math.min(doneStones.length - row * perRow, perRow);
+          const cx = CW / 2 + ((k % perRow) - (inRow - 1) / 2) * 22 + (twJit(k + 3, 7) - 0.5) * 8;
+          const cy = 18 + row * 30 + (twJit(k + 11, 5) - 0.5) * 6;
+          return twStone(cx, cy, twStoneR(it.mins), it.cls, true, k * 7 + 2, it);
+        });
+        colMount.innerHTML = `<svg class="tw-col-svg" width="${CW}" height="${rows * 30 + 12}"
+          viewBox="0 0 ${CW} ${rows * 30 + 12}">${parts.join("")}</svg>`;
+        // A COLLECTED STONE STILL KNOWS WHOSE IT WAS: tapping it is the
+        // page's one selection (the row lights, the paint decides), and
+        // the line under the pile names it in place, because the lit row
+        // is a screen away when you are standing at the foot.
+        const colLine = mount.querySelector("#twColLine");
+        colMount.querySelectorAll(".tw-stone[data-mech]").forEach(el => {
+          const pick = () => {
+            const same = twHeld && twHeld.mid === el.dataset.mech
+              && twGoalKey(twHeld.gid) === twGoalKey(el.dataset.goal);
+            twSelectMech(el.dataset.goal, el.dataset.mech);
+            twHover = null;
+            twPaintSelection();
+            if (!colLine) return;
+            if (same) { colLine.textContent = ""; return; }
+            const g3 = goals.find(x => x.id === Number(el.dataset.goal));
+            const m3 = g3 && (g3.mechanisms || []).find(x => x.id === el.dataset.mech);
+            const dayWord = el.dataset.date
+              ? new Date(el.dataset.date + "T12:00:00")
+                  .toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
+              : "";
+            colLine.textContent = m3
+              ? appVoice(m3.weekLabel ?? m3.label, wroteIt(m3)) + (dayWord ? ", done " + dayWord : ", done")
+              : "";
+          };
+          el.addEventListener("click", pick);
+          el.addEventListener("keydown", e3 => {
+            if (e3.key !== "Enter" && e3.key !== " ") return;
+            e3.preventDefault(); pick();
+          });
+        });
+      }
+    }
     // ---- SWIPES ON A ROW (owner ruling, 2026-09-01: "if i swipe right it
     // deletes, if i swipe left it does something else", and left is push
     // to tomorrow). THE NO-SWIPE RULING IS OVERTURNED FOR THIS PAGE, and
