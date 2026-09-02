@@ -854,7 +854,12 @@
     margin: -1px; padding: 0; overflow: hidden; white-space: nowrap;
     clip-path: inset(50%); border: 0; }
   .mg-halo ellipse { fill: #FCF5E0; opacity: 0.55; filter: url(#wash); }
-  .mg-ring path { fill: var(--ink); opacity: 0.86; }
+  /* A LIGHTER HAND ON THE RING (owner, 2026-09-02: "the line is way too
+     intense compared to the background ... more like an ink drawin line").
+     Near-full ink read as a frame dropped on the painting. The same ink
+     stays, eased back and multiplied so the washes breathe through the
+     stroke; the width came down with it, in mgEnso. */
+  .mg-ring path { fill: var(--ink); opacity: 0.62; mix-blend-mode: multiply; }
   .mg-wash { mix-blend-mode: multiply; }
   .mg-w1 { fill: #9DB4B8; opacity: 0.32; }
   .mg-w2 { fill: #8CA6AC; opacity: 0.20; }
@@ -2131,6 +2136,13 @@
   .cat-relationships { --cat: var(--cat-relationships); --cat-ink: var(--cat-relationships-ink); }
   .cat-meaning { --cat: var(--cat-meaning); --cat-ink: var(--cat-meaning-ink); }
   .cat-other { --cat: 126, 124, 108; --cat-ink: 105, 103, 88; }
+  /* A TASK WITH NO AREA IS A PLAIN STONE (owner, 2026-09-02: "tasks i add
+     or tasks that dont have to do with a category should be pebbles. And
+     their color is grey or black - you pick which is best"). Grey won:
+     black fights the watercolour, and a soft ink-grey reads as exactly
+     what it is — a stone that belongs to no petal — beside the coloured
+     ones. Not cat-other, which is khaki and MEANS an area called other. */
+  .cat-none { --cat: 112, 110, 106; --cat-ink: 88, 86, 82; }
   .cat-finance { --cat: var(--cat-finance); --cat-ink: var(--cat-finance-ink); }
 
   @media (prefers-reduced-motion: reduce) {
@@ -4909,20 +4921,24 @@
        viewBox), so the travelling comb turns around the line it cuts. */
     transform-origin: 50% 88%; }
   #twRake svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  /* The watercolour comb's own palette, off the owner's photograph: rosy
-     tan laid in two washes, the wood's marbling over them, a soft pool of
-     shadow beneath; everything firms a step while it is held. */
-  #twRake .rk-ground { fill: rgba(178,132,78,0.16); }
-  #twRake .rk-back-wash { fill: rgba(197,145,117,0.55); }
-  #twRake .rk-back-deep { fill: rgba(176,120,92,0.35); }
-  #twRake .rk-marble { fill: none; stroke: rgba(226,186,158,0.75); stroke-width: 1.2;
+  /* THE COMB WEARS THE POND'S INK NOW (owner, 2026-09-02: "I prefer a
+     grey-blue and blue mixture instead of the pinky terracotta color …
+     more similar to the leaf and koi pond, like the inky with the
+     watercolor theme"). Two blue washes — grey-blue over a deeper blue —
+     the marbling gone pale slate, and the OUTLINE stepped up to a real
+     ink line the way the pond's drawings carry theirs: the wash floats,
+     the ink says the shape. Everything firms a step while it is held. */
+  #twRake .rk-ground { fill: rgba(108,125,140,0.15); }
+  #twRake .rk-back-wash { fill: rgba(124,143,158,0.5); }
+  #twRake .rk-back-deep { fill: rgba(90,113,134,0.38); }
+  #twRake .rk-marble { fill: none; stroke: rgba(182,198,210,0.8); stroke-width: 1.2;
     stroke-linecap: round; }
-  #twRake .rk-back-line { fill: none; stroke: rgba(136,90,66,0.5); stroke-width: 1.2;
+  #twRake .rk-back-line { fill: none; stroke: rgba(56,72,88,0.62); stroke-width: 1.5;
     stroke-linecap: round; stroke-linejoin: round; }
-  #twRake .rk-tooth { fill: none; stroke: rgba(176,120,92,0.7); stroke-width: 3.4;
+  #twRake .rk-tooth { fill: none; stroke: rgba(88,108,126,0.75); stroke-width: 3.4;
     stroke-linecap: round; }
-  #thisWeekOverlay.raking #twRake .rk-tooth { stroke: rgba(150,98,70,0.85); }
-  #thisWeekOverlay.raking #twRake .rk-back-line { stroke: rgba(116,74,52,0.7); }
+  #thisWeekOverlay.raking #twRake .rk-tooth { stroke: rgba(62,84,104,0.9); }
+  #thisWeekOverlay.raking #twRake .rk-back-line { stroke: rgba(40,54,70,0.78); }
   #twRake:focus-visible { outline: none /* A1: the drawn ring */; }
   /* The undo breath: a small floating pill in the bottom corner, the
      board's own floating-pill idiom, present for a few seconds and gone. */
@@ -6889,6 +6905,14 @@
      without it the browser reads a touch-drag on a pebble as a page pan and
      scrolls the sheet under the hand while the pebble tries to follow it. */
   .tw-stone[data-mech] { cursor: pointer; touch-action: none; }
+  /* …AND THE MOUNT BACKS THE PEBBLES UP (owner, 2026-09-02: "on here i
+     cant move around the rocks on the m-friday graphic"). iOS Safari
+     ignores touch-action on elements INSIDE an svg, so on the phone the
+     rule above never applied: a pebble drag read as a page pan and was
+     cancelled mid-grab. The mount is HTML, where the property is honoured
+     — pan-y, the same answer the rows give, so a finger can still scroll
+     the sheet from the strip while a sideways drag keeps its pebble. */
+  .tw-strip-mount { touch-action: pan-y; }
   .tw-strip-mount.dragging .tw-stone[data-mech] { cursor: grabbing; }
   /* THE HALO IS THE HANDLE. A pebble's drawn path is ~15px across on a
      phone; this invisible twin over it is what a finger actually grabs.
@@ -6927,14 +6951,29 @@
     color: var(--ink-muted); }
   .tw-add:hover { color: var(--ink); }
   .tw-add:focus-visible { outline: none /* A1: the drawn ring */; }
-  .tw-add-field { margin: 4px 0 2px 0; }
-  /* THE FIELD THE + OPENS, on the same step as the + itself. It was
-     --t-body (15px) — a size This-week uses nowhere else — and invisible to
-     the ratchet because it does not exist until the + is tapped. */
-  .tw-add-input { width: 100%; max-width: 320px; background: none; border: none;
-    border-bottom: 1px solid var(--line); font-family: var(--voice-body);
-    font-size: var(--t-label); color: var(--ink); padding: 2px 0; }
-  .tw-add-input:focus { outline: none; border-bottom-color: rgb(var(--accent)); }
+  /* THE FIELD WRITES IN THE PAGE'S OWN HAND (owner, 2026-09-02: "its hard
+     to know when i click it that im adding a task because the font is
+     different than the rest of the page there's a straight line under,
+     which goes against my inky and sand theme"). The machine face and the
+     ruled border are gone: what you type is handwriting on the sand, and
+     the line under it is the app's own brush — the --swash mask stretched
+     thin, so it wavers like every other drawn line here. Focus steadies
+     the ink a step; nothing else announces itself. */
+  .tw-add-field { margin: 4px 0 2px 0; position: relative; max-width: 320px;
+    color: var(--ink); }
+  .tw-add-field::after { content: ""; position: absolute; left: 0; right: 6px;
+    bottom: 0; height: 6px; background: currentColor; opacity: 0.34;
+    pointer-events: none;
+    -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .tw-add-field:focus-within::after { opacity: 0.55; }
+  .tw-add-input { width: 100%; background: none; border: none;
+    font-family: var(--voice-hand); font-style: italic;
+    font-size: var(--t-read); color: var(--ink); padding: 2px 2px 6px; }
+  .tw-add-input::placeholder { color: var(--ink-muted); opacity: 0.7;
+    font-style: italic; }
+  .tw-add-input:focus { outline: none; }
 
   /* THE COMMITMENT EDITOR — a small sheet on the page, not a modal over it.
      TWO SIZES, ONE STYLE, per the two-and-two law: --t-body for the number
@@ -6994,7 +7033,11 @@
      with the marks centred in it. */
   /* THE ROCK COLLECTION: finished stones' second home, centred in the
      open sand above the companion; the line beneath names a tapped one. */
-  .tw-collection { margin-top: calc(var(--lead) * 1); }
+  /* touch-action none, the whole patch: the pile is 2D play, so a drag
+     goes any direction — and iOS ignores the property on svg children, so
+     it lives on the HTML mount (the strip's own lesson, one rule up).
+     The patch is a hand tall; the page scrolls from everywhere else. */
+  .tw-collection { margin-top: calc(var(--lead) * 0.35); touch-action: none; }
   .tw-collection svg { display: block; margin: 0 auto; }
   .tw-col-line { text-align: center; font-family: var(--voice-hand); font-style: italic;
     font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0; }
@@ -7799,8 +7842,12 @@
      a lead each side of the divider, which reads as a gap rather than a
      break — and this sheet has four such junctions, so two lines at each is
      most of a screen of empty paper. */
-  .tw-station { margin-top: 0; padding-top: calc(var(--lead) * 1 - 1px);
-    border-top: 1px solid var(--line); }
+  /* THE RULE ABOVE THE STATION IS GONE (owner, 2026-09-02: "i dont like
+     this dividing line, lets remove it and shift up the capacity and cute
+     rock chart a bit"). The sand is the ground here, and a drawn border on
+     sand read as chrome; the capacity words and the piles sit a half-lead
+     higher with nothing fencing them off from the list above. */
+  .tw-station { margin-top: 0; padding-top: calc(var(--lead) * 0.35); }
   /* THE FADE IS GONE AND THE HIGHLIGHT SPEAKS FOR ITSELF (overturned
      2026-09-01, owner: "I ONLY want it to highlight the pebble/rock and
      not grey out the other to do list stuff"). The 2026-08-27 ruling this
@@ -7822,6 +7869,23 @@
      the owner asked to keep. */
   .tw-row.tw-lit .tw-row-label:not(.done) { color: var(--ink); }
   .tw-row.tw-lit .tw-row-label.done { color: var(--ink); }
+  /* THE HIGHLIGHT RETURNS AS THE BRUSH (owner, 2026-09-02: "when i click
+     on a rock idk which task its pointing me too"). Full ink alone was
+     invisible the moment the underline came off — a selection that cannot
+     be found is not a selection. The chosen row now wears the app's own
+     highlighter stroke: the --swash mask in the row's area colour, behind
+     the words and only the words (the .tw-word span hugs the text so a
+     short label is a short stroke, never a band across the row). It marks
+     ONLY the chosen row — the 1 Sep ruling stands, nothing else greys.
+     isolation keeps the stroke's z-index:-1 inside the label, above the
+     sheet's own grounds rather than swallowed behind them. */
+  .tw-row-label .tw-word { position: relative; }
+  .tw-row.tw-lit .tw-row-label { isolation: isolate; }
+  .tw-row.tw-lit .tw-row-label .tw-word::before { content: ""; position: absolute;
+    inset: -2px -9px; z-index: -1; background: rgb(var(--cat, var(--accent)));
+    opacity: 0.28; -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   /* UNPLACED, IN THE ROW: the strip's own pebble in the area's colour, and
      NOTHING ELSE (2026-08-27, owner: "just have the pebble"). Quiet — it is
      an invitation, not a warning — and it is the handle the day is chosen
@@ -11546,7 +11610,12 @@
     const widthAt = t => {
       const env = Math.pow(Math.sin(Math.min(1, Math.max(0, t)) * Math.PI), 0.42);
       const body = 1 + 0.32 * Math.sin(t * 5.1 + seed) + 0.19 * Math.sin(t * 9.3 + seed * 2.1);
-      return Math.max(1.6, 13.5 * env * body) / 2;
+      // 13.5 was the frame the owner called too intense (2026-09-02); 8.1
+      // is the same brush at 60%, judged against the washes on the live
+      // page next to a 5.7 that lost the gate and a faded 10.8 that read
+      // as a watermark. The floor drops with it so the thin passes keep
+      // their taper.
+      return Math.max(1.2, 8.1 * env * body) / 2;
     };
     return brushPolygon(170, rm * span, pointAt, widthAt);
   }
@@ -13150,6 +13219,11 @@
     const rep = spec && spec.repeat;
     const r = { id: userId("rem"), kind: "reminder", goalId: null, label,
       date: rep ? null : ((spec && spec.date) || null), time: (spec && spec.time) || null,
+      // AN UNDATED ONE-OFF KNOWS ITS WEEK (2026-09-02): the week of the
+      // page it was filed from, so one written onto next week's sheet
+      // waits there instead of crowding this one. remindersInWeek reads
+      // it; a dated or standing capture needs no stamp.
+      ...(rep || (spec && spec.date) ? {} : { wk: (spec && spec.wk) || weekKeyOf() }),
       ...(rep ? { schedule: rep } : {}),
       ...(Number.isFinite(mins) && mins > 0 ? { durationMin: Math.round(mins) } : {}),
       completions: {}, occSchema: 2 };
@@ -13320,8 +13394,15 @@
     }
     if (spec.date) {
       const i = wd.indexOf(spec.date);
+      // A date landed in a week ahead is said with its week, not as a raw
+      // figure: "next friday", or the weekday alone further out.
+      const j = i >= 0 ? -1 : weekDates(spec.wk || weekKeyOf()).indexOf(spec.date);
       bits.push(spec.date === todayKey() ? "today"
-        : i >= 0 ? String(TW_DAYS[i]).toLowerCase() : spec.date);
+        : i >= 0 ? String(TW_DAYS[i]).toLowerCase()
+        : j >= 0 ? "next " + String(TW_DAYS[j]).toLowerCase() : spec.date);
+    } else if (spec.wk && spec.wk > weekKeyOf()) {
+      const nx = new Date(weekKeyOf() + "T12:00:00"); nx.setDate(nx.getDate() + 7);
+      bits.push(spec.wk === localDateKey(nx) ? "next week" : "that week");
     } else bits.push("this week");
     if (spec.durationMin) bits.push(minsText(spec.durationMin));
     return "added to " + bits.join(" · ");
@@ -13333,10 +13414,28 @@
     saveState();
     return true;
   }
-  // Dated ones land on their date; undated ones ride the week.
+  // A TASK BELONGS TO ONE WEEK (2026-09-02, owner: "if i add something in
+  // my this week it shows up in my next week ... it should just be for
+  // that day or week"). "Undated ones ride the week" used to mean riding
+  // EVERY week — !r.date passed for any week asked about. The rule now:
+  //   standing (has a schedule) — belongs to every week; the schedule is
+  //     the claim, and each week's own plan record refines it elsewhere.
+  //   dated — the week holding its date, and no other.
+  //   undated, done — the week it was completed in. A record.
+  //   undated, open — it follows you: the live week, wherever it was
+  //     filed. Except one filed AHEAD for a chosen week (r.wk), which
+  //     waits there until that week arrives.
   function remindersInWeek(wk) {
-    const days = weekDates(wk || weekKeyOf());
-    return reminders.filter(r => !r.date || days.indexOf(r.date) >= 0);
+    const key = wk || weekKeyOf(), live = weekKeyOf();
+    const days = weekDates(key);
+    return reminders.filter(r => {
+      if (r.schedule) return true;
+      if (r.date) return days.indexOf(r.date) >= 0;
+      const comp = Object.keys(completionsOf(r));
+      if (comp.length) return comp.some(d => days.indexOf(d) >= 0);
+      if (r.wk && r.wk > live) return key === r.wk;
+      return key === live;
+    });
   }
   function remindersOn(iso) {
     return reminders.filter(r => r.date === iso);
@@ -14242,10 +14341,33 @@
       el.classList.toggle("lit", !!sel && on);
       el.classList.toggle("quiet", !!sel && !on);
     });
-    // The collection's naming line follows the selection: nothing chosen,
-    // nothing said.
+    // THE NAMING LINE ANSWERS EVERY SELECTION (2026-09-02, owner: "when i
+    // click on a rock idk which task its pointing me too"). The lit row
+    // wears the swash, but a stone tapped at the strip can have its row a
+    // screen away — so the line at the foot says what was chosen, in
+    // place, for every kind of choosing: a stone or a row names its task,
+    // a day sums itself up. A collected stone's own tap writes a richer
+    // line after this one (", done wednesday") — later wins, by design.
+    // Nothing chosen, nothing said.
     const colLine0 = mount.querySelector("#twColLine");
-    if (colLine0 && !sel) colLine0.textContent = "";
+    if (colLine0) {
+      if (!sel) colLine0.textContent = "";
+      else if (day != null) {
+        const wkS = twViewWk(), wd = weekDates(wkS);
+        const si = twStripItems(wkS);
+        const items = day === "any" ? si.flex : (si.days[wd.indexOf(day)] || []);
+        const mins = items.reduce((n, it) => n + (Number(it.mins) || 0), 0);
+        const name = day === "any" ? "any day"
+          : String(TW_DAYS[wd.indexOf(day)] || "").toLowerCase();
+        colLine0.textContent = items.length
+          ? name + " · " + items.length + (items.length === 1 ? " thing" : " things")
+            + (mins ? ", " + minsText(mins) : "")
+          : name + " · nothing yet";
+      } else if (mid != null) {
+        const litRow = mount.querySelector(".tw-row.tw-lit .tw-row-label");
+        colLine0.textContent = litRow ? litRow.textContent.trim() : "";
+      } else colLine0.textContent = "";
+    }
     // THE DAY WORD ITSELF SAYS WHICH DAY IS BEING ASKED ABOUT. It is the
     // control, so it has to show its own state — otherwise the sheet dims
     // and nothing on the page says why.
@@ -23558,7 +23680,12 @@
     const key = wk || weekKeyOf();
     // Skipped this week asks for nothing this week — checked before the
     // floating branch, or an "any day" commitment would ignore the skip.
-    if (goalId != null && isSkipped(goalId, m && m.id, key)) return [];
+    // THE NULL GOAL SKIPS TOO (2026-09-02, the plannable future week): a
+    // standing habit swiped off a future sheet writes its skip under the
+    // same null key its moves already use — same map, one more reader,
+    // exactly the movesFor lesson below. Nothing wrote that skip before,
+    // so every existing week reads exactly as it did.
+    if (isSkipped(goalId, m && m.id, key)) return [];
     const s = scheduleOf(m, goalId, key);
     if (s === "any" || (s && s.any)) {
       // A FLOATING OCCURRENCE CAN BE PINNED TO A DAY for this week — that is
@@ -23676,8 +23803,11 @@
   // Skipping is WEEK-SCOPED, like a move: it lives in the week record and
   // expires with it, so "move to next week" needs no field on the
   // commitment and cannot become a permanent change nobody meant.
-  function skipThisWeek(goalId, mechId, on) {
-    const wk = weekKeyOf();
+  // wk0 (2026-09-02, the plannable future week): which week is being bent.
+  // Absent means the live one, so every existing caller reads as before;
+  // This-week's own surfaces pass the week on the sheet.
+  function skipThisWeek(goalId, mechId, on, wk0) {
+    const wk = wk0 || weekKeyOf();
     const week = weeklyTicks[wk] = weeklyTicks[wk] || {};
     const forGoal = week[goalId] = week[goalId] || {};
     const rec = forGoal[mechId] = forGoal[mechId] || {};
@@ -23780,8 +23910,8 @@
     const rec = (week[goalId] || {})[mechId];
     return (rec && rec.moves) || {};
   }
-  function moveOccurrence(goalId, mechId, fromISO, toISO) {
-    const wk = weekKeyOf();
+  function moveOccurrence(goalId, mechId, fromISO, toISO, wk0) {
+    const wk = wk0 || weekKeyOf();
     const inWeek = weekDates(wk);
     const isSlotKey = /^f\d+$/.test(String(fromISO || ""));
     if (!isSlotKey && inWeek.indexOf(fromISO) < 0) return null;
@@ -24887,6 +25017,24 @@
       word: c.date ? String(TW_DAYS[wd.indexOf(c.date)] || "").toLowerCase() : "any day" }));
   }
 
+  // THE WORD COUNTS THIS WEEK AND NOTHING ELSE (owner, 2026-09-02: "i just
+  // think we're crossing into sticky territoriy if we're meaning what's
+  // going on this week versus what is weekly through the quarter",
+  // superseding the same day's daily/weekly/monthly words after one look).
+  // On a sheet that IS a week, "weekly" said either nothing or something
+  // ambiguous, and "monthly" answered a question about the quarter. So the
+  // word is the week's own count now: "daily" for every day, "x4" for four
+  // times, and SILENCE for once — whether a thing returns next week is
+  // already the checkbox mark's job (the ring against the box, twRowMark),
+  // said once and in one place. Counted from the week's occurrences, so
+  // moves and skips are already folded in.
+  function twFreqWord(m, goalId) {
+    const standing = m && m.kind === "reminder" && m.schedule;
+    if (!standing && !comesBack(m)) return "";
+    const n = occurrenceCountOf(m, goalId, twViewWk());
+    return n >= 7 ? "daily" : n > 1 ? "x" + n : "";
+  }
+
   // A ROW AT REST READS: title · duration · days. Nothing else.
   //
   // EVERY PART OF IT IS A DOOR, AND THEY LEAD TO TWO PLACES. The checkbox
@@ -25110,10 +25258,13 @@
     // it simply no longer writes it beside a line that has no hours to give.
     // Most of these rows carry no duration at all, which is why the word was
     // the whole of the meta and read as the row's subject.
-    const dated = new Set(TW_DAYS.map(d => d.toLowerCase()));
-    const onTheStrip = !isReminder;
-    const cadenceWords = isReminder ? [] : [...new Set(marks.map(x => x.word)
-      .filter(w => w && w !== "any day" && (!onTheStrip || !dated.has(w))))];
+    // THE ROW SAYS THIS WEEK'S COUNT (owner, 2026-09-02, second reading —
+    // see twFreqWord for the ruling that replaced the daily/weekly/monthly
+    // words the same day): "daily" for every day, "x4" for four times this
+    // week, silence for once. One-off errands and setups stay word-free,
+    // and the 28 Aug hours-only ruling stands for them.
+    const freqWord = twFreqWord(m, g ? g.id : null);
+    const cadenceWords = freqWord ? [freqWord] : [];
     const dayWords = marks.filter(x => x.word)
       .map(x => x.word + (x.count > 1 ? " x" + x.count : "") + (x.done ? " done" : "")).join(", ");
     // THE ROW'S OWN PEBBLE IS RETIRED (owner, 2026-09-01: "idk what these
@@ -25148,7 +25299,7 @@
         data-goal="${gid}" data-mech="${escHtml(m.id)}" ${parked ? "disabled" : ""}
         aria-label="${escHtml(rowLabel)}, ${pushed ? "moved to next week, " : ""}${
           dayWords ? escHtml(dayWords) + ", " : ""}show this one's marks on the week"
-        >${escHtml(rowLabel)}${pushed ? drawnScratch() : ``}</button>
+        ><span class="tw-word">${escHtml(rowLabel)}</span>${pushed ? drawnScratch() : ``}</button>
       <span class="tw-meta">
         ${showMin > 0 && !pushed ? (readOnly
           ? `<span class="tw-per tw-per-still">${escHtml(perText)}</span>`
@@ -25457,7 +25608,12 @@
       // is pushed is NOT listed as having nothing this week: its row is on
       // the page saying where the work went, and saying both would be the
       // page contradicting itself in two places at once.
-      const rows = weeklyWorkFor(g, { withSkipped: true });
+      // EXCEPT ON A WEEK STILL AHEAD (2026-09-02, the plannable future
+      // week): there the grey "next week" receipt would say the wrong
+      // thing — a row swiped off a future sheet was REMOVED from that
+      // week's plan, and the plan simply no longer lists it. The schedule
+      // asks again the week after by itself.
+      const rows = weeklyWorkFor(g, { withSkipped: !(wkB0 > weekKeyOf()) });
       if (!rows.length) b.noWork.push(g);
       const ev = (g.objectives || []).find(o => o.evidence && !o.theme);
       if (ev) b.rc.push({ g, ev });
@@ -25723,21 +25879,39 @@
     // the rule that reminders are not hours still holds for it; what changed
     // is that a habit is not a reminder in the sense that rule was written
     // about. `cat-other` is the arealess colour the palette already keeps.
-    twWeekReminders(wkS).filter(r => r && r.schedule).forEach(r => {
+    // EVERY HAND-ADDED TASK IS A STONE NOW (owner, 2026-09-02: "tasks i
+    // add or tasks that dont have to do with a category should be
+    // pebbles"), overturning "a dated one-off still gets nothing"
+    // (2026-08-27). The strip's question is how full each day is, and an
+    // errand on Friday is a real thing on Friday whether or not it has
+    // hours or a goal. Grey — cat-none, the plain stone — for anything
+    // that feeds no petal; day-less ones stand in the lane like all
+    // day-less work. remindersInWeek is the one belonging reader, so a
+    // week's page draws exactly the errands that are actually its own.
+    // Standing habits come through the week's own record (sealed behind,
+    // snapshot ahead — twWeekReminders, as before); errands through the
+    // belonging rule. Two sources, one stone.
+    twWeekReminders(wkS).filter(r => r && r.schedule)
+      .concat(remindersInWeek(wkS).filter(r => r && !r.schedule))
+      .forEach(r => {
       const wk = wkS, wd = weekDates(wk);
       occurrenceSlotsFor(r, null, wk).forEach((sl, n) => {
         // Finished draws no stone here either — one ruling, both loops,
         // and the same record rule for a week that is not this one.
         if (sl.done && wkS === weekKeyOf()) return;
-        if (sl.date == null) return;
-        const di = wd.indexOf(sl.date);
-        if (di < 0) return;
-        days[di].push({ cls: "cat-other", cat: null, done: !!sl.done, gid: null, mid: r.id,
-          // A habit with no duration sits on the floor — it is a real thing
+        const base = { cls: "cat-none", cat: null, done: !!sl.done, gid: null, mid: r.id,
+          // A task with no duration sits on the floor — it is a real thing
           // on the day, and the smallest stone still says so.
           mins: minutesOf(r, null, wk),
-          date: sl.date, from: sl.origin == null ? sl.date : sl.origin,
-          slot: n, id: r.id + ":" + n });
+          slot: n, id: r.id + ":" + n };
+        if (sl.date == null) {
+          flex.push({ ...base, date: null, from: sl.origin });
+          return;
+        }
+        const di = wd.indexOf(sl.date);
+        if (di < 0) return;
+        days[di].push({ ...base,
+          date: sl.date, from: sl.origin == null ? sl.date : sl.origin });
       });
     });
     return { days, flex };
@@ -25981,6 +26155,14 @@
     // beside the stepper, which is BELOW the strip's wiring, and the strip
     // read it before it existed.
     const twRO = twReadOnly();
+    // A FUTURE WEEK IS PLANNABLE (2026-09-02, owner: "i shoudl be able to
+    // add tasks to my next week ... as well as remove or push out things.
+    // i jusst shouldnt be able to cross things out"). twRO still means "not
+    // the live week" and still governs everything that RECORDS — ticks,
+    // hours, today's field. twPlan opens the structural half on weeks still
+    // ahead: adding, swiping away, pushing on, the row's box. A past week
+    // stays a sealed record with neither.
+    const twPlan = twIsFuture();
     // THE PLAN, KEPT AND SEALED. Refreshed while this week is still this
     // week; frozen the moment it is not. Cheap, and it is what makes a past
     // week renderable against the schedule it actually had.
@@ -26079,7 +26261,14 @@
                  (named in DECISIONS per the dead-code rule). -->
             <p class="tw-sub-line" data-type-area="thisweek/quarter"><span
               class="tw-quarter-line" id="twQuarterLine">${escHtml((() => {
-                const pos = quarterWeekPosition();
+                // THE LINE COUNTS THE WEEK ON THE SHEET (owner, 2026-09-02:
+                // "if i go to next week, it still says its the same week X
+                // out of Y"). Asked at the viewed week's own date, so a
+                // turned page says ITS number — and a week that lands in
+                // the next quarter gets that quarter's own count, because
+                // quarterWeekPosition derives both halves from the date it
+                // is handed.
+                const pos = quarterWeekPosition(new Date(twViewWk() + "T12:00:00"));
                 return "week " + pos.week + " of " + pos.of;
               })())}</span></p>
             <!-- THE HOURS LINE LEFT THE HEADER (2026-09-01, DECISIONS: the
@@ -26238,20 +26427,35 @@
             // then the rest, and stops at the first that claims it. The
             // other occurrences are still on the strip, where the week's
             // shape is what is being shown.
-            const repDays = r => scheduledDatesFor(r, null, weekKeyOf()).filter(Boolean);
+            // THE PAGE READS ITS OWN WEEK (2026-09-02, owner: "if i add
+            // something in my this week it shows up in my next week").
+            // These three lists were built from the LIVE week's reminders
+            // whatever page was showing, so every errand leaked onto every
+            // week you turned to. remindersInWeek now answers belonging per
+            // week (the rule lives there); this assembly just has to ask
+            // about the week actually on the sheet. Today and tomorrow are
+            // live-week ideas — a week that is not this one has neither.
+            const viewWkR = twViewWk(), onNow = twIsNow();
+            const repDays = r => scheduledDatesFor(r, null, viewWkR).filter(Boolean);
             const repOn = (r, iso) => repDays(r).indexOf(iso) >= 0;
             const standing = reminders.filter(r => r && r.schedule);
             const dated = r => !!r.date;
-            const remToday = remindersOn(todayISO).map(r => ({ g: null, m: r }))
+            const remToday = !onNow ? [] : remindersOn(todayISO).map(r => ({ g: null, m: r }))
               .concat(standing.filter(r => !dated(r) && repOn(r, todayISO))
                 .map(r => ({ g: null, m: r })));
-            const remTomorrow = remindersOn(tomorrowISO).map(r => ({ g: null, m: r }))
+            const remTomorrow = !onNow ? [] : remindersOn(tomorrowISO).map(r => ({ g: null, m: r }))
               .concat(standing.filter(r => !dated(r) && !repOn(r, todayISO)
                 && repOn(r, tomorrowISO)).map(r => ({ g: null, m: r })));
-            const remWeek = remindersInWeek()
-              .filter(r => r.date !== todayISO && r.date !== tomorrowISO)
-              .filter(r => !(r.schedule && !dated(r)
-                && (repOn(r, todayISO) || repOn(r, tomorrowISO))))
+            // A STANDING HABIT ON ANOTHER WEEK comes from that week's own
+            // record — the sealed plan behind it, the snapshot ahead —
+            // through the reader the strip already uses.
+            const remWeek = remindersInWeek(viewWkR)
+              .filter(r => !r.schedule)
+              .filter(r => !onNow || (r.date !== todayISO && r.date !== tomorrowISO))
+              .concat(onNow
+                ? standing.filter(r => !dated(r) && !repOn(r, todayISO) && !repOn(r, tomorrowISO))
+                : twWeekReminders(viewWkR).filter(r => r && r.schedule
+                    && !isSkipped(null, r.id, viewWkR)))
               .map(r => ({ g: null, m: r }));
             const todayLeft = todayRows;
             // The section renders whenever the day exists — which is always.
@@ -26305,7 +26509,7 @@
                 </div>
                 <div class="tw-add-field" id="twAddField" hidden>
                   <input type="text" id="twAddInput" class="tw-add-input"
-                    placeholder="buy shampoo" aria-label="what is it?">
+                    placeholder="call Joe tomorrow" aria-label="what is it?">
                   ${capNote("today")}
                 </div>
                 ${todayLive.length ? paint(todayLive) : ``}
@@ -26320,7 +26524,7 @@
                 </div>
                 <div class="tw-add-field" id="twAddTomorrowField" hidden>
                   <input type="text" id="twAddTomorrowInput" class="tw-add-input"
-                    placeholder="call mom" aria-label="what is it?">
+                    placeholder="call Joe tomorrow" aria-label="what is it?">
                   ${capNote("tomorrow")}
                 </div>
                 ${tomorrowLive.length ? paint(tomorrowLive) : ``}
@@ -26332,13 +26536,13 @@
                        today to be the rest OF, so the one list says what it
                        is — the week. -->
                   <span class="tw-caps tw-sec-label">${twIsNow() ? "the rest of the week" : "the week"}</span>
-                  ${twIsNow() ? `<button class="tw-add" type="button" id="twAddWeek"
+                  ${twIsNow() || twIsFuture() ? `<button class="tw-add" type="button" id="twAddWeek"
                     aria-label="add something for the rest of the week"
                     title="add something for the rest of the week">+</button>` : ``}
                 </div>
                 <div class="tw-add-field" id="twAddWeekField" hidden>
                   <input type="text" id="twAddWeekInput" class="tw-add-input"
-                    placeholder="call mom" aria-label="what is it?">
+                    placeholder="call Joe tomorrow" aria-label="what is it?">
                   ${capNote("week")}
                 </div>
                 ${weekLive.length ? paint(weekLive) : ``}
@@ -26759,7 +26963,7 @@
         twCommitCapture(addTomInput, addTomWrap, localDateKey(d), "tomorrow");
       });
     }
-    const addWeekBtn = twRO ? null : mount.querySelector("#twAddWeek");
+    const addWeekBtn = twRO && !twPlan ? null : mount.querySelector("#twAddWeek");
     const addWeekWrap = mount.querySelector("#twAddWeekField");
     const addWeekInput = mount.querySelector("#twAddWeekInput");
     if (addWeekBtn && addWeekWrap && addWeekInput) {
@@ -26968,9 +27172,10 @@
         twHover = null;
         twPaintSelection();
         // THE ROW'S BOX RIDES THE HOLD (2026-09-01): choosing a row opens
-        // its box, choosing it again or tapping away closes it. Read-only
-        // weeks look, they do not edit.
-        if (!twRO) {
+        // its box, choosing it again or tapping away closes it. Past
+        // weeks look, they do not edit; a future week's box is how it is
+        // planned (2026-09-02).
+        if (!twRO || twPlan) {
           if (!same) openRowOptions(btn,
             twGoalKey(btn.dataset.goal) === "" ? null : Number(btn.dataset.goal),
             btn.dataset.mech);
@@ -27007,27 +27212,97 @@
             });
           });
         });
+        // FINISHED HAND-ADDED TASKS LAND HERE TOO (2026-09-02, with the
+        // grey-stone ruling): the strip's own two sources, done slots only.
+        twWeekReminders(wkC).filter(r => r && r.schedule)
+          .concat(remindersInWeek(wkC).filter(r => r && !r.schedule))
+          .forEach(r => occurrenceSlotsFor(r, null, wkC).forEach((sl, n) => {
+            if (!sl.done) return;
+            doneStones.push({ cls: "cat-none", cat: null, gid: null, mid: r.id,
+              mins: minutesOf(r, null, wkC), date: sl.date || "", from: sl.origin,
+              slot: n, done: true });
+          }));
       }
       if (!doneStones.length) {
         colMount.innerHTML = "";
       } else {
+        const wkC = weekKeyOf();
+        if (twCollect.wk !== wkC) twCollect = { wk: wkC, pos: {} };
         const CW = colMount.clientWidth || 320;
-        const perRow = Math.max(4, Math.floor((CW - 48) / 22));
-        const rows = Math.ceil(doneStones.length / perRow);
-        const parts = doneStones.map((it, k) => {
-          const row = Math.floor(k / perRow);
-          const inRow = Math.min(doneStones.length - row * perRow, perRow);
-          const cx = CW / 2 + ((k % perRow) - (inRow - 1) / 2) * 22 + (twJit(k + 3, 7) - 0.5) * 8;
-          const cy = 18 + row * 30 + (twJit(k + 11, 5) - 0.5) * 6;
-          return twStone(cx, cy, twStoneR(it.mins), it.cls, true, k * 7 + 2, it);
+        const CH = 96;
+        // A PILE, NOT A LINE (owner, 2026-09-02: "instead of collecting in
+        // a straight line they collect in like a little pile"). Courses
+        // laid like a cairn seen from the front — a base row, fewer on
+        // each course above, nestled a half-step over — the triangle a
+        // hand makes dropping stones in one spot. A stone the hand has
+        // moved rests where it was left instead (twCollect, below).
+        const n = doneStones.length;
+        const courses = [];
+        let cLeft = n, cw = Math.max(1, Math.ceil((Math.sqrt(8 * n + 1) - 1) / 2));
+        while (cLeft > 0) {
+          const take = Math.max(1, Math.min(cw, cLeft));
+          courses.push(take); cLeft -= take; cw = Math.max(1, cw - 1);
+        }
+        const spots = []; let k0 = 0;
+        courses.forEach((cnt, ci) => {
+          for (let j = 0; j < cnt; j++, k0++) spots.push({
+            x: CW / 2 + (j - (cnt - 1) / 2) * 19 + (ci % 2 ? 4 : 0) + (twJit(k0 + 3, 7) - 0.5) * 6,
+            y: CH - 16 - ci * 14 + (twJit(k0 + 11, 5) - 0.5) * 4 });
         });
-        colMount.innerHTML = `<svg class="tw-col-svg" width="${CW}" height="${rows * 30 + 12}"
-          viewBox="0 0 ${CW} ${rows * 30 + 12}">${parts.join("")}</svg>`;
+        const keyOf = it => (it.gid == null ? "" : it.gid) + "|" + it.mid + ":" + it.slot;
+        const laid = {};
+        const parts = doneStones.map((it, k) => {
+          const key = keyOf(it);
+          const p = twCollect.pos[key];
+          const x = p ? Math.max(10, Math.min(CW - 10, p[0])) : spots[k].x;
+          const y = p ? Math.max(10, Math.min(CH - 8, p[1])) : spots[k].y;
+          laid[key] = { x, y };
+          return twStone(x, y, twStoneR(it.mins), it.cls, true, k * 7 + 2, it);
+        });
+        colMount.innerHTML = `<svg class="tw-col-svg" width="${CW}" height="${CH}"
+          viewBox="0 0 ${CW} ${CH}">${parts.join("")}</svg>`;
         // A COLLECTED STONE STILL KNOWS WHOSE IT WAS: tapping it is the
         // page's one selection (the row lights, the paint decides), and
         // the line under the pile names it in place, because the lit row
         // is a screen away when you are standing at the foot.
+        // AND IT CAN BE PLAYED WITH (owner, 2026-09-02): a drag moves the
+        // stone, only inside this patch of sand below the strip — the
+        // same recipe as the strip's own drag (document listeners, a
+        // wobble gate, cancel restores), a tap still just asks. Where it
+        // is dropped is remembered for the week and smooths with it.
         const colLine = mount.querySelector("#twColLine");
+        let cdrag = null;
+        const cUnhook = () => {
+          document.removeEventListener("pointermove", cMove, true);
+          document.removeEventListener("pointerup", cUp, true);
+          document.removeEventListener("pointercancel", cCancel, true);
+        };
+        const cMove = e2 => {
+          if (!cdrag) return;
+          const gate = e2.pointerType === "touch" ? 6 : 4;
+          const dx = e2.clientX - cdrag.x, dy = e2.clientY - cdrag.y;
+          if (!cdrag.moved && (Math.abs(dx) > gate || Math.abs(dy) > gate)) cdrag.moved = true;
+          if (cdrag.moved)
+            cdrag.twins.forEach(t => t.setAttribute("transform", `translate(${dx} ${dy})`));
+        };
+        const cCancel = () => {
+          cUnhook();
+          if (!cdrag) return;
+          const d = cdrag; cdrag = null;
+          d.twins.forEach(t => t.removeAttribute("transform"));
+        };
+        const cUp = e2 => {
+          cUnhook();
+          if (!cdrag) return;
+          const d = cdrag; cdrag = null;
+          d.twins.forEach(t => t.removeAttribute("transform"));
+          if (!d.moved) { d.pick(); return; }
+          const nx = Math.max(10, Math.min(CW - 10, d.ox + (e2.clientX - d.x)));
+          const ny = Math.max(10, Math.min(CH - 8, d.oy + (e2.clientY - d.y)));
+          twCollect.pos[d.key] = [Math.round(nx), Math.round(ny)];
+          saveState();
+          renderThisWeek();
+        };
         colMount.querySelectorAll(".tw-stone[data-mech]").forEach(el => {
           const pick = () => {
             const same = twHeld && twHeld.mid === el.dataset.mech
@@ -27038,7 +27313,8 @@
             if (!colLine) return;
             if (same) { colLine.textContent = ""; return; }
             const g3 = goals.find(x => x.id === Number(el.dataset.goal));
-            const m3 = g3 && (g3.mechanisms || []).find(x => x.id === el.dataset.mech);
+            const m3 = g3 ? (g3.mechanisms || []).find(x => x.id === el.dataset.mech)
+                          : reminderList().find(x => x.id === el.dataset.mech);
             const dayWord = el.dataset.date
               ? new Date(el.dataset.date + "T12:00:00")
                   .toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
@@ -27047,7 +27323,22 @@
               ? appVoice(m3.weekLabel ?? m3.label, wroteIt(m3)) + (dayWord ? ", done " + dayWord : ", done")
               : "";
           };
-          el.addEventListener("click", pick);
+          el.addEventListener("pointerdown", e3 => {
+            if (e3.button != null && e3.button !== 0) return;
+            e3.preventDefault();
+            const key = (el.dataset.goal === "null" || el.dataset.goal === "" ? "" : el.dataset.goal)
+              + "|" + el.dataset.mech + ":" + el.dataset.slot;
+            const at = laid[key] || { x: CW / 2, y: CH - 20 };
+            const twins = [].slice.call(colMount.querySelectorAll(
+              `.tw-stone[data-mech="${el.dataset.mech}"][data-slot="${el.dataset.slot}"]`))
+              .filter(x => x.dataset.goal === el.dataset.goal);
+            cdrag = { key, twins, pick, ox: at.x, oy: at.y,
+                      x: e3.clientX, y: e3.clientY, moved: false };
+            try { el.setPointerCapture(e3.pointerId); } catch (err) {}
+            document.addEventListener("pointermove", cMove, true);
+            document.addEventListener("pointerup", cUp, true);
+            document.addEventListener("pointercancel", cCancel, true);
+          });
           el.addEventListener("keydown", e3 => {
             if (e3.key !== "Enter" && e3.key !== " ") return;
             e3.preventDefault(); pick();
@@ -27067,7 +27358,7 @@
     // opens the row's box with delete already armed, so a repeating thing
     // still gets its "just this day, or the whole repeat" ask and a slip
     // of the thumb costs nothing.
-    if (!twRO) mount.querySelectorAll(".tw-sections .tw-row").forEach(rowEl => {
+    if (!twRO || twPlan) mount.querySelectorAll(".tw-sections .tw-row").forEach(rowEl => {
       const mid = rowEl.dataset.mech;
       if (!mid) return;
       const rgid = twGoalKey(rowEl.dataset.goal) === "" ? null : Number(rowEl.dataset.goal);
@@ -27113,13 +27404,20 @@
         // repeater. Both stay visible options in the row's box, so the
         // no-invisible-shortcuts law holds.
         if (was.dx <= -72) {
+          // On a future page a standing thing is only taken off that week
+          // — the pill says the smaller truth. Read BEFORE the delete: an
+          // errand is out of the list by the time the pill speaks.
+          const rRem = rgid == null ? reminderList().find(x => x.id === mid) : null;
+          const offWeek = twPlan && (rgid != null || (rRem && rRem.schedule));
           const undo = twDeleteForSwipe(rgid, mid);
           if (undo) {
             renderThisWeek();
-            twShowUndo("deleted", undo);
+            twShowUndo(offWeek ? "off that week" : "deleted", undo);
           }
         } else if (was.dx >= 72) {
-          twSwipeNextWeek(rowEl.querySelector(".tw-row-label") || rowEl, rgid, mid);
+          const anch = rowEl.querySelector(".tw-row-label") || rowEl;
+          if (twPlan) twSwipeNextWeek(anch, rgid, mid);
+          else twSwipeTomorrow(anch, rgid, mid);
         }
       };
       const onUp = () => end(true);
@@ -27281,6 +27579,14 @@
     if (gid == null) {
       const r = reminderList().find(x => x.id === mid);
       if (!r) return null;
+      // A STANDING HABIT ON A FUTURE PAGE is taken off that week only,
+      // the same rule a goal's habit gets below. An errand still deletes
+      // outright wherever it is — it only ever existed in one week.
+      const wkR = twViewWk();
+      if (r.schedule && wkR > weekKeyOf()) {
+        skipThisWeek(null, mid, true, wkR);
+        return () => skipThisWeek(null, mid, false, wkR);
+      }
       const copy = JSON.parse(JSON.stringify(r));
       removeReminder(mid);
       return () => { reminders.push(copy); saveState(); };
@@ -27288,13 +27594,23 @@
     const g = goals.find(x => x.id === gid);
     const m = g && (g.mechanisms || []).find(x => x.id === mid);
     if (!m) return null;
+    // A FUTURE PAGE NEVER DELETES THE STANDING THING (2026-09-02, the
+    // plannable future week). Swiping "meditate daily" off next week's
+    // sheet is a decision about next week, not about the habit — so it
+    // skips that week and nothing else. Deleting the whole repeat stays
+    // where deliberateness lives: the row's box, behind the armed tap.
+    const wk = twViewWk();
+    if (wk > weekKeyOf()) {
+      skipThisWeek(gid, mid, true, wk);
+      return () => skipThisWeek(gid, mid, false, wk);
+    }
     m.dropped = true; saveState();
     return () => { m.dropped = false; saveState(); };
   }
   // The nearest open occurrence, today or ahead, else the earliest open —
   // the checkbox's own reading order, shared with the row's box.
-  function twNearestOpen(gid, mid, m) {
-    const wk = weekKeyOf(), today = todayKey();
+  function twNearestOpen(gid, mid, m, wk0) {
+    const wk = wk0 || weekKeyOf(), today = todayKey();
     const eff = scheduledDatesFor(m, gid, wk);
     const raw = scheduleOriginsFor(m, gid, wk);
     let pick = -1;
@@ -27305,37 +27621,80 @@
     if (pick < 0 && raw.length) pick = 0;
     return pick < 0 ? null : { date: eff[pick], from: raw[pick] };
   }
-  function twNextWeekOnce(gid, mid, m) {
-    const no = twNearestOpen(gid, mid, m);
+  function twNextWeekOnce(gid, mid, m, wk0) {
+    const no = twNearestOpen(gid, mid, m, wk0);
     if (!no) return null;
-    moveOccurrence(gid, mid, no.from, "off");
-    return () => moveOccurrence(gid, mid, no.from, no.date || "any");
+    moveOccurrence(gid, mid, no.from, "off", wk0);
+    return () => moveOccurrence(gid, mid, no.from, no.date || "any", wk0);
+  }
+  // THE RIGHT SWIPE AIMS AT TOMORROW NOW (owner, 2026-09-02: "i think i
+  // want the swipe right to move to tomorrow instead of next week. i
+  // think i will get more use out of that"). Promptless for everything —
+  // moving one occurrence to tomorrow is already "just this one", so the
+  // repeater question has nothing left to ask. Next-week stays a visible
+  // option in the row's box; a future page's right swipe still walks a
+  // week on (tomorrow is a live-week idea); and on Sunday, when the week
+  // holds no tomorrow, the swipe falls back to the move it replaced.
+  function twSwipeTomorrow(anchor, gid, mid) {
+    const g = gid == null ? null : goals.find(x => x.id === gid);
+    const m = g ? (g.mechanisms || []).find(x => x.id === mid)
+                : reminderList().find(x => x.id === mid);
+    if (!m) return;
+    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
+    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
+    if (wd.indexOf(tomorrow) < 0) { twSwipeNextWeek(anchor, gid, mid); return; }
+    if (gid == null && !m.schedule) {
+      const prevDate = m.date || null;
+      m.date = tomorrow; saveState(); renderThisWeek();
+      twShowUndo("moved to tomorrow", () => { m.date = prevDate; saveState(); });
+      return;
+    }
+    const no = twNearestOpen(gid, mid, m, wk);
+    if (!no) return;
+    moveOccurrence(gid, mid, no.from, tomorrow, wk);
+    renderThisWeek();
+    twShowUndo("moved to tomorrow", () => moveOccurrence(gid, mid, no.from, no.date || "any", wk));
   }
   function twSwipeNextWeek(anchor, gid, mid) {
     const g = gid == null ? null : goals.find(x => x.id === gid);
     const m = g ? (g.mechanisms || []).find(x => x.id === mid)
                 : reminderList().find(x => x.id === mid);
     if (!m) return;
-    // A ONE-OFF ERRAND walks to next week whole, no question asked.
+    // WHICH WEEK IS BEING BENT: the one on the sheet (2026-09-02, the
+    // plannable future week) — on the live page that is the live week,
+    // exactly as before.
+    const wk = twViewWk();
+    const undoWord = twIsNow() ? "moved to next week" : "moved a week on";
+    // A ONE-OFF ERRAND walks to next week whole, no question asked. It
+    // keeps its shape on the way: a dated one lands on the same weekday a
+    // week later, an undated one stays undated and just changes its home
+    // week — pushing an errand is not the app choosing a day for it.
     if (gid == null && !m.schedule) {
-      const prev = m.date || null;
-      const nx = new Date(weekKeyOf() + "T12:00:00"); nx.setDate(nx.getDate() + 7);
-      m.date = localDateKey(nx); saveState(); renderThisWeek();
-      twShowUndo("moved to next week", () => { m.date = prev; saveState(); });
+      const prevDate = m.date || null, prevWk = m.wk || null;
+      if (m.date) {
+        const d = new Date(m.date + "T12:00:00"); d.setDate(d.getDate() + 7);
+        m.date = localDateKey(d);
+      } else {
+        const nx = new Date(wk + "T12:00:00"); nx.setDate(nx.getDate() + 7);
+        m.wk = localDateKey(nx);
+      }
+      saveState(); renderThisWeek();
+      twShowUndo(undoWord, () => { m.date = prevDate;
+        if (prevWk) m.wk = prevWk; else delete m.wk; saveState(); });
       return;
     }
-    const open = occurrenceSlotsFor(m, gid, weekKeyOf()).filter(s => !s.done);
+    const open = occurrenceSlotsFor(m, gid, wk).filter(s => !s.done);
     // ONE occurrence this week IS the whole item this week.
     if (gid != null && open.length <= 1) {
-      skipThisWeek(gid, mid, true); renderThisWeek();
-      twShowUndo("moved to next week", () => skipThisWeek(gid, mid, false));
+      skipThisWeek(gid, mid, true, wk); renderThisWeek();
+      twShowUndo(undoWord, () => skipThisWeek(gid, mid, false, wk));
       return;
     }
     // A REPEATER gets the one small question.
     const wholeOff = () => {
       const restores = open.map(s => {
-        moveOccurrence(gid, mid, s.origin, "off");
-        return () => moveOccurrence(gid, mid, s.origin, s.date || "any");
+        moveOccurrence(gid, mid, s.origin, "off", wk);
+        return () => moveOccurrence(gid, mid, s.origin, s.date || "any", wk);
       });
       return () => restores.forEach(r => r());
     };
@@ -27348,8 +27707,8 @@
         <span class="mp-b">the rest of the week stays put</span>
       </button>
       <button type="button" class="mp-opt" id="nwAll">
-        <span class="mp-a">the whole thing this week</span>
-        <span class="mp-b">every time it comes up, back next week</span>
+        <span class="mp-a">the whole thing ${twIsNow() ? "this week" : "that week"}</span>
+        <span class="mp-b">every time it comes up, ${twIsNow() ? "back next week" : "one week later"}</span>
       </button>`;
     const cleanup = () => {
       pop.remove();
@@ -27360,16 +27719,16 @@
     const onKey = e => { if (e.key === "Escape") { e.stopPropagation(); cleanup(); } };
     pop.querySelector("#nwOne").addEventListener("click", () => {
       cleanup();
-      const u = twNextWeekOnce(gid, mid, m);
+      const u = twNextWeekOnce(gid, mid, m, wk);
       renderThisWeek();
-      if (u) twShowUndo("moved one to next week", u);
+      if (u) twShowUndo(twIsNow() ? "moved one to next week" : "moved one a week on", u);
     });
     pop.querySelector("#nwAll").addEventListener("click", () => {
       cleanup();
-      const u = gid != null ? (skipThisWeek(gid, mid, true), () => skipThisWeek(gid, mid, false))
+      const u = gid != null ? (skipThisWeek(gid, mid, true, wk), () => skipThisWeek(gid, mid, false, wk))
         : wholeOff();
       renderThisWeek();
-      twShowUndo("moved to next week", u);
+      twShowUndo(undoWord, u);
     });
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
@@ -27393,7 +27752,10 @@
     if (!m) return null;
     const isRem = gid == null;
     const oneOff = isRem && !m.schedule;       // an errand, dated or not
-    const wk = weekKeyOf(), wd = weekDates(wk), today = todayKey();
+    // THE BOX SPEAKS FOR THE WEEK ON THE SHEET (2026-09-02, the plannable
+    // future week): its days are that week's days, its pushes bend that
+    // week. On the live page nothing changes — the viewed week IS the week.
+    const wk = twViewWk(), wd = weekDates(wk), today = todayKey();
     const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
     const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
     // THE OCCURRENCE THE BOX IS ABOUT: the nearest open one, today or
@@ -27424,8 +27786,9 @@
         <span class="mp-b">this week bends, the rhythm is untouched</span>
       </button>` : ``}
       ${!isRem ? `<button type="button" class="mp-opt" id="rpSkip">
-        <span class="mp-a">push to next week</span>
-        <span class="mp-b">not this week, back on its rhythm monday</span>
+        <span class="mp-a">${twIsNow() ? "push to next week" : "push a week on"}</span>
+        <span class="mp-b">${twIsNow() ? "not this week, back on its rhythm monday"
+          : "not that week, back on its rhythm after"}</span>
       </button>` : ``}
       <button type="button" class="mp-opt" id="rpWhen">
         <span class="mp-a">change the day</span>
@@ -27502,14 +27865,14 @@
         const iso = b.dataset.iso;
         if (oneOff) { m.date = iso; saveState(); return done(); }
         const no = nearestOpen();
-        if (no) moveOccurrence(null, mid, no.from, iso);
+        if (no) moveOccurrence(null, mid, no.from, iso, wk);
         done();
       }));
     });
     const off = pop.querySelector("#rpOffDay");
     if (off) off.addEventListener("click", () => {
       const no = nearestOpen();
-      if (no) moveOccurrence(gid, mid, no.from, "off");
+      if (no) moveOccurrence(gid, mid, no.from, "off", wk);
       done();
     });
     // DELETE ARMS FIRST — the two-step the discovery menus already use.
@@ -27560,8 +27923,19 @@
     // A RECURRENCE OVERRIDES THE SECTION'S DAY. The + under "tomorrow"
     // supplies tomorrow as a FALLBACK, and typed words beat a fallback —
     // "stretch every morning" filed from there is a habit, not a Tuesday.
-    const spec = { label: p.label || raw, date: p.repeat ? null : (p.date || fallbackDate),
-                   time: p.time, durationMin: p.minutes, repeat: p.repeat };
+    let date = p.repeat ? null : (p.date || fallbackDate);
+    // FILED ONTO A WEEK STILL AHEAD (2026-09-02, the plannable future
+    // week): "friday" typed on next week's sheet means THAT Friday. The
+    // parser reads weekdays against today, so a date it lands inside the
+    // live week is re-landed on the same weekday of the week on the sheet.
+    // An explicit far date is outside the live week and passes untouched.
+    const vwC = twViewWk();
+    if (date && vwC > weekKeyOf()) {
+      const i = weekDates(weekKeyOf()).indexOf(date);
+      if (i >= 0) date = weekDates(vwC)[i];
+    }
+    const spec = { label: p.label || raw, date,
+                   time: p.time, durationMin: p.minutes, repeat: p.repeat, wk: vwC };
     const r = addReminder(spec);
     input.value = "";
     // UNDO, NOT CONFIRM. The reading it took is stated as a fact that has
@@ -27698,6 +28072,12 @@
   // forward, counted, or written anywhere else.
   let twRaking = false;
   let twSand = { wk: null, strokes: [] };
+  // WHERE THE PLAYED-WITH STONES REST (owner, 2026-09-02: "i want to be
+  // able to move around the rocks that are done! just like play with
+  // them"). Positions a hand chose, keyed by the stone's own identity,
+  // for THIS week only — Monday smooths the pile with the sand, by the
+  // same one reader (weekKeyOf) and the same serialize-as-absence road.
+  let twCollect = { wk: null, pos: {} };
   const twSandStrokesNow = () => (twSand && twSand.wk === weekKeyOf()
     && Array.isArray(twSand.strokes)) ? twSand.strokes : [];
   // A stroke point is [x as a fraction of the ground's width, y in the
@@ -28510,7 +28890,7 @@
     addPhase2.querySelector("#addBack").addEventListener("click", () => {
       addPhase1.style.display = ""; addPhase2.style.display = "none";
     });
-    addPhase2.querySelector("#addFallbackRaw").addEventListener("click", () => renderAddReview(true));
+    addPhase2.querySelector("#addFallbackRaw").addEventListener("click", addAsWritten);
   }
 
   async function runDistill(draft, constraints) {
@@ -28553,11 +28933,24 @@
     if (constraints.questions.length) renderAddQuestions(draft, constraints);
     else runDistill(draft, constraints);
   });
-  document.getElementById("asWrittenAdd").addEventListener("click", () => {
+  // AS WRITTEN MEANS AS WRITTEN (owner, 2026-09-02): "i entered what i want
+  // and clicked add to board as is and i think it should just add it and
+  // not preview." The review step exists to show the coach's shaping and
+  // the mirror; a goal in the person's own words has nothing to review, so
+  // it lands at once. The one page that still stands between the words and
+  // the board is a FULL board, because there the person chooses what rests,
+  // and that choice is the cap law, not a preview.
+  function addAsWritten() {
     const draft = addDraft();
     if (!draft.want) { showToast("say what you want first, messy is fine."); return; }
-    renderAddReview(true);
-  });
+    if (capCheck().full) { renderAddReview(true); return; }
+    addOut = null; addRaw = draft;
+    const g = { category: CATS[draft.category] ? draft.category : "Other", title: draft.want,
+      description: draft.notes || "", rationale: "", forming: true, horizon: null, objectives: [],
+      id: nextId++, provenance: "user", source: "user", progress: 0, status: "active" };
+    landAddedGoal(g, []);
+  }
+  document.getElementById("asWrittenAdd").addEventListener("click", addAsWritten);
 
   // The review: their goal shaped (or verbatim), the mirror where it collides
   // with the board, and — only when the board is full — the choice of what rests.
@@ -28811,21 +29204,26 @@
         if (picked.value === "new") g.status = "parked";
         else parkIntents.push(Number(picked.value));
       }
-      parkIntents.forEach(pid => {
-        const pg = goals.find(x => x.id === pid);
-        if (pg) pg.status = "parked";
-      });
-
-      goals.push(g);
-      closeAdd(); renderAll(); saveState();
-      showToast(g.status === "parked" ? "On the board, parked, sequencing is not deleting."
-                                      : "It's on the board. Yours.");
-      // The add-your-own path never met the companion. After the FIRST
-      // hand-added goal saves (no discovery run — no companion yet), the
-      // scrap appears once, picker open, and This-week opens with it
-      // arriving. Choosing later is always possible from the "?" menu.
-      if (!profileCompanion) setTimeout(openCompanionIntro, 600);
+      landAddedGoal(g, parkIntents);
     });
+  }
+  // The landing, shared by the review's confirm and the as-written door:
+  // parks applied, the goal on the board, the page closed, the save, the
+  // word. Every gate has already passed by the time this is called.
+  function landAddedGoal(g, parkIntents) {
+    parkIntents.forEach(pid => {
+      const pg = goals.find(x => x.id === pid);
+      if (pg) pg.status = "parked";
+    });
+    goals.push(g);
+    closeAdd(); renderAll(); saveState();
+    showToast(g.status === "parked" ? "On the board, parked, sequencing is not deleting."
+                                    : "It's on the board. Yours.");
+    // The add-your-own path never met the companion. After the FIRST
+    // hand-added goal saves (no discovery run — no companion yet), the
+    // scrap appears once, picker open, and This-week opens with it
+    // arriving. Choosing later is always possible from the "?" menu.
+    if (!profileCompanion) setTimeout(openCompanionIntro, 600);
   }
 
 
@@ -30391,6 +30789,11 @@
         ? { wk: twSand.wk, strokes: twSand.strokes.map(s =>
             s.map(p => [+p[0].toFixed(4), +p[1].toFixed(4)])) }
         : null,
+      // The pile's chosen resting places, the same week-or-absence rule.
+      twCollect: (twCollect && twCollect.wk === weekKeyOf()
+        && twCollect.pos && Object.keys(twCollect.pos).length)
+        ? { wk: twCollect.wk, pos: twCollect.pos }
+        : null,
     };
   }
 
@@ -30463,6 +30866,10 @@
       ? { wk: state.twSand.wk, strokes: state.twSand.strokes }
       : { wk: null, strokes: [] };
     twSandPaintDrawn();
+    // The pile's resting places, the same stale-is-absence reading.
+    twCollect = (state.twCollect && state.twCollect.wk && state.twCollect.pos)
+      ? { wk: state.twCollect.wk, pos: state.twCollect.pos }
+      : { wk: null, pos: {} };
     recentCheckins = (state.checkins || []).slice();
     deriveGates();
     visionQuote = state.profile.vision || "";
