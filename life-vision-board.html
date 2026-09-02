@@ -31019,6 +31019,7 @@
     return r;
   }
 
+  let loadTimeoutRetried = false;   // the timeout's single retry, armed once
   async function restoreState() {
     let state;
     // A device that says it is offline does not ask the account at all: the
@@ -31027,15 +31028,63 @@
       return bootOffline();
     }
     try {
-      state = await store.load();
+      // SIX SECONDS OF PATIENCE, THEN THE PHONE'S OWN COPY (2026-09-02,
+      // the 6am wall). A phone fresh off a pocket says onLine:true while
+      // its radio is still waking, and a load with no deadline held the
+      // page hostage for as long as the stall lasted. When this device
+      // keeps a mirror, the mirror boots instead — the same offline road,
+      // and the reconnect below carries the truth up or down the moment
+      // the account actually answers. A device with NO copy keeps
+      // waiting: showing nothing is still better than showing a wall a
+      // save could make real.
+      const m0 = store !== localStore ? mirrorRead() : null;
+      state = (m0 && m0.state)
+        ? await Promise.race([
+            store.load(),
+            new Promise((_, rej) => setTimeout(
+              () => rej(new Error("load_timeout: the account did not answer in time")), 6000)),
+          ])
+        : await store.load();
     } catch (err) {
       // A failed load must BLOCK: rendering an empty board here lets the very
       // next save write that emptiness over the real one on the server.
       // Unless the failure is the network itself, which is the offline road.
       console.warn("load failed:", err.message);
+      if (store !== localStore && /^load_timeout/.test(err.message)) {
+        const took = bootOffline();
+        // One quiet retry once the boot has settled: if the account was
+        // merely slow, the live board replaces the mirror's copy without
+        // anyone touching anything. ONE, armed once — a retry that times
+        // out again must not become a clock that ticks forever.
+        if (took && !loadTimeoutRetried) {
+          loadTimeoutRetried = true;
+          setTimeout(() => { reconnectBoard(); }, 4000);
+        }
+        return took;
+      }
       if (store !== localStore && looksOffline(err.message)) return bootOffline();
       showLoadFailure(err.message);
       return false;
+    }
+    loadTimeoutRetried = false;       // a load that answered re-arms the retry
+    // THE MACHINERY CAN GO MISSING TOO (2026-09-02): when the sign-in
+    // script never arrives, this boot runs local-only on a device whose
+    // board lives in an account — the local key is empty while the mirror
+    // holds everything. An empty page must not outrank the copy: the
+    // mirror renders, and is written into the local key so edits made on
+    // this crippled open at least keep locally. Nothing can reach the
+    // account from here, so nothing can write over it either.
+    if (store === localStore && !lsNamespace && !DEMO) {
+      const localBlank = !state
+        || (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded));
+      const m1 = localBlank ? mirrorRead() : null;
+      if (m1 && m1.state && applyState(m1.state)) {
+        renderAll();
+        hideLoadFailure();
+        bootHoldHide();
+        try { await localStore.save(serializeState()); } catch (e) {}
+        return true;
+      }
     }
     hideLoadFailure();
     try {
@@ -31251,6 +31300,7 @@
     }
     renderAll();
     hideLoadFailure();
+    bootHoldHide();
     offlineBoard = true;
     offlineBar();
     return true;
@@ -31293,6 +31343,7 @@
     return el;
   }
   function showLoadFailure(reason, offline) {
+    bootHoldHide();   // the failure card replaces the hold, never stacks on it
     const el = persistOverlay("loadFailOverlay");
     // Two different truths behind one card: a server that answered wrongly,
     // or a phone with no network and nothing kept yet. The second is not a
@@ -31320,6 +31371,38 @@
   function hideLoadFailure() {
     const el = document.getElementById("loadFailOverlay");
     if (el) closeBookPage(el);
+  }
+  // ---------- the boot hold ----------
+  // THE WALL MUST NEVER SPEAK FIRST (2026-09-02, owner's phone at 6am: "It
+  // doesnt recognize it's me again :/"). The page paints before the account
+  // answers, so every slow morning radio put the empty welcome wall over a
+  // real board — no error, no lie anyone told, just the one state that
+  // renders while nothing has resolved. While the front door is still
+  // asking, this quiet card holds the page instead; every road out of the
+  // boot (board rendered, account page opened, failure card shown, mirror
+  // boot) takes it down. If NOTHING answers in 12 seconds and this device
+  // keeps a copy, the copy boots — a held door is not a home.
+  let bootHoldTimer = null;
+  function bootHoldShow() {
+    const el = persistOverlay("bootHoldOverlay");
+    el.innerHTML = `<div class="persist-card">
+        <h2>opening your board</h2>
+        <p>one moment, checking in with your account.</p>
+      </div>`;
+    openBookPage(el);
+    clearTimeout(bootHoldTimer);
+    bootHoldTimer = setTimeout(() => {
+      if (!document.getElementById("bootHoldOverlay")) return;
+      bootHoldHide();
+      const m = mirrorRead();
+      if (m && m.state && !hasOnboarded && !goals.length) bootOffline();
+    }, 12000);
+  }
+  function bootHoldHide() {
+    clearTimeout(bootHoldTimer);
+    bootHoldTimer = null;
+    const el = document.getElementById("bootHoldOverlay");
+    if (el) { closeBookPage(el); setTimeout(() => el.remove(), 400); }
   }
   // Shown when a save is refused because nobody is signed in. Once per
   // dismissal, not once per keystroke \u2014 but never silent: the old behaviour
@@ -35825,6 +35908,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
+    bootHoldShow, bootHoldHide,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
     analyzeThemes, detectPatterns, prioritizeAreas, generateGoals, draftPlan, detectTensions,
     // The wheel step, so the harness can drive the real controls and check
@@ -36649,6 +36733,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // SIGNED_OUT re-arms the same wall. Demo and test pages never see it:
     // they took the local branch below, the same one they kept when the
     // cloud's keys were blank.
+    // THE HOLD GOES UP BEFORE THE QUESTION IS ASKED (2026-09-02): between
+    // this line and the first event, the page is otherwise the empty wall.
+    bootHoldShow();
     sb.auth.onAuthStateChange(async (event, session) => {
       renderAccount();
       if (event === "SIGNED_IN" || (event === "INITIAL_SESSION" && session)) {
@@ -36657,9 +36744,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
         const m = mirrorRead();
         if (m && m.uid && session && session.user && m.uid !== session.user.id) mirrorClear();
         await restoreState(); boot();
+        bootHoldHide();
         if (session && session.user && !offlineBoard) mirrorWrite(session.user.id);
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
         if (event === "SIGNED_OUT") mirrorClear();
+        bootHoldHide();
         openAuth(true);
       }
     });
