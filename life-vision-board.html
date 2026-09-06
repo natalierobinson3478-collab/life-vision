@@ -8306,6 +8306,11 @@
       background: linear-gradient(to top, var(--bg) 68%, rgba(237,229,209,0)); }
     /* AN EMPTY ROW IS NOT A BAR. The row usually holds nothing (the pills it
        was built for are seasonal, the focus proposal and little else), and
+    /* THE TITLE LEAVES THE ✕ ITS CORNER (2026-09-05, owner's phone: the
+       first journal entry's title ran under the mark). The quiz keeps its
+       ✕ at the window corner, so the first line of type on a narrow page
+       stops short of that lane rather than sharing it. */
+    #checkinOverlay .ci-h1 { padding-right: 84px; }
        sticky + the gradient painted a bare cream band drifting over whatever
        it passed — it sat across the cat's middle. The paint and the stickiness
        go; the height STAYS, because the shelf below is spaced through this row
@@ -20185,6 +20190,14 @@
     // replaced — so for any work done since that model landed there was no
     // record to find, every goal returned no rows, and THE WEEK BACK CAME UP
     // BLANK. The weekly close is the one page whose entire job is showing
+    // NO WEEK NAMED MEANS THE WEEK THE DOOR IS ABOUT (2026-09-05, seen as
+    // "Invalid Date to Invalid Date" on a sheet opened bare): the week the
+    // close is due for, else the live one. A sheet never opens on a week
+    // that does not exist.
+    if (!weekKey2 || !/^\d{4}-\d{2}-\d{2}$/.test(String(weekKey2))) {
+      const d = weekDoorState();
+      weekKey2 = (d && d.week) || weekKeyOf();
+    }
     // what you did, and it was showing nothing while the data sat in
     // `m.completions` where the rest of the app reads it.
     const wkDates = weekDates(wk);
