@@ -27084,6 +27084,18 @@
         }
         return null;
       };
+      // THE PILE IS A DROP TARGET TOO (2026-09-06, owner: "drag a incomplete
+      // pebble that week to my pile of done pebbles to indicate i did
+      // actually complete it that day im dragging it from, just didnt mark
+      // it at the time"). Its patch of sand is measured at least a hand
+      // tall, so an empty pile still catches the first stone.
+      const twOnPile = (clientX, clientY) => {
+        const col = document.getElementById("twCollectionMount");
+        if (!col || !col.isConnected) return false;
+        const r = col.getBoundingClientRect();
+        const bottom = Math.max(r.bottom, r.top + 72);
+        return clientX >= r.left && clientX <= r.right && clientY >= r.top - 6 && clientY <= bottom;
+      };
       // DRAG MOVES ONE OCCURRENCE TO ANOTHER DAY. The listeners live on the
       // DOCUMENT for the length of the gesture, and the pointer is captured:
       // an SVG path is small, the finger leaves it immediately, and
@@ -27141,6 +27153,16 @@
           twSelectMech(d.gid, d.mid);
           twHover = null;
           twPaintSelection();
+          return;
+        }
+        // DROPPED ON THE PILE: IT WAS DONE, THAT DAY. The pile is where
+        // finished stones live, so a stone carried there is finished, on
+        // the day it was carried from; a stone from the lane has no day and
+        // is done today. The write is the row's own tick, so the pile, the
+        // row and the week's record all agree.
+        if (!d.done && twOnPile(e.clientX, e.clientY)) {
+          tickOccurrence(d.gid, d.mid, d.date || null);
+          renderThisWeek();
           return;
         }
         const di = dayAt(e.clientX, e.clientY);
@@ -32017,9 +32039,18 @@
   async function saveState() {
     saveSeq++;
     logCompanionWrite();
-    // On the offline road the mirror takes the save and the reconnect
-    // carries it up; the account is not asked, so no toast can be wrong.
-    if (offlineBoard) { mirrorWrite(); offlineDirty = true; return { ok: true, offline: true }; }
+    // THE COPY FIRST, THE ACCOUNT SECOND (2026-09-06, owner: goals, moves
+    // and the book's pages vanished after closing the app). The device's
+    // copy used to be written only once the account had confirmed, so a
+    // change made just before the app closed lived nowhere when that
+    // request never finished; and a copy that did hold unsent changes was
+    // written over by the account's older answer at the next open. Now the
+    // copy takes every change at once, marked as not yet received; the mark
+    // clears when the account says ok, and a marked copy goes UP at boot.
+    mirrorWrite(undefined, { dirty: true });
+    // On the offline road the copy has the save and the reconnect carries
+    // it up; the account is not asked, so no toast can be wrong.
+    if (offlineBoard) { offlineDirty = true; return { ok: true, offline: true }; }
     const run = () => store.save(serializeState())
       .catch(err => ({ ok: false, reason: err.message }));
     const mine = (saveInFlight ?? Promise.resolve()).then(run, run);
@@ -32031,8 +32062,7 @@
       // The network went mid-session: step onto the offline road with the
       // change kept, rather than a toast that says the account refused it.
       console.warn("save failed, going offline:", r.reason);
-      offlineBoard = true; offlineDirty = true;
-      mirrorWrite();
+      offlineBoard = true; offlineDirty = true;   // the copy is already written, and marked
       offlineBar();
       return { ok: true, offline: true };
     }
@@ -32289,12 +32319,17 @@
     try { return JSON.parse(localStorage.getItem(MIRROR_KEY) || "null"); }
     catch (e) { return null; }
   }
-  function mirrorWrite(uid) {
+  function mirrorWrite(uid, opts) {
     if (store === localStore) return;   // the local store IS this device's copy
     try {
       const prev = mirrorRead();
       localStorage.setItem(MIRROR_KEY, JSON.stringify({
-        uid: uid || (prev && prev.uid) || null, at: Date.now(), state: serializeState() }));
+        uid: uid || (prev && prev.uid) || null, at: Date.now(), state: serializeState(),
+        // THE COPY SAYS WHETHER THE ACCOUNT HAS RECEIVED IT (2026-09-06).
+        // Written dirty before every save and clean once the account says
+        // ok, so a copy that holds unsent changes is known to be holding
+        // them at the next open, when it goes up rather than under.
+        dirty: !!(opts && opts.dirty) }));
     } catch (e) {}
   }
   function mirrorClear() { try { localStorage.removeItem(MIRROR_KEY); } catch (e) {} }
@@ -32341,6 +32376,16 @@
     renderAll();
     bootHoldHide();
     boot();
+    // THIS DEVICE HOLDS CHANGES THE ACCOUNT NEVER RECEIVED (2026-09-06):
+    // they go up, and no answer comes down over them. The save is the
+    // ordinary one, so the offline road and its bar are the same as ever;
+    // an account that refuses gets the persistent bar, since a toast is
+    // gone before anyone reads it.
+    if (m.dirty) {
+      const up = await saveState();
+      if (up && !up.ok && !up.offline) cloudSaveProblemBar(up.reason);
+      return true;
+    }
     const seq0 = saveSeq;
     let state;
     try {
@@ -32379,6 +32424,7 @@
     hideLoadFailure();
     bootHoldHide();
     offlineBoard = true;
+    offlineDirty = !!m.dirty;   // unsent changes on the copy go up at the reconnect
     offlineBar();
     return true;
   }
@@ -32406,6 +32452,38 @@
     return reconnecting;
   }
   window.addEventListener("online", () => { setTimeout(() => { reconnectBoard(); }, 800); });
+  // A TAB THAT COMES BACK ASKS THE ACCOUNT AGAIN (2026-09-06). A page left
+  // open on the desk holds the board as it was when it was last looked at,
+  // and the phone may have moved on since; its next save would carry the
+  // old board up over the new one, whole. So a tab that has been out of
+  // sight for a while asks first when it returns: a newer board lands
+  // underneath, the same road the boot takes, and a copy holding unsent
+  // changes pushes up instead. Nothing happens while a save is in flight,
+  // on the offline road, or when the local store is the only store.
+  let hiddenAt = null;
+  const RETURN_REFRESH_MS = 30 * 1000;
+  async function refreshOnReturn() {
+    if (store === localStore || offlineBoard || saveInFlight) return false;
+    const m = mirrorRead();
+    if (m && m.dirty) { await saveState(); return true; }
+    const seq0 = saveSeq;
+    let state;
+    try { state = await store.load(); } catch (e) { return false; }
+    if (saveSeq !== seq0 || !state) return false;
+    if (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded)) return false;
+    if (!applyState(state)) return false;
+    renderAll();
+    const twOv = document.getElementById("thisWeekOverlay");
+    if (twOv && twOv.classList.contains("open")) renderThisWeek();
+    mirrorWrite();
+    return true;
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    const away = hiddenAt ? Date.now() - hiddenAt : 0;
+    hiddenAt = null;
+    if (away >= RETURN_REFRESH_MS) refreshOnReturn();
+  });
 
   // ---------- blocking persistence screens ----------
   // Same register as the analysis failures: a paper card that says what
@@ -36984,7 +37062,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
-    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq,
+    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn,
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
