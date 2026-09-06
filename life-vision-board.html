@@ -4868,7 +4868,15 @@
     background-image:
       radial-gradient(circle at 20% 10%, rgba(255,253,246,0.7), transparent 62%),
       radial-gradient(circle at 84% 90%, rgba(186,142,88,0.12), transparent 55%);
-    backdrop-filter: none; }
+    backdrop-filter: none;
+    /* THE SCROLL STAYS IN THE GARDEN (owner, 2026-09-05: "if i scroll to
+       the bottom sometimes it freezes if i like overscroll i guess and
+       doesnt let me scroll back up"). A finger that runs past the end of a
+       nested scroller hands the rest of the gesture to the document
+       behind it, and on iOS the page then answers to nothing until the
+       finger lifts. Containing the overscroll here keeps every gesture on
+       the sand. */
+    overscroll-behavior: contain; }
   /* THE GROUND IS THE WHOLE GARDEN, NOT THE GLASS (owner, 2026-09-01:
      "if i rake something at the top i wont see it if i scroll down because
      it's still at the top. like a living area"). The sand is absolute
@@ -4956,11 +4964,37 @@
     box-shadow: 0 4px 12px rgba(69,63,82,0.14); -webkit-tap-highlight-color: transparent; }
   .tw-corner-tool svg { display: block; width: 100%; height: 100%; overflow: visible; }
   .tw-corner-tool[aria-pressed="true"] { background: rgba(124,143,158,0.28); }
-  .tw-corner-add { background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
-    padding: 4px 14px 6px; width: min(300px, calc(100vw - 32px));
-    box-shadow: 0 6px 18px rgba(69,63,82,0.16); }
+  /* THE ADD STRIP IS A TORN SCRAP (owner, 2026-09-05: "hard to see goal
+     addition element … meeting my aesthetic vision"). The same torn paper
+     the board's sheets wear, at scrap size: the fibre-and-shadow wrapper
+     outside, the torn mask inside, handwriting on it, and a drawn tick at
+     the end for a thumb that does not reach for the keyboard's return.
+     It docks above the keyboard when one is up (wireTwCorner). */
+  .tw-corner-add { width: min(360px, calc(100vw - 20px)); }
   .tw-corner-add[hidden] { display: none; }
-  .tw-corner-add .tw-add-field { margin: 0; max-width: none; }
+  .tw-corner-sheet { position: relative; background: var(--paper); padding: 16px 18px 18px;
+    -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    -webkit-mask-size: 100% 22px, 100% max(0px, 100% - 44px), 100% 22px;
+    mask-size: 100% 22px, 100% max(0px, 100% - 44px), 100% 22px;
+    -webkit-mask-position: 0 100%, 0 22px, 0 0; mask-position: 0 100%, 0 22px, 0 0;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .tw-corner-row { display: flex; align-items: center; gap: 10px; }
+  .tw-corner-row .tw-add-field { margin: 0; max-width: none; flex: 1 1 auto; }
+  .tw-corner-row .tw-add-field::after { opacity: 0.5; }
+  .tw-corner-row .tw-add-input { font-size: var(--t-read); padding: 4px 2px 8px; }
+  .tw-corner-go { flex: 0 0 auto; width: 32px; height: 32px; padding: 5px; background: none;
+    border: none; cursor: pointer; color: var(--ink-muted); line-height: 0;
+    align-self: flex-start; margin: 0 -4px 0 0;
+    -webkit-tap-highlight-color: transparent; }
+  .tw-corner-go svg { display: block; width: 100%; height: 100%; }
+  .tw-corner-go:hover { color: var(--ink); }
+  .tw-corner-go:focus-visible { outline: none /* A1 */; }
+  /* THE HOLD, WHEN IT MUST SHOW, IS A LINE ON THE SAND, NOT A PANEL. */
+  #bootHoldOverlay .persist-card { background: none; border: none; box-shadow: none;
+    text-align: center; }
+  #bootHoldOverlay .persist-card h2, #bootHoldOverlay .persist-card p {
+    font-family: var(--voice-hand); font-style: italic; font-weight: 400; }
   #twRake svg { display: block; width: 100%; height: 100%; overflow: visible; }
   /* THE COMB WEARS THE POND'S INK NOW (owner, 2026-09-02: "I prefer a
      grey-blue and blue mixture instead of the pinky terracotta color …
@@ -10339,11 +10373,17 @@
         <button id="twToolClean" class="tw-corner-tool" type="button"
           aria-label="smooth the whole sand" title="smooth the whole sand"></button>
       </div>
-      <div class="tw-corner-add" id="twCornerAdd" hidden>
-        <div class="tw-add-field">
-          <input type="text" id="twCornerInput" class="tw-add-input"
-            placeholder="call Joe tomorrow" aria-label="what is it?">
-        </div>
+      <div class="tw-corner-add torn-paper" id="twCornerAdd" hidden>
+        <div class="tw-corner-sheet"><div class="tw-corner-row">
+          <div class="tw-add-field">
+            <input type="text" id="twCornerInput" class="tw-add-input"
+              placeholder="call Joe tomorrow" aria-label="what is it?">
+          </div>
+          <button id="twCornerGo" class="tw-corner-go" type="button" aria-label="add it"
+            title="add it"><svg viewBox="0 0 24 24" aria-hidden="true"><path
+            d="M4.5 12.8 C7 14.5 8.6 16.4 9.8 18.6 C12.4 13.2 15.6 8.8 20 5.4" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div></div>
       </div>
       <div class="tw-corner-bubble">
         <button id="twRake" type="button" aria-pressed="false" aria-label="pick up the rake"></button>
@@ -28070,20 +28110,30 @@
     // of the day raising the pile, a row sinking — keeps its weather, its
     // bed and its field instead of rebuilding all three. overflow: hidden
     // on the host clips the spare course.
+    // THE HOST IS EXACTLY AS TALL AS THE PAGE, the bed inside it a course
+    // taller: measured with the host out of the way, or the host's own
+    // height would read back as the page's and the page could never
+    // shrink. A bed taller than its host once added up to 511px of empty
+    // sand to scroll into at the foot — the host's overflow: hidden clips
+    // the drawing, and its height is what the scroller believes.
+    host.style.height = "0px";
     const need = Math.max(480, ov.scrollHeight, ov.clientHeight);
     const H = Math.ceil(need / 512) * 512;
+    host.style.height = need + "px";
     if (twSandDims.W === W && twSandDims.H === H && host.firstElementChild) {
       twSandPaintDrawn();
       return;
     }
     twSandDims = { W, H };
     twBaseHF = null;                                // a new size is a new bed
-    host.style.height = H + "px";
     // The watercolour weather (washes, grain, pebbles) stays below; the BED
     // is a canvas above it — the height field's one drawing surface,
-    // transparent wherever the ground is flat.
+    // transparent wherever the ground is flat. Both are sized to the bed's
+    // own course-rounded height, never to the host.
     host.innerHTML = twSandWeatherSvg(W, H, false)
-      + `<canvas id="twSandCanvas" width="${W}" height="${H}" aria-hidden="true"></canvas>`;
+      + `<canvas id="twSandCanvas" width="${W}" height="${H}" style="height:${H}px" aria-hidden="true"></canvas>`;
+    const svg0 = host.querySelector("svg");
+    if (svg0) svg0.style.height = H + "px";
     const cv = document.getElementById("twSandCanvas");
     twCtx = cv ? cv.getContext("2d") : null;
     twSandPaintDrawn(true);
@@ -28128,6 +28178,7 @@
           if (!live) return;
           const c = document.createElement("canvas");
           c.width = W; c.height = H; c.className = "tw-weather";
+          c.style.height = H + "px";
           c.setAttribute("aria-hidden", "true");
           c.getContext("2d").drawImage(img, 0, 0, W, H);
           host.replaceChild(c, live);
@@ -28815,14 +28866,31 @@
     // second tap on the +. Enter files through the one capture road with
     // no fallback day, so the words decide, and the week on the sheet is
     // home when they do not.
+    // DOCKED ABOVE THE KEYBOARD (owner, 2026-09-05: "difficult to use with
+    // the writing pop up that comes up"). A phone keyboard shrinks the
+    // VISUAL viewport, not the layout one, so a fixed corner stays where
+    // the keyboard now is. The visual viewport says how much of the screen
+    // the keyboard took; the corner lifts by exactly that while the strip
+    // is open, and settles back when it closes.
+    const corner = document.getElementById("twCorner");
+    const vv = window.visualViewport;
+    const dock = () => {
+      if (!corner) return;
+      if (!vv || strip.hidden) { corner.style.bottom = ""; return; }
+      const gap = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      corner.style.bottom = gap ? (gap + 10) + "px" : "";
+    };
+    if (vv) { vv.addEventListener("resize", dock); vv.addEventListener("scroll", dock); }
     let outside = null;
     const close = () => {
       strip.hidden = true;
+      dock();
       if (outside) { document.removeEventListener("pointerdown", outside, true); outside = null; }
     };
     const open = () => {
       strip.hidden = false;
       input.focus();
+      dock();
       if (!outside) {
         outside = ev => {
           if (strip.contains(ev.target) || plus.contains(ev.target)) return;
@@ -28831,12 +28899,15 @@
         setTimeout(() => document.addEventListener("pointerdown", outside, true), 0);
       }
     };
+    const file = () => twCommitCapture(input, strip, null, "corner");
     plus.addEventListener("click", () => { if (strip.hidden) open(); else close(); });
     input.addEventListener("keydown", e => {
       if (e.key === "Escape") { e.stopPropagation(); close(); plus.focus(); return; }
       if (e.key !== "Enter") return;
-      twCommitCapture(input, strip, null, "corner");
+      file();
     });
+    const go = document.getElementById("twCornerGo");
+    if (go) go.addEventListener("click", () => { file(); input.focus(); });
     hand.addEventListener("click", () => twToolSet(twTool === "hand" ? "comb" : "hand"));
     clean.addEventListener("click", () => twSandClean());
   })();
@@ -31250,6 +31321,7 @@
   // save. Many call sites are fire-and-forget (every chip click in the
   // quarterly review), so the chain is what keeps writes ordered.
   let saveInFlight = null;
+  let saveSeq = 0;            // every save counts, so a boot can tell "moved on" from "waiting"
   let lastCompanionLogged;
   let companionWriteVia = null;   // set by mutation sites right before their save
   function tagCompanionWrite(via) { companionWriteVia = via; }
@@ -31268,6 +31340,7 @@
     } catch (e) {}
   }
   async function saveState() {
+    saveSeq++;
     logCompanionWrite();
     // On the offline road the mirror takes the save and the reconnect
     // carries it up; the account is not asked, so no toast can be wrong.
@@ -31573,6 +31646,54 @@
     if (el) el.remove();
   }
   // The offline road: the mirror, or the wall with the honest reason.
+  // THE COPY OPENS THE DOOR (2026-09-05, owner: "why does it even need to
+  // pull my login? why cant it be a one time loigin and then forever its
+  // just the app and no log in required??"). It IS one login; what she
+  // waited on, behind a card, was the board coming down from the account
+  // on every open. A device that keeps a copy (the mirror) renders it AT
+  // ONCE — the app opens like an app — and asks the account afterwards,
+  // quietly: a newer board comes in under the same page; a stalled or
+  // dead network changes nothing on screen (the offline bar says so); and
+  // a person who has already moved on — a save went up while the question
+  // was out — is never overwritten by an older answer. An account that
+  // holds LESS than this device (blank, or brand new) receives the copy,
+  // the first-sign-in rule as it has always stood. Returns false when this
+  // device has no copy for this account, and the old road runs instead.
+  async function bootFromMirror(uid) {
+    const m = mirrorRead();
+    if (!(m && m.state && (!m.uid || m.uid === uid))) return false;
+    if (!applyState(m.state)) return false;
+    renderAll();
+    bootHoldHide();
+    boot();
+    const seq0 = saveSeq;
+    let state;
+    try {
+      state = await store.load();
+    } catch (err) {
+      console.warn("reconcile failed, the copy stands:", err.message);
+      if (looksOffline(err.message)) { offlineBoard = true; offlineBar(); }
+      return true;
+    }
+    if (saveSeq !== seq0) { mirrorWrite(uid); return true; }   // the person moved first
+    const cloudBlank = !state
+      || (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded));
+    if (cloudBlank) {
+      const up = await store.save(serializeState());
+      if (!up.ok) cloudSaveProblemBar(up.reason);
+      mirrorWrite(uid);
+      return true;
+    }
+    if (applyState(state)) {
+      renderAll();
+      // renderAll paints the board; a This Week the landing already opened
+      // is its own page and takes the newer board itself.
+      const twOv = document.getElementById("thisWeekOverlay");
+      if (twOv && twOv.classList.contains("open")) renderThisWeek();
+    }
+    mirrorWrite(uid);
+    return true;
+  }
   function bootOffline() {
     const m = mirrorRead();
     if (!(m && m.state && applyState(m.state))) {
@@ -36189,7 +36310,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
-    bootHoldShow, bootHoldHide,
+    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq,
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
@@ -37018,17 +37139,26 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // cloud's keys were blank.
     // THE HOLD GOES UP BEFORE THE QUESTION IS ASKED (2026-09-02): between
     // this line and the first event, the page is otherwise the empty wall.
-    bootHoldShow();
+    // …BUT ONLY ON A DEVICE WITH NOTHING (2026-09-05, owner: "i hate the
+    // loading page"). A device that keeps a copy opens from it the moment
+    // the session is known (bootFromMirror); only a first-ever open waits.
+    if (!(mirrorRead() && mirrorRead().state)) bootHoldShow();
     sb.auth.onAuthStateChange(async (event, session) => {
       renderAccount();
       if (event === "SIGNED_IN" || (event === "INITIAL_SESSION" && session)) {
+        const uid = session && session.user ? session.user.id : null;
         // The mirror belongs to ONE account. A different person signing in
         // on this device must not be offered the last one's board.
         const m = mirrorRead();
-        if (m && m.uid && session && session.user && m.uid !== session.user.id) mirrorClear();
-        await restoreState(); boot();
+        if (m && m.uid && uid && m.uid !== uid) { mirrorClear(); bootHoldShow(); }
+        if (uid && await bootFromMirror(uid)) return;
+        if (!document.getElementById("bootHoldOverlay")) bootHoldShow();
+        await restoreState();
+        // The hold comes down BEFORE the landing opens a page, so the page
+        // that opens is the only thing on top of the board.
         bootHoldHide();
-        if (session && session.user && !offlineBoard) mirrorWrite(session.user.id);
+        boot();
+        if (uid && !offlineBoard) mirrorWrite(uid);
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
         if (event === "SIGNED_OUT") mirrorClear();
         bootHoldHide();
