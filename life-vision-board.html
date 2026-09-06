@@ -4936,10 +4936,19 @@
   #twCorner { position: fixed; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom));
     z-index: 160; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
   #twCorner[hidden] { display: none; }
-  .tw-corner-bubble { display: flex; align-items: center; gap: 2px;
-    background: rgba(243,230,200,0.96); border: 1px solid var(--line);
-    border-radius: 999px; padding: 3px 8px 3px 3px;
-    box-shadow: 0 6px 18px rgba(69,63,82,0.16); }
+  /* THE BUBBLE IS A WASH, NOT A PILL (owner, 2026-09-05, the eleven
+     references: "a watercolor scrap book of beautiful things"). The comb
+     and the + sit on the sand inside a bloom of sage — the quill's halo,
+     the pond's own weather — with no border, no shadow, no rounded box.
+     The wash is the --swash brush the highlight already uses, laid at a
+     tilt so it reads as a stroke of paint, not a shape. */
+  .tw-corner-bubble { position: relative; display: flex; align-items: center; gap: 2px;
+    padding: 6px 10px 6px 6px; }
+  .tw-corner-bubble::before { content: ""; position: absolute; inset: -6px -10px -8px -12px;
+    z-index: -1; background: rgb(139,152,138); opacity: 0.30; transform: rotate(-4deg);
+    -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   #twRake { position: relative; width: 46px; height: 46px; flex: 0 0 auto;
     background: none; border: none; padding: 2px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
@@ -4959,11 +4968,17 @@
   #twCorner.tw-corner-record #twRake { display: none; }
   .tw-corner-tools { display: flex; flex-direction: column; gap: 6px; align-items: center; }
   .tw-corner-tools[hidden] { display: none; }
-  .tw-corner-tool { width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
-    background: rgba(243,230,200,0.96); border: 1px solid var(--line); padding: 5px;
-    box-shadow: 0 4px 12px rgba(69,63,82,0.14); -webkit-tap-highlight-color: transparent; }
+  /* The two tools, the same way: a drawn thing on its own small wash. The
+     held one deepens its wash, the way a second pass of paint does. */
+  .tw-corner-tool { position: relative; width: 42px; height: 42px; cursor: pointer;
+    background: none; border: none; padding: 6px; -webkit-tap-highlight-color: transparent; }
+  .tw-corner-tool::before { content: ""; position: absolute; inset: -3px -6px -5px -6px;
+    z-index: -1; background: rgb(139,152,138); opacity: 0.26; transform: rotate(6deg);
+    -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   .tw-corner-tool svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .tw-corner-tool[aria-pressed="true"] { background: rgba(124,143,158,0.28); }
+  .tw-corner-tool[aria-pressed="true"]::before { background: rgb(124,143,158); opacity: 0.42; }
   /* THE ADD STRIP IS A TORN SCRAP (owner, 2026-09-05: "hard to see goal
      addition element … meeting my aesthetic vision"). The same torn paper
      the board's sheets wear, at scrap size: the fibre-and-shadow wrapper
@@ -5017,12 +5032,21 @@
   #twRake:focus-visible { outline: none /* A1: the drawn ring */; }
   /* The undo breath: a small floating pill in the bottom corner, the
      board's own floating-pill idiom, present for a few seconds and gone. */
-  #twUndoPill { position: fixed; left: 12px; bottom: 16px; z-index: 200;
+  /* THE UNDO BREATH IS A TORN SCRAP (owner, 2026-09-05, the references):
+     a few words in handwriting on a torn bit of the board's paper, left
+     on the sand for a moment — not a pill with a shadow. Same torn masks
+     as every sheet, at scrap size. */
+  #twUndoPill { position: fixed; left: 10px; bottom: 12px; z-index: 200;
     display: none; align-items: baseline; gap: 10px;
-    background: rgba(243,230,200,0.97); border: 1px solid var(--line);
-    border-radius: 12px; padding: 8px 14px;
-    font-family: var(--voice-hand); font-size: var(--t-label); color: var(--ink);
-    box-shadow: 0 4px 14px rgba(51,67,76,0.18); }
+    background: var(--paper); border: none; border-radius: 0;
+    padding: 16px 18px 17px;
+    font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label); color: var(--ink);
+    -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    -webkit-mask-size: 100% 18px, 100% max(0px, 100% - 36px), 100% 18px;
+    mask-size: 100% 18px, 100% max(0px, 100% - 36px), 100% 18px;
+    -webkit-mask-position: 0 100%, 0 18px, 0 0; mask-position: 0 100%, 0 18px, 0 0;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   #twUndoPill.on { display: flex; }
   #twUndoPill button { background: none; border: none; padding: 0; cursor: pointer;
     font-family: inherit; font-size: inherit; font-weight: 600; color: var(--ink);
