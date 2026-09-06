@@ -4889,6 +4889,9 @@
      transparent wherever the ground is flat. */
   #twSandCanvas { position: absolute; inset: 0; width: 100%; height: 100%;
     pointer-events: none; }
+  /* The baked weather sits where the live svg stood, a photograph of it. */
+  #twSandGround canvas.tw-weather { position: absolute; inset: 0; width: 100%;
+    height: 100%; pointer-events: none; }
   /* CALMER CLOUDS (owner, 2026-09-01: "brighter in places, so i cant even
      read my to do list which is the point of the page"). The washes keep
      the fluff and lose the glare: type beats weather. */
@@ -4914,12 +4917,50 @@
      screen, so it leans on the right bezel at thumb height, a 48px target.
      Held, its ink firms; drawing, it travels under the hand and comes back
      to the frame on the lift, the way the tray's does. */
-  #twRake { position: fixed; right: 3px; top: 57%; z-index: 155; width: 54px; height: 54px;
+  /* THE CORNER (owner, 2026-09-05: "have it always be in the bottom right
+     of the screen in a bubble that stays there even while i move up and
+     down through the tasks. and then also that provides an area to put
+     the add a goal function there"). One floating pill, fixed above the
+     rake's veil like the ✕, holding the comb and the +. The tools the
+     rake needs (the hand, the clean slate) stack above it only while the
+     rake is held; the add strip slides out above it only while asked.
+     The undo pill lives bottom LEFT, so the two never meet. */
+  #twCorner { position: fixed; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index: 160; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  #twCorner[hidden] { display: none; }
+  .tw-corner-bubble { display: flex; align-items: center; gap: 2px;
+    background: rgba(243,230,200,0.96); border: 1px solid var(--line);
+    border-radius: 999px; padding: 3px 8px 3px 3px;
+    box-shadow: 0 6px 18px rgba(69,63,82,0.16); }
+  #twRake { position: relative; width: 46px; height: 46px; flex: 0 0 auto;
     background: none; border: none; padding: 2px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     /* Rotation pivots at the TEETH TIPS (their height in the comb's
        viewBox), so the travelling comb turns around the line it cuts. */
     transform-origin: 50% 88%; }
+  /* The + is DRAWN, not typed (the page's ladder holds five sizes and a
+     control is not a sixth): two brushed strokes in the ink, sized as a
+     thumb target. */
+  .tw-corner-plus { background: none; border: none; cursor: pointer; padding: 6px;
+    width: 38px; height: 38px; color: var(--ink-muted); line-height: 0;
+    -webkit-tap-highlight-color: transparent; }
+  .tw-corner-plus svg { display: block; width: 100%; height: 100%; }
+  .tw-corner-plus:hover { color: var(--ink); }
+  .tw-corner-plus:focus-visible, .tw-corner-tool:focus-visible { outline: none /* A1 */; }
+  #thisWeekOverlay.raking .tw-corner-plus, #twCorner.tw-corner-record .tw-corner-plus,
+  #twCorner.tw-corner-record #twRake { display: none; }
+  .tw-corner-tools { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .tw-corner-tools[hidden] { display: none; }
+  .tw-corner-tool { width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    background: rgba(243,230,200,0.96); border: 1px solid var(--line); padding: 5px;
+    box-shadow: 0 4px 12px rgba(69,63,82,0.14); -webkit-tap-highlight-color: transparent; }
+  .tw-corner-tool svg { display: block; width: 100%; height: 100%; overflow: visible; }
+  .tw-corner-tool[aria-pressed="true"] { background: rgba(124,143,158,0.28); }
+  .tw-corner-add { background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+    padding: 4px 14px 6px; width: min(300px, calc(100vw - 32px));
+    box-shadow: 0 6px 18px rgba(69,63,82,0.16); }
+  .tw-corner-add[hidden] { display: none; }
+  .tw-corner-add .tw-add-field { margin: 0; max-width: none; }
   #twRake svg { display: block; width: 100%; height: 100%; overflow: visible; }
   /* THE COMB WEARS THE POND'S INK NOW (owner, 2026-09-02: "I prefer a
      grey-blue and blue mixture instead of the pinky terracotta color …
@@ -6920,7 +6961,10 @@
   .tw-stone.hit { fill: transparent; stroke: none; pointer-events: all; }
   /* PICKED UP: the pebble you are carrying darkens a little so the hand can
      see which one it has. No shadow and no scale — it is a stone on paper. */
-  .tw-stone.lifted { opacity: 1; filter: saturate(1.25); }
+  /* NO FILTER ON A MOVING STONE (2026-09-05): saturate() on the element
+     being translated every frame made iOS re-rasterize it per move, which
+     is the drag "feeling off". Lifted is full ink and nothing else. */
+  .tw-stone.lifted { opacity: 1; }
   /* FOCUS: the chosen commitment's pebbles speak up and the rest are LEFT
      ALONE (overturned 2026-09-01 with the sheet's fade — the owner wants
      the highlight without the grey-out). .quiet stays on the others as
@@ -7033,11 +7077,17 @@
      with the marks centred in it. */
   /* THE ROCK COLLECTION: finished stones' second home, centred in the
      open sand above the companion; the line beneath names a tapped one. */
-  /* touch-action none, the whole patch: the pile is 2D play, so a drag
-     goes any direction — and iOS ignores the property on svg children, so
-     it lives on the HTML mount (the strip's own lesson, one rule up).
-     The patch is a hand tall; the page scrolls from everywhere else. */
-  .tw-collection { margin-top: calc(var(--lead) * 0.35); touch-action: none; }
+  /* THE HANDLES CARRY THE TOUCH RULE (2026-09-05). The whole patch wore
+     touch-action: none for a day, and a scroll that began on the pile went
+     nowhere — one of the "glitchy" feelings. Now each stone has an HTML
+     handle over it (where iOS honours touch-action) and the sand between
+     stones scrolls like the rest of the page. */
+  .tw-collection { margin-top: calc(var(--lead) * 0.35); position: relative; }
+  .tw-col-handle { position: absolute; transform: translate(-50%, -50%);
+    background: none; border: none; padding: 0; border-radius: 50%;
+    touch-action: none; cursor: grab; -webkit-tap-highlight-color: transparent; }
+  .tw-col-handle:focus-visible { outline: none /* A1: the drawn ring */; }
+  .tw-collection.dragging .tw-col-handle { cursor: grabbing; }
   .tw-collection svg { display: block; margin: 0 auto; }
   .tw-col-line { text-align: center; font-family: var(--voice-hand); font-style: italic;
     font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0; }
@@ -10282,7 +10332,27 @@
          and the rake (155): leaving the page stays possible and sets the
          rake down on the way out; everything else waits. -->
     <div id="twRakeVeil" aria-hidden="true"></div>
-    <button id="twRake" type="button" aria-pressed="false" aria-label="pick up the rake"></button>
+    <div id="twCorner">
+      <div class="tw-corner-tools" id="twCornerTools" hidden>
+        <button id="twToolHand" class="tw-corner-tool" type="button" aria-pressed="false"
+          aria-label="the hand, rub to smooth the sand" title="the hand, rub to smooth"></button>
+        <button id="twToolClean" class="tw-corner-tool" type="button"
+          aria-label="smooth the whole sand" title="smooth the whole sand"></button>
+      </div>
+      <div class="tw-corner-add" id="twCornerAdd" hidden>
+        <div class="tw-add-field">
+          <input type="text" id="twCornerInput" class="tw-add-input"
+            placeholder="call Joe tomorrow" aria-label="what is it?">
+        </div>
+      </div>
+      <div class="tw-corner-bubble">
+        <button id="twRake" type="button" aria-pressed="false" aria-label="pick up the rake"></button>
+        <button id="twCornerPlus" class="tw-corner-plus" type="button"
+          aria-label="add something" title="add something"><svg viewBox="0 0 24 24" aria-hidden="true"
+          ><path d="M12 4.6 C12.2 9 12 14 12 19.4 M4.8 12 C9 11.7 14.5 12.2 19.2 12" fill="none"
+          stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
     <!-- THE UNDO BREATH (owner, 2026-09-01: "for a brief moment in the
          bottom corner have an 'undo' but then go away after a few
          seconds. like tinder basically"). One pill, one action, gone in
@@ -26482,10 +26552,8 @@
             // 2026-08-27: "it says it added to tomorrow ... but i didnt
             // really see it." The gesture's answer belongs at the gesture,
             // which is the same rule the strip's exit already follows.
-            const capNote = where => (twCapture && twCapture.where === where)
-              ? `<p class="tw-capture-note" data-type-area="thisweek/capture"
-                >${escHtml(twCapture.note)} <button type="button" class="brushed-link"
-                id="twCaptureUndo">undo</button></p>` : ``;
+            // THE CAPTURE NOTE LEFT WITH THE SECTION PLUSES (2026-09-05):
+            // adding lives in the corner now, and its receipt is the pill.
             return `<div class="tw-sections">
               ${catchup}
               <!-- THE WEEK IS DAY-SHAPED: today · tomorrow · the rest of the
@@ -26502,15 +26570,13 @@
                      word — it belongs to that section, and under it it read
                      as a row of its own. One tap opens a field, Enter files a
                      personal reminder. No modal, no required fields. -->
+                <!-- THE + LEFT THE HEADINGS (owner, 2026-09-05: "that
+                     provides an area to put the add a goal function there.
+                     instead of on the today, tomorrow ... etc areas. to
+                     streamline"). Adding is the corner's, one field for the
+                     whole page; a typed day word decides the day. -->
                 <div class="tw-sec-head">
                   <span class="tw-caps tw-sec-label">today</span>
-                  <button class="tw-add" type="button" id="twAddToday"
-                    aria-label="add something for today" title="add something for today">+</button>
-                </div>
-                <div class="tw-add-field" id="twAddField" hidden>
-                  <input type="text" id="twAddInput" class="tw-add-input"
-                    placeholder="call Joe tomorrow" aria-label="what is it?">
-                  ${capNote("today")}
                 </div>
                 ${todayLive.length ? paint(todayLive) : ``}
                 ${remTodayLive.map(r => twTickRow(null, { m: r.m, _noHold: true })).join("")}
@@ -26519,13 +26585,6 @@
                 data-type-area="thisweek/section">
                 <div class="tw-sec-head">
                   <span class="tw-caps tw-sec-label">tomorrow</span>
-                  ${twIsNow() ? `<button class="tw-add" type="button" id="twAddTomorrow"
-                    aria-label="add something for tomorrow" title="add something for tomorrow">+</button>` : ``}
-                </div>
-                <div class="tw-add-field" id="twAddTomorrowField" hidden>
-                  <input type="text" id="twAddTomorrowInput" class="tw-add-input"
-                    placeholder="call Joe tomorrow" aria-label="what is it?">
-                  ${capNote("tomorrow")}
                 </div>
                 ${tomorrowLive.length ? paint(tomorrowLive) : ``}
                 ${remTomorrowLive.map(r => twTickRow(null, { m: r.m, _noHold: true })).join("")}
@@ -26536,14 +26595,6 @@
                        today to be the rest OF, so the one list says what it
                        is — the week. -->
                   <span class="tw-caps tw-sec-label">${twIsNow() ? "the rest of the week" : "the week"}</span>
-                  ${twIsNow() || twIsFuture() ? `<button class="tw-add" type="button" id="twAddWeek"
-                    aria-label="add something for the rest of the week"
-                    title="add something for the rest of the week">+</button>` : ``}
-                </div>
-                <div class="tw-add-field" id="twAddWeekField" hidden>
-                  <input type="text" id="twAddWeekInput" class="tw-add-input"
-                    placeholder="call Joe tomorrow" aria-label="what is it?">
-                  ${capNote("week")}
                 </div>
                 ${weekLive.length ? paint(weekLive) : ``}
                 ${remWeekLive.map(r => twTickRow(null, { m: r.m, _noHold: true })).join("")}
@@ -26699,6 +26750,16 @@
       if (twRaking && !twIsNow()) twRakeToggle(false);
       const rakeBtn = document.getElementById("twRake");
       if (rakeBtn) rakeBtn.style.display = twIsNow() ? "" : "none";
+      // THE CORNER KNOWS WHICH WEEK IT STANDS ON: a past week is a record
+      // (nothing to add, nothing to rake, so no bubble at all); a future
+      // week is plannable, so the + stays and the comb rests.
+      const corner = document.getElementById("twCorner");
+      if (corner) {
+        corner.hidden = twIsPast();
+        corner.classList.toggle("tw-corner-record", twIsPast());
+        const addStrip = document.getElementById("twCornerAdd");
+        if (addStrip && twIsPast()) addStrip.hidden = true;
+      }
       twSandGroundPaint();
       // ---- THE STRIP IS THE SCHEDULE, so it takes the schedule's gestures.
       // TAP focuses one commitment. DRAG moves ONE occurrence to another
@@ -26943,41 +27004,8 @@
       // rehoused — the strip's pebbles still drag, but only from a day they
       // are already on.
     }
-    // THE + BESIDE TOMORROW. Same field, same Enter, and its default is its
-    // own heading: under a section that says tomorrow, nobody should have to
-    // type "tomorrow". A typed word still OVERRIDES — parseCapture reads the
-    // date out of the words first and the section's day is only the
-    // fallback — so "call mom friday" filed from here lands on Friday.
-    const addTomBtn = twRO ? null : mount.querySelector("#twAddTomorrow");
-    const addTomWrap = mount.querySelector("#twAddTomorrowField");
-    const addTomInput = mount.querySelector("#twAddTomorrowInput");
-    if (addTomBtn && addTomWrap && addTomInput) {
-      addTomBtn.addEventListener("click", () => {
-        addTomWrap.hidden = !addTomWrap.hidden;
-        if (!addTomWrap.hidden) addTomInput.focus();
-      });
-      addTomInput.addEventListener("keydown", e => {
-        if (e.key === "Escape") { e.stopPropagation(); addTomWrap.hidden = true; addTomBtn.focus(); return; }
-        if (e.key !== "Enter") return;
-        const d = dayAnchor(); d.setDate(d.getDate() + 1);
-        twCommitCapture(addTomInput, addTomWrap, localDateKey(d), "tomorrow");
-      });
-    }
-    const addWeekBtn = twRO && !twPlan ? null : mount.querySelector("#twAddWeek");
-    const addWeekWrap = mount.querySelector("#twAddWeekField");
-    const addWeekInput = mount.querySelector("#twAddWeekInput");
-    if (addWeekBtn && addWeekWrap && addWeekInput) {
-      addWeekBtn.addEventListener("click", () => {
-        addWeekWrap.hidden = !addWeekWrap.hidden;
-        if (!addWeekWrap.hidden) addWeekInput.focus();
-      });
-      addWeekInput.addEventListener("keydown", e => {
-        if (e.key === "Escape") { e.stopPropagation(); addWeekWrap.hidden = true; addWeekBtn.focus(); return; }
-        if (e.key !== "Enter") return;
-        // No date parsed: it rides the week rather than landing on a day.
-        twCommitCapture(addWeekInput, addWeekWrap, null, "week");
-      });
-    }
+    // THE THREE SECTION PLUSES ARE GONE (2026-09-05): one field, in the
+    // corner, files for the whole page — see wireTwCorner.
     // THE ROSE LEFT THIS PAGE (2026-09-01) — its build, its snap and its
     // subtitle guard went with its mount. See the ruling at the markup.
 
@@ -27082,22 +27110,6 @@
     if (mount.querySelector(".tw-today-empty") && twRestfulSaidFor !== todayKey()) {
       twRestfulSaidFor = todayKey();
       setTimeout(() => showScrap("have a restful day"), 450);
-    }
-    // THE + BESIDE TODAY. One tap opens a field, Enter files a personal
-    // reminder due today, Escape closes it. No modal, no required fields.
-    const addBtn = twRO ? null : mount.querySelector("#twAddToday");
-    const addWrap = mount.querySelector("#twAddField");
-    const addInput = mount.querySelector("#twAddInput");
-    if (addBtn && addWrap && addInput) {
-      addBtn.addEventListener("click", () => {
-        addWrap.hidden = !addWrap.hidden;
-        if (!addWrap.hidden) addInput.focus();
-      });
-      addInput.addEventListener("keydown", e => {
-        if (e.key === "Escape") { e.stopPropagation(); addWrap.hidden = true; addBtn.focus(); return; }
-        if (e.key !== "Enter") return;
-        twCommitCapture(addInput, addWrap, todayKey(), "today");
-      });
     }
     // ---- HOURS: A STEPPER, IN PLACE ----
     if (!twRO) {
@@ -27270,7 +27282,34 @@
         // same recipe as the strip's own drag (document listeners, a
         // wobble gate, cancel restores), a tap still just asks. Where it
         // is dropped is remembered for the week and smooths with it.
+        // THE HANDLE IS HTML AND THE DROP IS IN PLACE (2026-09-05, "it
+        // doesnt really run smooth on my phone"). The drawn paths are the
+        // picture; what a finger holds is a button laid over each stone,
+        // where iOS honours touch-action, so the sand between stones
+        // scrolls and a stone drags any direction. Letting go moves the
+        // paths and the handle to where the finger left them and writes
+        // the resting place — nothing else on the page is rebuilt, which
+        // is what took the snap out of the release.
         const colLine = mount.querySelector("#twColLine");
+        colMount.querySelectorAll(".tw-stone[tabindex]").forEach(p => p.removeAttribute("tabindex"));
+        const baked = {};
+        Object.keys(laid).forEach(k => { baked[k] = { x: laid[k].x, y: laid[k].y }; });
+        const keyOfEl = x => (x.dataset.goal === "null" || x.dataset.goal === "" ? "" : x.dataset.goal)
+          + "|" + x.dataset.mech + ":" + x.dataset.slot;
+        const stoneEls = key => [].slice.call(colMount.querySelectorAll(".tw-stone[data-mech]"))
+          .filter(x => keyOfEl(x) === key);
+        colMount.insertAdjacentHTML("beforeend", doneStones.map(it => {
+          const key = keyOf(it), at = laid[key], r = twStoneR(it.mins);
+          return `<button type="button" class="tw-col-handle" data-key="${escHtml(key)}"
+            data-goal="${it.gid}" data-mech="${escHtml(it.mid)}" data-slot="${it.slot}"
+            data-date="${it.date || ""}" aria-label="a finished stone, tap to see whose, drag to move"
+            style="left:${at.x.toFixed(1)}px; top:${at.y.toFixed(1)}px; width:${
+              (TW_STONE_R * 2 + 14).toFixed(0)}px; height:${(r * 2 + 12).toFixed(0)}px"></button>`;
+        }).join(""));
+        const setTx = (t, x, y) => {
+          if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01) t.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+          else t.removeAttribute("transform");
+        };
         let cdrag = null;
         const cUnhook = () => {
           document.removeEventListener("pointermove", cMove, true);
@@ -27281,65 +27320,74 @@
           if (!cdrag) return;
           const gate = e2.pointerType === "touch" ? 6 : 4;
           const dx = e2.clientX - cdrag.x, dy = e2.clientY - cdrag.y;
-          if (!cdrag.moved && (Math.abs(dx) > gate || Math.abs(dy) > gate)) cdrag.moved = true;
-          if (cdrag.moved)
-            cdrag.twins.forEach(t => t.setAttribute("transform", `translate(${dx} ${dy})`));
+          if (!cdrag.moved && (Math.abs(dx) > gate || Math.abs(dy) > gate)) {
+            cdrag.moved = true;
+            colMount.classList.add("dragging");
+          }
+          if (cdrag.moved) {
+            cdrag.twins.forEach(t => setTx(t, cdrag.off.x + dx, cdrag.off.y + dy));
+            cdrag.h.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+          }
         };
         const cCancel = () => {
           cUnhook();
           if (!cdrag) return;
           const d = cdrag; cdrag = null;
-          d.twins.forEach(t => t.removeAttribute("transform"));
+          colMount.classList.remove("dragging");
+          d.twins.forEach(t => setTx(t, d.off.x, d.off.y));
+          d.h.style.transform = "";
         };
         const cUp = e2 => {
           cUnhook();
           if (!cdrag) return;
           const d = cdrag; cdrag = null;
-          d.twins.forEach(t => t.removeAttribute("transform"));
-          if (!d.moved) { d.pick(); return; }
+          colMount.classList.remove("dragging");
+          d.h.style.transform = "";
+          if (!d.moved) { d.twins.forEach(t => setTx(t, d.off.x, d.off.y)); d.pick(); return; }
           const nx = Math.max(10, Math.min(CW - 10, d.ox + (e2.clientX - d.x)));
           const ny = Math.max(10, Math.min(CH - 8, d.oy + (e2.clientY - d.y)));
+          d.twins.forEach(t => setTx(t, nx - d.base.x, ny - d.base.y));
+          d.h.style.left = nx.toFixed(1) + "px";
+          d.h.style.top = ny.toFixed(1) + "px";
+          laid[d.key] = { x: nx, y: ny };
           twCollect.pos[d.key] = [Math.round(nx), Math.round(ny)];
           saveState();
-          renderThisWeek();
         };
-        colMount.querySelectorAll(".tw-stone[data-mech]").forEach(el => {
+        colMount.querySelectorAll(".tw-col-handle").forEach(h => {
+          const key = h.dataset.key;
           const pick = () => {
-            const same = twHeld && twHeld.mid === el.dataset.mech
-              && twGoalKey(twHeld.gid) === twGoalKey(el.dataset.goal);
-            twSelectMech(el.dataset.goal, el.dataset.mech);
+            const same = twHeld && twHeld.mid === h.dataset.mech
+              && twGoalKey(twHeld.gid) === twGoalKey(h.dataset.goal);
+            twSelectMech(h.dataset.goal, h.dataset.mech);
             twHover = null;
             twPaintSelection();
             if (!colLine) return;
             if (same) { colLine.textContent = ""; return; }
-            const g3 = goals.find(x => x.id === Number(el.dataset.goal));
-            const m3 = g3 ? (g3.mechanisms || []).find(x => x.id === el.dataset.mech)
-                          : reminderList().find(x => x.id === el.dataset.mech);
-            const dayWord = el.dataset.date
-              ? new Date(el.dataset.date + "T12:00:00")
+            const g3 = goals.find(x => x.id === Number(h.dataset.goal));
+            const m3 = g3 ? (g3.mechanisms || []).find(x => x.id === h.dataset.mech)
+                          : reminderList().find(x => x.id === h.dataset.mech);
+            const dayWord = h.dataset.date
+              ? new Date(h.dataset.date + "T12:00:00")
                   .toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
               : "";
             colLine.textContent = m3
               ? appVoice(m3.weekLabel ?? m3.label, wroteIt(m3)) + (dayWord ? ", done " + dayWord : ", done")
               : "";
           };
-          el.addEventListener("pointerdown", e3 => {
+          h.addEventListener("pointerdown", e3 => {
             if (e3.button != null && e3.button !== 0) return;
             e3.preventDefault();
-            const key = (el.dataset.goal === "null" || el.dataset.goal === "" ? "" : el.dataset.goal)
-              + "|" + el.dataset.mech + ":" + el.dataset.slot;
-            const at = laid[key] || { x: CW / 2, y: CH - 20 };
-            const twins = [].slice.call(colMount.querySelectorAll(
-              `.tw-stone[data-mech="${el.dataset.mech}"][data-slot="${el.dataset.slot}"]`))
-              .filter(x => x.dataset.goal === el.dataset.goal);
-            cdrag = { key, twins, pick, ox: at.x, oy: at.y,
+            const pos = laid[key] || { x: CW / 2, y: CH - 20 };
+            const base = baked[key] || pos;
+            cdrag = { key, h, twins: stoneEls(key), pick, ox: pos.x, oy: pos.y, base,
+                      off: { x: pos.x - base.x, y: pos.y - base.y },
                       x: e3.clientX, y: e3.clientY, moved: false };
-            try { el.setPointerCapture(e3.pointerId); } catch (err) {}
+            try { h.setPointerCapture(e3.pointerId); } catch (err) {}
             document.addEventListener("pointermove", cMove, true);
             document.addEventListener("pointerup", cUp, true);
             document.addEventListener("pointercancel", cCancel, true);
           });
-          el.addEventListener("keydown", e3 => {
+          h.addEventListener("keydown", e3 => {
             if (e3.key !== "Enter" && e3.key !== " ") return;
             e3.preventDefault(); pick();
           });
@@ -27442,12 +27490,8 @@
     // are reported as gaps rather than quietly rehoused, because choosing
     // where they go is not a decision this session was asked to make.
 
-    const undoBtn = mount.querySelector("#twCaptureUndo");
-    if (undoBtn) undoBtn.addEventListener("click", () => {
-      if (twCapture) removeReminder(twCapture.id);
-      twCapture = null;
-      renderThisWeek();
-    });
+    // The capture note's own undo left with the section pluses (2026-09-05):
+    // the corner files, and the pill carries the way back.
     const catchupBtn = mount.querySelector("#twCatchup");
     if (catchupBtn) catchupBtn.addEventListener("click", () => {
       const cu = quarterCatchUp();
@@ -27944,8 +27988,16 @@
     // typed is asking them to type it twice.
     twCapture = r ? { id: r.id, note: captureNote(spec), where } : null;
     renderThisWeek();
+    // FROM THE CORNER, THE RECEIPT IS THE PILL (2026-09-05): the sections
+    // no longer carry a + or a note, so what was read is said where every
+    // other act's way back is said, bottom left, for a few seconds.
+    if (where === "corner") twCornerReceipt();
     const again = document.getElementById(input.id);
-    if (again) { again.closest(".tw-add-field").hidden = false; again.focus(); }
+    if (again) {
+      const fld = again.closest(".tw-add-field");
+      if (fld) fld.hidden = false;
+      again.focus();
+    }
     // THE MODEL IS THE FALLBACK, NOT THE PATH. It runs only when the regexes
     // read no date at all out of something that plainly carries one, it never
     // blocks the add, and a failure is silence: the item is already filed on
@@ -27964,6 +28016,7 @@
       saveState();
       twCapture = { id: live.id, note: captureNote({ date: when, durationMin: live.durationMin }), where };
       renderThisWeek();
+      if (where === "corner") twCornerReceipt();
     } catch (e) { /* silence: the item is already filed */ }
   }
 
@@ -28012,24 +28065,78 @@
     const ov = document.getElementById("thisWeekOverlay");
     if (!host || !ov) return;
     const W = Math.max(320, ov.clientWidth || window.innerWidth);
-    const H = Math.max(480, ov.scrollHeight, ov.clientHeight);
+    // CUT IN COURSES (2026-09-05): the ground's height is rounded up to
+    // the next 512px, so a page that grows a few pixels — the first tick
+    // of the day raising the pile, a row sinking — keeps its weather, its
+    // bed and its field instead of rebuilding all three. overflow: hidden
+    // on the host clips the spare course.
+    const need = Math.max(480, ov.scrollHeight, ov.clientHeight);
+    const H = Math.ceil(need / 512) * 512;
     if (twSandDims.W === W && twSandDims.H === H && host.firstElementChild) {
       twSandPaintDrawn();
       return;
     }
     twSandDims = { W, H };
+    twBaseHF = null;                                // a new size is a new bed
     host.style.height = H + "px";
-    // The watercolour weather (washes, grain, pebbles) stays SVG below;
-    // the BED is a canvas above it — the height field's one drawing
-    // surface, transparent wherever the ground is flat.
-    host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    // The watercolour weather (washes, grain, pebbles) stays below; the BED
+    // is a canvas above it — the height field's one drawing surface,
+    // transparent wherever the ground is flat.
+    host.innerHTML = twSandWeatherSvg(W, H, false)
+      + `<canvas id="twSandCanvas" width="${W}" height="${H}" aria-hidden="true"></canvas>`;
+    const cv = document.getElementById("twSandCanvas");
+    twCtx = cv ? cv.getContext("2d") : null;
+    twSandPaintDrawn(true);
+    twSandBakeWeather(host, W, H);
+  }
+  // THE WEATHER, AS MARKUP. Standalone = a whole SVG document with the two
+  // filters and its colours inlined, fit to load as an image; otherwise the
+  // page's own defs and stylesheet do the work.
+  function twSandWeatherSvg(W, H, standalone) {
+    const defs = standalone ? (() => {
+      const f = id => { const el = document.getElementById(id); return el ? el.outerHTML : ""; };
+      const sand = getComputedStyle(document.documentElement).getPropertyValue("--qr-sand").trim() || "214, 196, 160";
+      return `<defs>${f("wash")}${f("granulate")}</defs>
+      <style>.tw-wash-light{fill:rgba(255,253,244,0.3)}.tw-wash-shade{fill:rgba(196,150,94,0.08);mix-blend-mode:multiply}
+        .zg-grain{fill:rgb(${sand});opacity:0.07;mix-blend-mode:multiply}.tw-sand-fleck ellipse{fill:rgba(94,72,44,0.28)}</style>`;
+    })() : "";
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"
+      preserveAspectRatio="none" aria-hidden="true">${defs}
       <g class="tw-sand-wash" filter="url(#wash)">${twSandWashes(W, H)}</g>
       <g class="zg-grain" filter="url(#granulate)"><rect x="0" y="0" width="${W}" height="${H}"/></g>
       <g class="tw-sand-fleck">${twSandFlecks(W, H)}</g>
-    </svg><canvas id="twSandCanvas" width="${W}" height="${H}" aria-hidden="true"></canvas>`;
-    const cv = document.getElementById("twSandCanvas");
-    twCtx = cv ? cv.getContext("2d") : null;
-    twSandPaintDrawn();
+    </svg>`;
+  }
+  // THE WEATHER IS BAKED (2026-09-05, "it doesnt really run smooth on my
+  // phone" — worst while scrolling). The washes and grain ran through live
+  // SVG filters (turbulence, displacement, blur) over shapes as tall as
+  // the page, INSIDE the scrolling content, and iOS re-rasterizes filtered
+  // SVG under a moving finger. So the same drawing is rendered once, as an
+  // image, onto a plain canvas that scrolls like a photograph. Asynchronous
+  // and optional: until it decodes the live SVG stands, and if it never
+  // decodes the live SVG stays.
+  function twSandBakeWeather(host, W, H) {
+    let url = null;
+    try {
+      const blob = new Blob([twSandWeatherSvg(W, H, true)], { type: "image/svg+xml;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          if (twSandDims.W !== W || twSandDims.H !== H) return;    // the page moved on
+          const live = host.querySelector("svg");
+          if (!live) return;
+          const c = document.createElement("canvas");
+          c.width = W; c.height = H; c.className = "tw-weather";
+          c.setAttribute("aria-hidden", "true");
+          c.getContext("2d").drawImage(img, 0, 0, W, H);
+          host.replaceChild(c, live);
+        } catch (e) { /* the live svg stays */ }
+        finally { if (url) URL.revokeObjectURL(url); }
+      };
+      img.onerror = () => { if (url) URL.revokeObjectURL(url); };
+      img.src = url;
+    } catch (e) { if (url) URL.revokeObjectURL(url); }
   }
   // The weather: pooled watercolour clouds and the small dark pebbles of
   // the owner's references. WEATHER, not bed — the height field cannot
@@ -28104,6 +28211,19 @@
   // one place or dragged back and forth cannot pile the same groove
   // twice.
   let twHF = null, twCtx = null;
+  // THE SAND IS PAINTED ONCE (2026-09-05, owner: "it doesnt really run
+  // smooth on my phone. like its a little jump"). Every re-render used to
+  // re-noise the whole page-tall bed, restamp every stroke and re-shade
+  // every pixel — 70 to 90ms on a desktop with NO strokes, a phone's whole
+  // frame budget several times over, on every tick, drop and swipe. Now
+  // the flat bed is computed once per size (twBaseHF) and copied back, and
+  // the drawn sand repaints only when something about it changed
+  // (twSandPaintSig). twSandPaints counts real repaints for the suite.
+  let twBaseHF = null, twSandPaintSig = null, twSandPaints = 0;
+  // WHICH TOOL THE HAND HOLDS while the rake mode is on: the comb carves,
+  // the hand smooths (owner, 2026-09-05: "a way for the person to clear out
+  // their strokes ... or have something they can clean it up themselves").
+  let twTool = "comb";
   const TW_TOOTH_SP = 6.5, TW_SWATH = 16;
   // The comb's target shape across its width: grooves at the tooth
   // spacing, lips between them, a pushed rim melting to nothing at the
@@ -28213,6 +28333,13 @@
   // so a pass over them erases them like anything else.
   function twSandFieldInit() {
     const { W, H } = twSandDims;
+    // The flat bed for this size is already known: copy it back in one
+    // move instead of re-rolling the noise and re-laying the sweeps.
+    if (twBaseHF && twBaseHF.length === W * H) {
+      if (!twHF || twHF.length !== W * H) twHF = new Float32Array(W * H);
+      twHF.set(twBaseHF);
+      return;
+    }
     twHF = new Float32Array(W * H);
     // Bilinear value noise, two octaves — INTERPOLATED, because sampling
     // the lattice raw shades 8px squares into the bed and squares are the
@@ -28243,6 +28370,34 @@
         px = nx; py = ny;
       }
     }
+    twBaseHF = twHF.slice();          // the flat bed, kept for every repaint at this size
+  }
+  // THE HAND: the comb's opposite. Where the comb converges the bed to its
+  // grooved profile, the hand converges it to FLAT, in a soft round
+  // footprint along the rub — so a corner can be tidied by hand, and the
+  // same stroke record replays it on the next open. Returns the dirty rect.
+  function twSmoothSeg(x0, y0, x1, y1, str) {
+    if (!twHF) return null;
+    const { W, H } = twSandDims;
+    const R = TW_SWATH + 4;
+    const len = Math.hypot(x1 - x0, y1 - y0);
+    const steps = Math.max(1, Math.ceil(len / 2));
+    for (let s = 0; s <= steps; s++) {
+      const t = s / steps, cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
+      const bx0 = Math.max(1, Math.floor(cx - R)), bx1 = Math.min(W - 2, Math.ceil(cx + R));
+      const by0 = Math.max(1, Math.floor(cy - R)), by1 = Math.min(H - 2, Math.ceil(cy + R));
+      for (let yy = by0; yy <= by1; yy++) {
+        for (let xx = bx0; xx <= bx1; xx++) {
+          const d = Math.hypot(xx - cx, yy - cy) / R;
+          if (d >= 1) continue;
+          const w = (1 - d) * (1 - d) * 0.22 * str;
+          const i = yy * W + xx;
+          twHF[i] += (0 - twHF[i]) * w;
+        }
+      }
+    }
+    return [Math.min(x0, x1) - R - 1, Math.min(y0, y1) - R - 1,
+            Math.max(x0, x1) + R + 1, Math.max(y0, y1) + R + 1];
   }
   // ONE LIGHT DOES EVERY COLOUR: slope toward the upper left catches a
   // warm cream, slope away holds a warm shadow, flat ground is fully
@@ -28296,23 +28451,44 @@
     const y = Math.max(1, Math.min(H - 2, Math.round(yPx)));
     return twHF[y * W + x];
   }
-  function twSandPaintDrawn() {
+  // A stroke record is a plain array of points for the comb, or
+  // { k: "h", p: [points] } for the hand — the older shape untouched, so
+  // every saved garden and the suite's fixtures read as they always did.
+  const twStrokePts = s => Array.isArray(s) ? s : (s && Array.isArray(s.p) ? s.p : []);
+  const twStrokeIsHand = s => !!(s && !Array.isArray(s) && s.k === "h");
+  function twSandPaintDrawn(force) {
     if (!twCtx) return;
     const { W, H } = twSandDims;
+    const now = typeof twIsNow !== "function" || twIsNow();
+    const strokes = now ? twSandStrokesNow() : [];
+    // NOTHING CHANGED, NOTHING REPAINTS. The canvas already shows this
+    // exact sand; the signature is the size, the page, and the strokes'
+    // count and last point (the record only ever grows at its end, or is
+    // replaced whole, and both move the signature).
+    const last = strokes.length ? twStrokePts(strokes[strokes.length - 1]) : null;
+    const tail = last && last.length ? last[last.length - 1].join(",") : "";
+    const sig = `${W}x${H}|${now ? "now" : "then"}|${strokes.length}|${tail}`;
+    if (!force && sig === twSandPaintSig) return;
+    twSandPaintSig = sig;
+    twSandPaints++;
     twSandFieldInit();
     // EVERY WEEK'S PAGE IS ITS OWN SAND (owner, 2026-09-01: "if i go to
     // the next page or previous page it should be blank"). The drawing
     // belongs to the living week; a turned page shows the ambient bed.
-    if (typeof twIsNow !== "function" || twIsNow()) {
-      twSandStrokesNow().forEach(s => {
-        const pts = s.map(p => [p[0] * W, p[1]]);
-        const dir = { x: null, y: null, t: 0 };
+    strokes.forEach(s => {
+      const pts = twStrokePts(s).map(p => [p[0] * W, p[1]]);
+      if (twStrokeIsHand(s)) {
         for (let i = 1; i < pts.length; i++) {
-          twStampSeg(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 1, dir);
+          twSmoothSeg(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 1);
         }
-        twStampMound(pts);
-      });
-    }
+        return;
+      }
+      const dir = { x: null, y: null, t: 0 };
+      for (let i = 1; i < pts.length; i++) {
+        twStampSeg(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 1, dir);
+      }
+      twStampMound(pts);
+    });
     twRenderRect(1, 1, W - 2, H - 2);
   }
   // THE RESTING RAKE, REDRAWN (owner, 2026-09-01: "make it feel more
@@ -28371,7 +28547,46 @@
       btn.setAttribute("aria-pressed", String(twRaking));
       btn.setAttribute("aria-label", twRaking ? "set the rake down" : "pick up the rake");
     }
+    // The corner's tools stand only while the rake is held; setting it
+    // down puts the comb back in the hand and folds the add strip away.
+    const tools = document.getElementById("twCornerTools");
+    if (tools) tools.hidden = !twRaking;
+    const addStrip = document.getElementById("twCornerAdd");
+    if (addStrip && twRaking) addStrip.hidden = true;
+    if (!twRaking) twToolSet("comb");
     return twRaking;
+  }
+  function twToolSet(name) {
+    twTool = name === "hand" ? "hand" : "comb";
+    const hand = document.getElementById("twToolHand");
+    if (hand) hand.setAttribute("aria-pressed", String(twTool === "hand"));
+    const rake = document.getElementById("twRake");
+    if (rake) rake.classList.toggle("tw-tool-resting", twTool === "hand");
+    return twTool;
+  }
+  // THE CLEAN SLATE (owner, 2026-09-05): one tap and the week's sand is
+  // smooth again — acted at once, with the undo breath, never a question.
+  function twSandClean() {
+    const prev = twSandStrokesNow().slice();
+    twSand = { wk: weekKeyOf(), strokes: [] };
+    twSandPaintDrawn(true);
+    saveState();
+    if (prev.length) twShowUndo("smoothed the sand", () => {
+      twSand = { wk: weekKeyOf(), strokes: prev };
+      twSandPaintDrawn(true);
+      saveState();
+    });
+    return prev.length;
+  }
+  // WHAT THE CORNER FILED, SAID IN THE PILL, with the way back on it.
+  function twCornerReceipt() {
+    if (!twCapture) return;
+    const id = twCapture.id;
+    twShowUndo(twCapture.note, () => {
+      removeReminder(id);
+      twCapture = null;
+      renderThisWeek();
+    });
   }
   (function wireTwRake() {
     const btn = document.getElementById("twRake");
@@ -28434,11 +28649,15 @@
     let raf = null, lastEv = null, rakeAng = null, stamped = 0;
     let dirRef = { x: null, y: null, t: 0 };
     // settle needs the queued stamps down before it measures the mound
+    // ONE SEGMENT, WHICHEVER TOOL: the comb carves toward its profile, the
+    // hand flattens toward the bed.
+    const stampOne = (a, b) => twTool === "hand"
+      ? twSmoothSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1)
+      : twStampSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1, dirRef);
     const frameFlush = () => {
       if (!live) return;
       while (stamped < live.length - 1) {
-        const a = live[stamped], b = live[stamped + 1];
-        const r = twStampSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1, dirRef);
+        const r = stampOne(live[stamped], live[stamped + 1]);
         if (r) twRenderRect(r[0], r[1], r[2], r[3]);
         stamped++;
       }
@@ -28450,8 +28669,7 @@
       // the strip of bed those stamps touched — constant work per frame
       // whatever the drawing already holds.
       while (stamped < live.length - 1) {
-        const a = live[stamped], b = live[stamped + 1];
-        const r = twStampSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1, dirRef);
+        const r = stampOne(live[stamped], live[stamped + 1]);
         if (r) twRenderRect(r[0], r[1], r[2], r[3]);
         stamped++;
       }
@@ -28492,15 +28710,22 @@
       lastEv = null; rakeAng = null;
       if (live && live.length > 1) {
         pending.push(live);
-        // the pushed-off pile where the pull ended
-        const { W } = twSandDims;
-        const all = pending.flat();
-        const r = twStampMound(all.map(q => [q[0] * W, q[1]]));
-        if (r) twRenderRect(r[0], r[1], r[2], r[3]);
+        // the pushed-off pile where the pull ended — the comb's alone; a
+        // hand leaves no mound
+        if (twTool !== "hand") {
+          const { W } = twSandDims;
+          const all = pending.flat();
+          const r = twStampMound(all.map(q => [q[0] * W, q[1]]));
+          if (r) twRenderRect(r[0], r[1], r[2], r[3]);
+        }
       }
       if (pending.length) {
         if (twSand.wk !== weekKeyOf()) twSand = { wk: weekKeyOf(), strokes: [] };
-        twSand.strokes = twSand.strokes.concat(pending).slice(-40);
+        const recs = twTool === "hand" ? pending.map(p => ({ k: "h", p })) : pending;
+        twSand.strokes = twSand.strokes.concat(recs).slice(-40);
+        // the bed already holds every stamp of this stroke; the record just
+        // caught up with it, so the signature moves without a repaint
+        twSandPaintSig = null;
         saveState();                               // written on the LIFT, not every stamp
       }
       pending = []; live = null; stamped = 0;
@@ -28560,6 +28785,60 @@
     };
     veil.addEventListener("pointerup", lift);
     veil.addEventListener("pointercancel", lift);
+  })();
+  // ---- THE CORNER'S WIRING (2026-09-05) ----
+  // The +, the hand and the clean slate live in static markup beside the
+  // rake, so they are wired once here, like the rake, and never re-rendered.
+  (function wireTwCorner() {
+    const plus = document.getElementById("twCornerPlus");
+    const strip = document.getElementById("twCornerAdd");
+    const input = document.getElementById("twCornerInput");
+    const hand = document.getElementById("twToolHand");
+    const clean = document.getElementById("twToolClean");
+    if (!plus || !strip || !input || !hand || !clean) return;
+    // The two tools drawn in the comb's own ink: a resting hand, palm
+    // down, and three courses of sand lying smooth.
+    hand.innerHTML = `<svg viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M12 24 C10 18 11 13 14 13 C16 13 16.5 16 16.5 18 L16.5 12 C16.5 9.5 20 9.5 20 12
+        L20 17 L20 10.5 C20 8 23.5 8 23.5 10.5 L23.5 17.5 L23.5 12.5 C23.5 10 27 10 27 12.5
+        L27 22 C27 28.5 23.5 32 18.5 32 C14 32 12.8 28 12 24 Z"
+        fill="rgba(124,143,158,0.34)" stroke="rgba(56,72,88,0.68)" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M12 24 C9 22 7 19.5 8.5 18.5 C9.6 17.8 11 19.5 12.5 21.5"
+        fill="rgba(124,143,158,0.34)" stroke="rgba(56,72,88,0.68)" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>`;
+    clean.innerHTML = `<svg viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M7 15 Q20 11 33 15" fill="none" stroke="rgba(56,72,88,0.62)" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M7 21 Q20 17 33 21" fill="none" stroke="rgba(56,72,88,0.5)" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M7 27 Q20 23 33 27" fill="none" stroke="rgba(56,72,88,0.38)" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>`;
+    // THE ADD STRIP: out on the +, away on Escape, a tap elsewhere, or a
+    // second tap on the +. Enter files through the one capture road with
+    // no fallback day, so the words decide, and the week on the sheet is
+    // home when they do not.
+    let outside = null;
+    const close = () => {
+      strip.hidden = true;
+      if (outside) { document.removeEventListener("pointerdown", outside, true); outside = null; }
+    };
+    const open = () => {
+      strip.hidden = false;
+      input.focus();
+      if (!outside) {
+        outside = ev => {
+          if (strip.contains(ev.target) || plus.contains(ev.target)) return;
+          close();
+        };
+        setTimeout(() => document.addEventListener("pointerdown", outside, true), 0);
+      }
+    };
+    plus.addEventListener("click", () => { if (strip.hidden) open(); else close(); });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Escape") { e.stopPropagation(); close(); plus.focus(); return; }
+      if (e.key !== "Enter") return;
+      twCommitCapture(input, strip, null, "corner");
+    });
+    hand.addEventListener("click", () => twToolSet(twTool === "hand" ? "comb" : "hand"));
+    clean.addEventListener("click", () => twSandClean());
   })();
   function openThisWeek() {
     // Boards from before this page existed have no discovery date; the
@@ -30786,8 +31065,10 @@
       // move map and the recurring reopen already live by.
       twSand: (twSand && twSand.wk === weekKeyOf() && Array.isArray(twSand.strokes)
         && twSand.strokes.length)
-        ? { wk: twSand.wk, strokes: twSand.strokes.map(s =>
-            s.map(p => [+p[0].toFixed(4), +p[1].toFixed(4)])) }
+        ? { wk: twSand.wk, strokes: twSand.strokes.map(s => {
+            const pts = twStrokePts(s).map(p => [+p[0].toFixed(4), +p[1].toFixed(4)]);
+            return twStrokeIsHand(s) ? { k: "h", p: pts } : pts;   // the hand keeps its mark
+          }) }
         : null,
       // The pile's chosen resting places, the same week-or-absence rule.
       twCollect: (twCollect && twCollect.wk === weekKeyOf()
@@ -35909,6 +36190,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
     bootHoldShow, bootHoldHide,
+    twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
+    twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
     analyzeThemes, detectPatterns, prioritizeAreas, generateGoals, draftPlan, detectTensions,
     // The wheel step, so the harness can drive the real controls and check
