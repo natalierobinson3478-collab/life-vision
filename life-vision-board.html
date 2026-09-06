@@ -4990,9 +4990,9 @@
   .tw-corner-sheet { position: relative; background: var(--paper); padding: 16px 18px 18px;
     -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
     mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
-    -webkit-mask-size: 100% 22px, 100% max(0px, 100% - 44px), 100% 22px;
-    mask-size: 100% 22px, 100% max(0px, 100% - 44px), 100% 22px;
-    -webkit-mask-position: 0 100%, 0 22px, 0 0; mask-position: 0 100%, 0 22px, 0 0;
+    -webkit-mask-size: 100% 22px, 100% max(0px, 100% - 32px), 100% 22px;
+    mask-size: 100% 22px, 100% max(0px, 100% - 32px), 100% 22px;
+    -webkit-mask-position: 0 100%, 0 16px, 0 0; mask-position: 0 100%, 0 16px, 0 0;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   .tw-corner-row { display: flex; align-items: center; gap: 10px; }
   .tw-corner-row .tw-add-field { margin: 0; max-width: none; flex: 1 1 auto; }
@@ -5043,9 +5043,9 @@
     font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label); color: var(--ink);
     -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
     mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
-    -webkit-mask-size: 100% 18px, 100% max(0px, 100% - 36px), 100% 18px;
-    mask-size: 100% 18px, 100% max(0px, 100% - 36px), 100% 18px;
-    -webkit-mask-position: 0 100%, 0 18px, 0 0; mask-position: 0 100%, 0 18px, 0 0;
+    -webkit-mask-size: 100% 18px, 100% max(0px, 100% - 26px), 100% 18px;
+    mask-size: 100% 18px, 100% max(0px, 100% - 26px), 100% 18px;
+    -webkit-mask-position: 0 100%, 0 13px, 0 0; mask-position: 0 100%, 0 13px, 0 0;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
   #twUndoPill.on { display: flex; }
   #twUndoPill button { background: none; border: none; padding: 0; cursor: pointer;
@@ -9932,6 +9932,122 @@
      either. #releaseOverlay keeps the zero: it is a card book, not a book
      page, and it centres by its own arrangement. */
   .cov-overlay > .cov-wrap, #releaseOverlay > .modal { margin-top: 0; }
+
+  /* ==== THE SCRAPBOOK PASS (2026-09-05) ====
+     Owner, with eleven references: "this is my aesthetic. a watercolor
+     scrap book of beautiful things … Like a beautiful bittersweet tucked
+     away memory." The rules are written in DECISIONS ("The vision, written
+     down") and the design language has banned these surfaces since phase 4
+     ("bordered boxes, solid pill buttons … drop shadows except the sheet's
+     soft lift"). This block is the audit's ENUMERATION OF SURVIVORS — every
+     surface still dressed as an app control — kept in ONE place, appended,
+     so the whole pass reads together and a later hand can see exactly what
+     it reached (DESIGN-LANGUAGE: "a round is done when the survivors are
+     enumerated"). Each group says what it becomes.
+     LEFT STANDING, ON PURPOSE: dots (a dot is a drawn mark); the books'
+     covers and their shadows (a book is an object, like the sketchbook in
+     the photograph); the walk's spotlight; the drawn ✕; the armed delete's
+     one sanctioned inverse fill; native selects (a drawn picker is its own
+     round); the add card (another hand's round today); inset rings that
+     mark a chosen thing (ink firming, not a shadow). */
+
+  /* 1. NOTES ARE TORN SCRAPS. The failure and hold cards, the offline bar,
+        the row's box and the move picker: paper with the torn masks at note
+        size, no border, no shadow, no rounded corner. */
+  .persist-card, .fresh-bar, .when-pop {
+    border: none; border-radius: 0; box-shadow: none; background: var(--paper);
+    -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    -webkit-mask-size: 100% 26px, 100% max(0px, 100% - 40px), 100% 26px;
+    mask-size: 100% 26px, 100% max(0px, 100% - 40px), 100% 26px;
+    -webkit-mask-position: 0 100%, 0 20px, 0 0; mask-position: 0 100%, 0 20px, 0 0;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  /* (The fill overlaps both tears by 6px: masks abutting edge to edge
+     leave a hairline of light where they meet, and the tear must read as
+     one piece of paper.) */
+  .persist-card { padding: 38px 30px 40px; }
+  .fresh-bar { padding: 24px 22px 26px; width: min(92vw, 560px); box-sizing: border-box;
+    flex-wrap: wrap; row-gap: 10px; }
+  .when-pop { padding: 24px 15px 26px; }
+
+  /* 2. CARDS ARE PAPER, NOT PANELS. The plain modals (the account page,
+        the goal's title, the companion's pages, the vision) lose the 24px
+        corner and the 60px shadow and take the tear; their ✕ steps in
+        below the tear. The paper-modals already wear it; the journal and
+        the portrait are books and keep their covers. */
+  .modal:not(.paper-modal):not(.jb-modal):not(.pt-modal):not(.add-modal) {
+    border-radius: 0; box-shadow: none; padding-top: 44px; padding-bottom: 46px;
+    -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
+    -webkit-mask-size: 100% 36px, 100% max(0px, 100% - 60px), 100% 36px;
+    mask-size: 100% 36px, 100% max(0px, 100% - 60px), 100% 36px;
+    -webkit-mask-position: 0 100%, 0 30px, 0 0; mask-position: 0 100%, 0 30px, 0 0;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .modal:not(.paper-modal):not(.jb-modal):not(.pt-modal):not(.add-modal) .modal-close.checkin-close {
+    top: 24px; right: 12px; }
+
+  /* 3. PILLS BECOME WORDS ON A WASH. The board's chrome (the pill row, the
+        tabs, the account pill): fill, border, shadow and the 999px corner
+        go; a sage wash rides behind the words the way the highlight
+        already does, and the chosen tab wears it. */
+  .pill-btn, .pill-btn:hover, .tab, .tab.active, .account-pill, .account-pill:hover {
+    background: none; border: none; box-shadow: none; border-radius: 0; position: relative; }
+  .pill-btn::before, .tab.active::before, .account-pill::before {
+    content: ""; position: absolute; inset: 1px -8px; z-index: -1;
+    background: rgb(139,152,138); opacity: 0.26; transform: rotate(-2deg);
+    -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .pill-btn:hover::before, .account-pill:hover::before { opacity: 0.36; }
+
+  /* 4. CHIPS ARE DRAWN CHIPS. The review's and the check-in's option
+        pills take the app's own hand-cut edge (the .ci-chip corner, dashed
+        at rest) instead of a capsule; a chosen one keeps the one selection
+        treatment every chip already wears (the accent tint, the drawn
+        tick), which outranks these by its own specificity. */
+  .rv-cat, .rv-toggle, .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .rv-genplan,
+  .rv-maint, .rv-cov-make, .rv-cov-open, .ci-driver-chip, .ci-breakdown-toggle,
+  .ci-tune-kind, .qv-own, .qv-floor-tag, .hv-early, .rm-q-rc, .wk-acc, .lv-focus-chip,
+  .rm-delete:not(.armed), .tw-hstep { border-radius: 8px; box-shadow: none; }
+  .rv-toggle, .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .ci-breakdown-toggle,
+  .wk-acc, .tw-hstep { border-style: dashed; background: none; }
+  .ci-driver-chip { border-style: dashed; }
+
+  /* 5. BOXES ARE PAPER. The review's cards and the check-in's notes lose
+        the rounded corner and the shadow; they sit on the sheet as writing,
+        set apart by air and the ruling. */
+  .rv-item, .rv-focus, .rv-empty, .rv-add, .rv-cov, .rv-reframe, .rv-ask, .rv-focus-opt,
+  .rv-h-ownin, .rv-why-note, .ci-bubble, .ci-bubble:hover, .ci-review-item, .ci-low-item,
+  .ci-care, .ci-analysis-error, .ci-thin-note, .ci-week-note, .ci-dig-dial, .ci-draft-obj,
+  .hb-comp-opt, .rc-move-opt, .rm-work-label, .tension-reasoning, .lv-ghost,
+  .discover-menu-item { border-radius: 0; box-shadow: none; }
+  .lv-ghost { border-radius: 8px; }
+
+  /* 6. FIELDS ARE LINES, NOT BOXES. A text field is words on the paper —
+        the ruled line where there is one, the brush under it where there is
+        not (the modal's fields) — never a bordered rounded box. Selects are
+        left as they are, above. */
+  .field input, .field textarea, .rv-q input, .qv-own-input, .rc-capture-in {
+    background: none; border: none; border-radius: 0; box-shadow: none; padding: 6px 2px 8px; }
+  .field input:focus, .field textarea:focus, .rv-q input:focus, .qv-own-input:focus,
+  .rc-capture-in:focus { outline: none; box-shadow: none; }
+  .field { position: relative; }
+  .field:has(input, textarea)::after { content: ""; position: absolute; left: 0; right: 8px;
+    bottom: 0; height: 6px; background: var(--ink); opacity: 0.32; pointer-events: none;
+    -webkit-mask-image: var(--swash); mask-image: var(--swash);
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .field:has(input:focus, textarea:focus)::after { opacity: 0.5; }
+
+  /* 7. FOCUS IS THE DRAWN RING, NOT A SHADOW. These box-shadow rings
+        predate the one hand-drawn ring (A1) and doubled it. */
+  .rv-title:focus, .qv-label[contenteditable]:focus, .qr-label[contenteditable]:focus,
+  .qv-if:focus { box-shadow: none; }
+
+  /* 8. A SECONDARY ACTION IS A WORD. The cancel that abandons typed input
+        is quiet ink, not a bordered capsule. */
+  .btn-cancel { border: none; border-radius: 0; padding: 10px 6px; color: var(--ink-muted); }
+  .btn-cancel:hover { color: var(--ink); }
 </style>
 </head>
 <body>
