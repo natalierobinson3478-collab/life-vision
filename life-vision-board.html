@@ -3333,6 +3333,15 @@
     font-family: inherit; font-size: inherit; color: var(--ink);
     background: none; border: none; border-bottom: 1px solid var(--line);
     padding: 2px 0 5px; margin: 0 0 4px; outline: none; }
+  /* THE NOTE UNDER THE TITLE: what this is, why, and the goal it sits under,
+     in the box's own quiet voice (.mp-b), one line each, ruled off from the
+     options below by the same hairline they use. Not a control. */
+  .tw-row-pop .tw-pop-about { margin: 2px 0 0; padding: 4px 0 8px;
+    border-bottom: 1px solid rgba(90,70,50,0.16);
+    font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
+    color: var(--ink-muted); line-height: var(--lead); }
+  .tw-row-pop .tw-pop-about span { display: block; }
+  .tw-row-pop .tw-pop-about span + span { margin-top: 3px; }
   /* Armed delete darkens the way the discovery menus' does. */
   .tw-row-pop .mp-opt.arm { background: rgba(70,49,34,0.08); }
   .tw-row-pop .mp-opt.arm .mp-a { color: #524136; font-weight: 600; }
@@ -27761,6 +27770,8 @@
   // holding exactly four things: the title in place, push to tomorrow,
   // change the day, delete. Tying work to a goal is deliberately NOT here
   // (workshop only, ruled, test 145), by the owner's own choice this round.
+  // Since 2026-09-06 a note sits under the title saying what the row is
+  // (the fuller label, its why, its goal): a note, not a fifth thing.
   // PUSH TO TOMORROW — one rule, shared by the box and the left swipe. An
   // errand is re-dated; a scheduled thing's nearest open occurrence moves,
   // this week only; a tomorrow beyond the week means next week, and only a
@@ -28012,12 +28023,29 @@
     const canPush = due && (oneOff || tomorrowInWeek || !isRem);
     const repeating = !isRem || !!m.schedule;
     const title = appVoice(m.weekLabel ?? m.label, wroteIt(m));
+    // WHAT THIS IS, under the title (owner, 2026-09-06: "it says 'do one AI
+    // practice exercise' but what does that mean"). The week line is seven
+    // words by design; the fuller label and the model's one-line why were
+    // written for exactly this question and were drawn nowhere. A note, not
+    // an option: nothing here is a control. Nothing for a reminder (no goal,
+    // no why); a person's own work shows only the goal it sits under.
+    const undash = s => String(s == null ? "" : s).replace(/\s+—\s+/g, ", ");
+    const same = (a, b) => String(a || "").toLowerCase().replace(/[.\s]+$/, "").trim()
+      === String(b || "").toLowerCase().replace(/[.\s]+$/, "").trim();
+    const aboutLines = isRem ? [] : [
+      m.weekLabel && m.label && !same(m.label, m.weekLabel) ? undash(appVoice(m.label, wroteIt(m))) : "",
+      m.why ? undash(lcFirst(m.why)) : "",
+      g ? `part of “${appVoice(stripDot(g.title), titleIsTheirs(g))}”` : ""
+    ].filter(Boolean);
+    const aboutHtml = aboutLines.length
+      ? `<p class="tw-pop-about">${aboutLines.map(l => `<span>${escHtml(l)}</span>`).join("")}</p>` : ``;
     const pop = document.createElement("div");
     pop.className = "when-pop move-pop tw-row-pop";
     pop.setAttribute("role", "dialog");
     pop.innerHTML = `
       <input id="twEditTitle" class="tw-pop-title" type="text" autocomplete="off"
         value="${escHtml(title)}" aria-label="rename this">
+      ${aboutHtml}
       ${canPush ? `<button type="button" class="mp-opt" id="rpPush">
         <span class="mp-a">${oneOff || tomorrowInWeek ? "push to tomorrow" : "push to next week"}</span>
         <span class="mp-b">this week bends, the rhythm is untouched</span>
