@@ -5758,6 +5758,45 @@
      own heading and rule. Air was the fourth signal and the only one that
      made the rhythm uneven. */
   .fq-quiet { opacity: 0.8; }
+  /* ---- TOMORROW, AND TOMORROW (2026-09-05): the FAQ's paper and four
+     roles, worn by a second book. Only what this page adds is written
+     here; a third book that wants the same build adds its own modal class
+     and pigment and nothing else. ---- */
+  /* THE FOOT IS ONE AND A HALF LEADS, not the FAQ's five and a half: that
+     foot holds the koi pond, and this page has no pond yet. A whole number
+     of half-leads, like every vertical measure on the sheet. */
+  .tm-page .fq-inner { padding-bottom: calc(var(--lead) * 1.5); }
+  /* A reading is prose in the hand at the reading size, one lead a line;
+     a quote of the person's own words is the caption's italic. Neither is
+     a control, so neither is a button. */
+  .tm-read { margin: 0; font-family: var(--voice-hand); font-size: var(--t-read);
+    line-height: var(--lead); color: var(--ink); }
+  .tm-quote { margin: 0; font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
+    line-height: var(--lead); color: var(--ink-muted); }
+  /* The written thing: a line on the paper, no box, the hand-cut patch of
+     paper on focus like every other writing line in the app. */
+  .tm-own { display: block; line-height: var(--lead); }
+  .tm-own-input { width: 100%; height: var(--lead); background: none; border: none; padding: 0 2px;
+    font-family: var(--voice-hand); font-size: var(--t-read); line-height: var(--lead); color: var(--ink); }
+  .tm-own-input::placeholder { color: var(--ink-muted); opacity: 0.85; }
+  .tm-own-input:focus { outline: none; background: var(--paper-tint); border-radius: 6px; }
+  /* The move's writing line is the quarters' own if-then line; it only
+     needs to sit flush on this sheet. */
+  .tm-page .qv-if, .tm-page .qv-if-hint { text-align: left; }
+  /* THE ROWS HERE CAN BE LONG. The FAQ's row is one lead tall because every
+     row there is short; a kept move is a sentence, so the row grows by
+     whole leads and the caption follows it instead of being written over. */
+  .tm-page .fq-row { height: auto; min-height: var(--lead); white-space: normal; }
+  .tm-write { display: block; }
+  .tm-keep { display: block; line-height: var(--lead); }
+  .tm-page .btn-solid { padding-left: 2px; padding-right: 2px; }
+  /* A highlighted word inside a caption: it inherits the caption's face,
+     size and italic, so the pair stays two-and-two, and only the brush
+     behind it says it can be tapped. */
+  .tm-word { background: none; border: none; padding: 0 2px; margin-left: 12px; font: inherit; color: inherit;
+    cursor: pointer; }
+  .tm-word:focus-visible { outline: none; }
+  .tm-forgive { margin-top: var(--lead); }
   @media (max-width: 520px) {
     /* THE FOOT SURVIVES THE PHONE. This rule used to restate the bottom
        padding as a flat 38px, which quietly undid the sheet's 5.5-lead foot
@@ -10574,6 +10613,14 @@
     </div>
   </div>
 
+  <!-- TOMORROW, AND TOMORROW (2026-09-05): the book for the one thing you
+       keep meaning to do. The ✕ is the overlay's, like every other book's;
+       the mount is filled by renderTomorrow on open. -->
+  <div id="tomorrowOverlay" class="book-page">
+    <button class="checkin-close" id="tomorrowClose" aria-label="close" title="close"></button>
+    <div id="tomorrowMount"></div>
+  </div>
+
   <div id="faqOverlay" class="book-page">
     <button class="checkin-close" id="faqClose" aria-label="close" title="close"></button>
     <div id="faqMount"></div>
@@ -10628,6 +10675,8 @@
           <div class="faq-a"><p>because most people move faster on fewer. six is the cap on active commitments, paused goals and dreams are uncapped, so the board never says no to a goal. A full board just makes you choose what rests first.</p></div></details>
         <details><summary>what are habits and tasks?</summary>
           <div class="faq-a"><p>the weekly work that actually moves a goal, habits that happen on a rhythm, one-time tasks, capabilities that build. they're deliberately budgeted under your available hours, so one bad week doesn't end the whole thing.</p></div></details>
+        <details><summary>what if I keep not doing one of my habits?</summary>
+          <div class="faq-a"><p>that's TOMORROW, AND TOMORROW on the shelf. pick the thing, say what happens when it's time, and it hands you one small move and remembers it. nothing in there counts or keeps score.</p></div></details>
         <details><summary>what are the check-ins?</summary>
           <div class="faq-a"><p>weekly: about two minutes, how did each area of life feel, one optional honest line. A rough week may gently shrink a goal's weekly work; a good one may raise it a notch, always with your say-so. quarterly: the deeper look, progress, tensions you chose to hold, and what leads next quarter.</p></div></details>
         <details><summary>my goal has a deadline a few weeks away, does it fit here?</summary>
@@ -13715,6 +13764,9 @@
   }
 
   let releaseWishes = [];
+  // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
+  // score. Same name on both sides, column `unstuck` (0013).
+  let unstuck = [];
   function addReleaseWish(habit, under) {
     const w = { habit: String(habit || "").trim(), under: String(under || "").trim(), at: appNow().toISOString() };
     if (!w.habit) return null;
@@ -13769,6 +13821,13 @@
       lines: [["your own", "s"], ["CHAPTERS", "b"]],
       board: "#a89570", ink: "#3d3223", rule: "#8a7a58", dress: "bands", gapAfter: 3, hx: 30,
       tour: "each goal is its own chapter, its name, its quarter, its habits and tasks, all editable here." },
+    // TOMORROW, AND TOMORROW (2026-09-05): the book for the one thing you
+    // keep meaning to do. Inside the cluster of the person's own books, so
+    // it carries no breath; the FAQ catalogue and the tour read this line.
+    { door: "tomorrow", aria: "open tomorrow and tomorrow, for the thing you keep putting off", open: openTomorrow,
+      lines: [["tomorrow, and", "s"], ["TOMORROW", "b"]],
+      board: "#c9a58a", ink: "#4a3528", rule: "#a9836a", dress: "plain", gapAfter: 3, hx: 22,
+      tour: "for the thing you keep meaning to do. it asks what happens when it's time, and hands you one small move." },
     { door: "journal", aria: "open your journal", open: openJournal,
       lines: [["the secret", "s"], ["HISTORY", "b"]],
       // 24, not the cluster's 3: this book LEANS 5 degrees and pivots from
@@ -18264,7 +18323,7 @@
   // and one opened over the journal in the journal's olive. A tenth book
   // gets its bloom for free. Two tones, exactly as the book swatches do it:
   // the light one spreads, the dark one pools where the water stopped.
-  const OV_BOOK_PAGES = { faqOverlay: "faq", journalOverlay: "journal",
+  const OV_BOOK_PAGES = { faqOverlay: "faq", journalOverlay: "journal", tomorrowOverlay: "tomorrow",
     atlasOverlay: "atlas", chaptersOverlay: "chapters", thisWeekOverlay: "week",
     releaseOverlay: "release", addOverlay: "addgoal", weekOverlay: "weekcheck",
     quarterOverlay: "quartercheck", roadmapOverlay: "chapters" };
@@ -29357,6 +29416,437 @@
     releaseEditIdx = null;
     closeBookPage(document.getElementById("releaseOverlay"));
   }
+  // ---- TOMORROW, AND TOMORROW: THE THING YOU KEEP MEANING TO DO (2026-09-05) ----
+  // Owner: "an anti procrastination book, that will help if there's a setback
+  // or i feel for a specific thing im not doing it". A book for ONE thing at
+  // a time, with no model call anywhere in it. Why a thing does not happen at
+  // the moment it is due comes in six shapes, and each shape fixes the move,
+  // so a model could only ever have varied the wording. The six, from Steel's
+  // temporal motivation theory, Pychyl and Sirois on putting off as emotion
+  // regulation (and self-forgiveness as the one thing shown to reduce it),
+  // Gollwitzer's if-then plans, Fogg's anchors and Kroese's bedtime
+  // procrastination: no cue, starting feels bad, too vague, spent by the time
+  // it is due, crowded out, and not actually wanted.
+  // LAW 8 SHAPES EVERYTHING HERE. The book never counts a miss, never opens
+  // itself because the app noticed something, never sorts the list by
+  // failure, and keeps no worked/didn't tick. The person opens it and points.
+  // What it keeps is the plan's memory of the move that was tried, for the
+  // quarter's obstacle post-mortem to read one day, never a score. Every line
+  // of copy passes the companion's ban list and a stricter one of its own.
+  // The record is `unstuck`, a profiles column of the same name (0013).
+
+  // THE ONE IF-THEN SENTENCE, hoisted from the quarters' render so the
+  // objective's obstacle and this book's move are parsed by one rule.
+  function ifThenClause(x) {
+    const t = (x || "").trim().replace(/\.+$/, "");
+    // "I write one page anyway" keeps its I: a lowered pronoun is a typo,
+    // not a lowercase law (the same exemption lcFirst grants an all-caps word).
+    if (/^I(\s|'|$)/.test(t)) return t;
+    return t ? t.charAt(0).toLowerCase() + t.slice(1) : "";
+  }
+  function ifThenSentence(obstacle, plan) {
+    return `If ${ifThenClause(obstacle) || "…"}, then ${ifThenClause(plan) || "…"}.`;
+  }
+  function parseIfThenSentence(text) {
+    const t = (text || "").trim().replace(/\.\s*$/, "");
+    const m = /^\s*if\s+([\s\S]*?)(?:,\s*|\s+)then\s+([\s\S]*)$/i.exec(t);
+    const clean = x => { const v = (x || "").trim(); return v === "…" ? "" : v; };
+    if (m) return { obstacle: clean(m[1]), obstaclePlan: clean(m[2]) };
+    return { obstacle: clean(t.replace(/^\s*if\s+/i, "")), obstaclePlan: "" };
+  }
+
+  // The tells: what the person notices at the moment the thing was due.
+  // Ordered as the page lists them, and the order is the diagnosis order,
+  // cue before feeling before shape before energy before room before want.
+  // Each tell is a short KEY (the row's title, and the words the highlight
+  // sits behind, short enough never to wrap on a phone: a wrapped highlight
+  // collapses to a blob at the break) and a fuller LINE as its caption.
+  const TM_TELLS = [
+    { id: "nocue",    key: "the time just goes.",          line: "I don't notice it's time until it's gone." },
+    { id: "avoid",    key: "I put it off.",                line: "I notice, and I step around it." },
+    { id: "vague",    key: "I don't know where to start.", line: "it's big, and it hasn't got an edge yet." },
+    { id: "spent",    key: "I'm too tired by then.",       line: "by the time it's due, there's nothing left." },
+    { id: "crowded",  key: "something else comes up.",     line: "the week fills, and this is what gives." },
+    { id: "unwanted", key: "I'm relieved, honestly.",      line: "when it doesn't happen, part of me is glad." },
+  ];
+  // One follow-up, for the tell that hides the most: putting off has a
+  // feeling right before it, and "pointless" is not a start problem at all.
+  const TM_FEELS = ["boring", "hard", "scary", "pointless"];
+  // Three readings a tell, rotated by how many earlier pages carry that
+  // tell, so two visits in a row never read the same words and nothing has
+  // to be stored to remember which was shown. {thing} is the person's words.
+  const TM_READINGS = {
+    nocue: [
+      "nothing is wrong with your wanting. {thing} has no doorway yet. a habit doesn't live on a clock, it lives on the thing right before it, and right now there isn't one.",
+      "the day is a river and {thing} is standing on the bank waiting to be noticed. it never will be. what works is tying it to something the river already carries every day.",
+      "you keep meaning to and the moment keeps not arriving. that's not a character flaw, it's a missing cue. the meaning is there. the trigger isn't.",
+    ],
+    avoid: [
+      "you see it coming and you step around it. that's not idleness, it's your body protecting you from a feeling. the move isn't to push harder, it's to make the first minute so small there's nothing to protect you from.",
+      "putting off is what we do with things that feel bad to start, not things that are bad. the feeling is the whole obstacle. it lasts about as long as it takes to begin.",
+      "{thing} has become a mood before it's an action. shrink the action until it's smaller than the mood.",
+    ],
+    vague: [
+      "{thing} is a direction, and you can't start a direction. you can only start an action. what's the very next thing your hands would do?",
+      "big and fuzzy things wait forever, not because you don't care but because there's no edge to pick them up by. give it one edge.",
+      "when a thing has been sitting for weeks it usually isn't heavy, it's unshaped. name the first physical step and it stops being a cloud.",
+    ],
+    spent: [
+      "by the time it's due, the part of you that decides things has gone home for the night. that's how tired minds work, all of them. it isn't willpower, it's timing.",
+      "{thing} is asking a tired person to be their best self. either move it toward a fresher hour, or make the tired version so small that a tired person can do it.",
+      "if {thing} lives at the end of the day, the real fix might be the night before. late nights don't cost you the evening, they cost you the next one.",
+    ],
+    crowded: [
+      "some of what stops {thing} is yours, and some was never yours to carry. the app has a rule for this: you're only graded on the coins you get to flip.",
+      "when something is always cancelled, ask who cancelled it. if it was you, this is a different question. if it wasn't, the plan needs the part that's only yours.",
+      "a week has a shape, and {thing} keeps landing where the shape gives way. that's not a verdict, it's information about where the room actually is.",
+    ],
+    unwanted: [
+      "relief is honest. it's telling you {thing} might be a should, not a want. there's no shame in that, and the app has a word for real and not now: paused.",
+      "you can want the result and not want the thing. that's allowed. but a plan built on a should will keep quietly cancelling itself, and it's kinder to say so out loud.",
+      "if letting {thing} go would feel like setting something heavy down, listen to that. a goal renegotiated on purpose is a feature of the plan, not a fault in you.",
+    ],
+  };
+  // One move a tell. `ifthen` writes the app's own obstacle sentence; `line`
+  // writes one plain line; `door` writes nothing and opens the goal's
+  // chapter, where pausing already lives.
+  const TM_MOVES = {
+    nocue:    { kind: "ifthen", line: "pick something you already do every day, right before this could happen.",
+                prompt: "If I …, then I {thing}." },
+    avoid:    { kind: "line",   line: "what's the two-minute version of {thing}? the smallest piece that still counts. only that this week.",
+                prompt: "the two-minute version is …" },
+    vague:    { kind: "line",   line: "what is the very next physical action? something your hands do.",
+                prompt: "next, I …" },
+    spent:    { kind: "ifthen", line: "either move it earlier, or shrink the tired version.",
+                prompt: "If it's the evening and I'm spent, then I …" },
+    crowded:  { kind: "line",   line: "which part of {thing} was only yours to flip?",
+                prompt: "the part that's mine is …" },
+    unwanted: { kind: "door",   line: "this might be a should. look at the goal it belongs to, pausing lives there, and so does renegotiating.",
+                free: "you can just let this one go. nothing here keeps score." },
+  };
+  // The last line on the page, every time. Sirois: forgiving the last miss
+  // is what reduces the next one, and guilt does the opposite.
+  const TM_FORGIVE = [
+    "the version of you that didn't do it was tired, or busy, or protecting something. be on their side. then do the small thing.",
+    "people who forgive themselves for the last miss do better on the next one. that's research, not a platitude.",
+    "nothing here is counting. start from today.",
+    "you noticed. that's the whole first step, and you've already taken it.",
+  ];
+  const TM_SUB_LINE = "for the one thing you keep meaning to do. nothing here counts, and nothing keeps score.";
+  const TM_HINT_IFTHEN = "one sentence. the first half is something that already happens every day.";
+  const TM_HINT_LINE = "small enough for a bad week.";
+  const TM_HINT_MISSING = "write the missing piece, and it keeps.";
+
+  // The companion's bans, and this book's own: no digit (a count is a
+  // score), no "again" (the word that carries the guilt), no dash.
+  function tomorrowLineOk(line) {
+    const s = String(line || "");
+    return companionLineOk(s) && !/\d/.test(s) && !/\bagain\b/i.test(s) && !/[\u2014\u2013]/.test(s);
+  }
+  // avoid + pointless is a want signal, not a start problem: it reads the
+  // unwanted page and offers that door. Every other pair is itself.
+  function tomorrowRoute(tell, feel) {
+    const t = (tell === "avoid" && feel === "pointless") ? "unwanted" : tell;
+    const mv = TM_MOVES[t];
+    return mv ? { tell: t, kind: mv.kind, move: mv } : null;
+  }
+  function tomorrowReading(tell, n) {
+    const pool = TM_READINGS[tell] || [];
+    if (!pool.length) return "";
+    const i = ((Math.floor(Number(n) || 0) % pool.length) + pool.length) % pool.length;
+    return pool[i];
+  }
+  function tomorrowForgive(n) {
+    const i = ((Math.floor(Number(n) || 0) % TM_FORGIVE.length) + TM_FORGIVE.length) % TM_FORGIVE.length;
+    return TM_FORGIVE[i];
+  }
+  // The person's words go into the sentence as they wrote them, first letter
+  // lowered by the app's own rule (which leaves an all-caps name alone).
+  function tomorrowFill(line, thing) {
+    const t = String(thing || "").trim();
+    return String(line || "").split("{thing}").join(t ? lcFirst(t) : "it");
+  }
+
+  // THE PAGE. One page, top to bottom, each step appearing under the last
+  // as the answer lands; every edit in place; one accent action.
+  let tmState = { thing: null, own: "", tell: null, feel: null, draft: null, hint: "", editId: null };
+  // The things: the person's own weekly work in PLAN ORDER, with no mark
+  // and no count on any row, then their standing personal habits, then the
+  // things written into this book before. Nothing here is sorted by
+  // anything the app measured.
+  function tomorrowThings() {
+    const out = [];
+    goals.filter(g => g.status === "active").forEach(g => {
+      let rows = [];
+      try { rows = weeklyWorkFor(g, { withSkipped: true }) || []; } catch (e) { rows = []; }
+      rows.forEach(r => {
+        const m = r && r.m;
+        if (!m || m.dropped || !m.label) return;
+        out.push({ key: g.id + "|" + m.id, label: m.label, goalId: g.id, mechId: m.id, from: g.title || "" });
+      });
+    });
+    reminderList().forEach(r => {
+      if (r && r.schedule && r.label) out.push({ key: "rem|" + r.id, label: r.label, goalId: null, mechId: r.id, from: "" });
+    });
+    const seen = new Set(out.map(o => o.key));
+    unstuck.forEach(u => {
+      const th = u && u.thing;
+      if (!th || th.goalId != null || th.mechId != null || !th.label) return;
+      const k = "own|" + th.label.trim().toLowerCase();
+      if (seen.has(k)) return;
+      seen.add(k);
+      out.push({ key: k, label: th.label, goalId: null, mechId: null, from: "", own: true });
+    });
+    return out;
+  }
+  // What the person already told the app, in their words and only when it
+  // exists: the obstacle they named on the objective this habit drives, and
+  // the intake's "what's gotten in the way before". Never "you didn't write
+  // one".
+  function tomorrowSaid(thing) {
+    const out = [];
+    if (thing && thing.goalId != null && thing.mechId != null) {
+      const g = goals.find(x => x.id === thing.goalId);
+      const m = g && (g.mechanisms || []).find(x => x.id === thing.mechId);
+      const o = g && m && (g.objectives || []).find(x => x.id === m.drivesObjectiveId);
+      if (o && o.obstacle) out.push("you said what would stop this: " + ifThenSentence(o.obstacle, o.obstaclePlan));
+    }
+    let j = "";
+    try { j = ((buildIntake().journals || {}).obstacles || "").trim(); } catch (e) { j = ""; }
+    if (j) out.push("you wrote, at the start: " + trimQuote(sentencesOf(j)[0] || j));
+    return out;
+  }
+  const tmDateWords = iso => {
+    const d = new Date(String(iso) + "T12:00:00");
+    if (isNaN(d)) return "";
+    return d.toLocaleDateString("en-GB", { day: "numeric", month: "long" }).toLowerCase();
+  };
+  function renderTomorrow() {
+    const mount = document.getElementById("tomorrowMount");
+    if (!mount) return;
+    const st = tmState;
+    // The FAQ's row and chapter, in this book's costume: the title is the
+    // control and hugs its words, the caption is a sibling on the paper.
+    const row = (attrs, label, sub, cls) => `<div data-type-area="tomorrow/row" class="fq-item"
+      ><button class="fq-row${cls ? " " + cls : ""}" ${attrs} type="button"><b>${label}</b></button>${
+        sub ? `<span class="fq-sub">${sub}</span>` : ``}</div>`;
+    const ch = (name, body, cls) => `<div data-type-area="tomorrow/chapter" class="fq-ch${cls ? " " + cls : ""}"
+      ><div data-type-area="tomorrow/chapter" class="fq-ch-h">${name}</div>
+      <div class="fq-ch-rule"></div>${body}</div>`;
+    const hi = (t, on) => on ? `<span class="ch-hi">${t}</span>` : t;
+    const things = tomorrowThings();
+    const chosenKey = st.thing ? st.thing.key : null;
+    if (st.thing && st.thing.own && !things.some(t => t.key === chosenKey)) things.unshift(st.thing);
+    const thingRows = things.map(t => row(`data-tm="thing" data-key="${escHtml(t.key)}"`,
+      hi(escHtml(t.label), t.key === chosenKey),
+      t.from ? `from ${escHtml(t.from)}` : (t.own ? `written here before` : ``))).join("");
+    const ownRow = `<div data-type-area="tomorrow/own" class="tm-own"><input type="text" class="tm-own-input" id="tmOwn"
+      placeholder="or something not on the board, in your words" value="${escHtml(st.own || "")}"
+      aria-label="something not on the board, in your words"></div>`;
+    const tellRows = TM_TELLS.map(t => row(`data-tm="tell" data-id="${t.id}"`, hi(escHtml(t.key), st.tell === t.id), escHtml(t.line))).join("");
+    const feelRows = TM_FEELS.map(f => row(`data-tm="feel" data-id="${f}"`, hi(escHtml(f), st.feel === f))).join("");
+    const route = (st.thing && st.tell) ? tomorrowRoute(st.tell, st.feel) : null;
+    let readingBlock = "", moveBlock = "", forgive = "";
+    if (route) {
+      const nPrior = unstuck.filter(u => u.tell === route.tell && u.id !== st.editId).length;
+      const said = tomorrowSaid(st.thing);
+      const reading = tomorrowFill(tomorrowReading(route.tell, nPrior), st.thing.label);
+      readingBlock = ch("what's going on", `
+        ${said.map(s => `<p data-type-area="tomorrow/said" class="tm-quote">${escHtml(s)}</p>`).join("")}
+        <p data-type-area="tomorrow/reading" class="tm-read">${escHtml(reading)}</p>`);
+      const mv = route.move;
+      const keep = `<div data-type-area="tomorrow/keep" class="tm-keep"><button class="btn-solid" type="button" data-tm="keep">${
+        st.editId ? "keep the change" : "keep this"}</button></div>`;
+      if (mv.kind === "door") {
+        const g = st.thing.goalId != null ? goals.find(x => x.id === st.thing.goalId) : null;
+        moveBlock = ch("one small move", `
+          <p data-type-area="tomorrow/reading" class="tm-read">${escHtml(g ? mv.line : mv.free)}</p>
+          ${g ? row(`data-tm="goal" data-gid="${escHtml(String(g.id))}"`, `<span class="ch-hi">look at ${escHtml(g.title || "the goal")}</span>`) : ``}
+          ${keep}`);
+      } else {
+        const prompt = tomorrowFill(mv.prompt, st.thing.label);
+        moveBlock = ch("one small move", `
+          <p data-type-area="tomorrow/reading" class="tm-read">${escHtml(tomorrowFill(mv.line, st.thing.label))}</p>
+          <div data-type-area="tomorrow/write" class="tm-write">
+            <div class="qv-if" id="tmWrite" contenteditable="plaintext-only">${escHtml(st.draft != null ? st.draft : prompt)}</div>
+            <div class="qv-if-hint">${escHtml(st.hint || (mv.kind === "ifthen" ? TM_HINT_IFTHEN : TM_HINT_LINE))}</div>
+          </div>
+          ${keep}`);
+      }
+      forgive = `<p data-type-area="tomorrow/forgive" class="fq-sub-line tm-forgive">${escHtml(tomorrowForgive(unstuck.length))}</p>`;
+    }
+    // The book's own pages, newest first: the thing, the move, the day. No
+    // tick for worked or didn't. A page not yet in the week offers the way
+    // there once; a page about a should offers its goal.
+    const pages = unstuck.slice().reverse();
+    const pageRows = pages.length ? pages.map(u => {
+      const th = u.thing || {};
+      const g = th.goalId != null ? goals.find(x => x.id === th.goalId) : null;
+      const canWeek = !u.landed && u.tell !== "unwanted" && u.move;
+      return row(`data-tm="rec" data-id="${escHtml(u.id)}"`, `${escHtml(th.label || "")}: ${escHtml(u.move || "")}`,
+        `<span class="tm-date">${escHtml(tmDateWords(u.at))}</span>${
+          canWeek ? `<button class="tm-word" type="button" data-tm="week" data-id="${escHtml(u.id)}"><span class="ch-hi">put it in this week</span></button>`
+                  : (u.landed ? `, in your week` : ``)}${
+          g && u.tell === "unwanted" ? `<button class="tm-word" type="button" data-tm="goal" data-gid="${escHtml(String(g.id))}"><span class="ch-hi">look at the goal</span></button>` : ``}`);
+    }).join("") : `<p data-type-area="tomorrow/empty" class="fq-sub-line">nothing kept yet. the first page is the one you're writing.</p>`;
+    mount.innerHTML = `<div class="fq-page tm-page">
+      <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
+        <div data-type-area="tomorrow/header"><h1 class="fq-h1">tomorrow, and tomorrow.</h1>
+          <p class="fq-sub-line">${escHtml(TM_SUB_LINE)}</p></div>
+        ${ch("the thing", thingRows + ownRow)}
+        ${st.thing ? ch("when it's time, what happens?", tellRows) : ``}
+        ${st.thing && st.tell === "avoid" ? ch("right before, it feels…", feelRows) : ``}
+        ${readingBlock}${moveBlock}${forgive}
+        ${ch("earlier pages", pageRows, "fq-quiet")}
+      </div></div></div>`;
+    const page = mount.querySelector(".tm-page");
+    page.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-tm]");
+      if (!b) return;
+      const act = b.dataset.tm;
+      if (act === "thing") {
+        const t = tomorrowThings().find(x => x.key === b.dataset.key)
+          || (st.thing && st.thing.key === b.dataset.key ? st.thing : null);
+        if (t) tomorrowPick(t);
+      } else if (act === "tell") {
+        tmState.tell = b.dataset.id; tmState.feel = null; tmState.draft = null; tmState.hint = "";
+        renderTomorrow(); tomorrowScrollTo("what's going on");
+      } else if (act === "feel") {
+        tmState.feel = tmState.feel === b.dataset.id ? null : b.dataset.id; tmState.draft = null; tmState.hint = "";
+        renderTomorrow();
+      } else if (act === "keep") { tomorrowKeep();
+      } else if (act === "week") { tomorrowLand(b.dataset.id);
+      } else if (act === "goal") {
+        const g = goals.find(x => String(x.id) === b.dataset.gid);
+        if (g) { closeTomorrow(); openChapters(g.id); }
+      } else if (act === "rec") { tomorrowReopen(b.dataset.id); }
+    });
+    const own = mount.querySelector("#tmOwn");
+    if (own) {
+      own.addEventListener("input", () => { tmState.own = own.value; });
+      own.addEventListener("keydown", e => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const label = own.value.replace(/\s+/g, " ").trim();
+        if (!label) return;
+        tomorrowPick({ key: "own|" + label.toLowerCase(), label, goalId: null, mechId: null, from: "", own: true });
+      });
+    }
+    const write = mount.querySelector("#tmWrite");
+    if (write) write.addEventListener("input", () => { tmState.draft = write.textContent; });
+    if (document.getElementById("tomorrowOverlay").classList.contains("open")) tomorrowPaint();
+  }
+  function tomorrowScrollTo(heading) {
+    const mount = document.getElementById("tomorrowMount");
+    const h = mount && [...mount.querySelectorAll(".fq-ch-h")].find(el => el.textContent === heading);
+    if (h && h.scrollIntoView) { try { h.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }
+  }
+  function tomorrowPick(t) {
+    tmState.thing = t; tmState.own = t.own ? t.label : "";
+    tmState.tell = null; tmState.feel = null; tmState.draft = null; tmState.hint = ""; tmState.editId = null;
+    renderTomorrow();
+    tomorrowScrollTo("when it's time, what happens?");
+  }
+  // KEEP. The written line is the move; an unfinished sentence keeps
+  // nothing and says so in the hint, never in a toast. Editing an earlier
+  // page changes that page rather than writing a second one.
+  function tomorrowKeep() {
+    const st = tmState;
+    const route = (st.thing && st.tell) ? tomorrowRoute(st.tell, st.feel) : null;
+    if (!route) return;
+    const mv = route.move;
+    let move = "", ifThen = null;
+    if (mv.kind === "door") {
+      move = st.thing.goalId != null ? "this might be a should. look at the goal, pausing is allowed." : "let this one go, on purpose.";
+    } else {
+      const el = document.getElementById("tmWrite");
+      const text = String(el ? el.textContent : "").replace(/\s+/g, " ").trim();
+      const prompt = tomorrowFill(mv.prompt, st.thing.label);
+      if (!text || /…/.test(text) || text === prompt) {
+        st.draft = text || prompt; st.hint = TM_HINT_MISSING;
+        renderTomorrow();
+        const again = document.getElementById("tmWrite");
+        if (again) again.focus();
+        return;
+      }
+      move = text;
+      if (mv.kind === "ifthen") { const p = parseIfThenSentence(text); ifThen = p.obstacle ? p : null; }
+    }
+    const existing = st.editId ? unstuck.find(u => u.id === st.editId) : null;
+    if (existing) {
+      existing.tell = route.tell; existing.feel = st.feel || null; existing.move = move; existing.ifThen = ifThen;
+    } else {
+      unstuck.push({ id: userId("us"), at: todayKey(),
+        thing: { label: st.thing.label, goalId: st.thing.goalId != null ? st.thing.goalId : null,
+                 mechId: st.thing.mechId != null ? st.thing.mechId : null },
+        tell: route.tell, feel: st.feel || null, move, ifThen, landed: null });
+    }
+    saveState();
+    tmState = { thing: null, own: "", tell: null, feel: null, draft: null, hint: "", editId: null };
+    renderTomorrow();
+    showToast(existing ? "changed. the page is yours." : "kept. it's on the book's pages now.");
+  }
+  // The move lands in the week as a hand-added task, through the same road
+  // the corner's + takes: day-less, in this week's lane, a grey stone.
+  function tomorrowLand(id) {
+    const rec = unstuck.find(u => u.id === id);
+    if (!rec || rec.landed || !rec.move) return;
+    const r = addReminder({ label: rec.move, date: null, wk: weekKeyOf() });
+    if (!r) return;
+    rec.landed = r.id;
+    saveState();
+    renderTomorrow();
+    showToast("it's in this week's lane now.");
+  }
+  function tomorrowReopen(id) {
+    const u = unstuck.find(x => x.id === id);
+    if (!u || !u.thing) return;
+    const th = u.thing;
+    const key = th.goalId != null ? th.goalId + "|" + th.mechId
+      : th.mechId != null ? "rem|" + th.mechId : "own|" + String(th.label || "").trim().toLowerCase();
+    const t = tomorrowThings().find(x => x.key === key)
+      || { key, label: th.label, goalId: th.goalId, mechId: th.mechId, from: "", own: th.goalId == null && th.mechId == null };
+    // An unwanted page reopened may have been reached through avoid +
+    // pointless; it reads as unwanted either way, so it reopens there.
+    tmState = { thing: t, own: t.own ? t.label : "", tell: u.tell, feel: u.feel || null, draft: u.move || null, hint: "", editId: u.id };
+    renderTomorrow();
+    tomorrowScrollTo("one small move");
+  }
+  // THE BOOK'S OWN PAINT, read from SHELF_BOOKS: the chapter rules in the
+  // spine's `rule`, and --cat for the highlights, so recolouring the book
+  // repaints the page. After open, never before: a closed page is
+  // display:none and every width it reports is zero.
+  function tomorrowPaint() {
+    const mount = document.getElementById("tomorrowMount");
+    const bk = SHELF_BOOKS.find(b => b.door === "tomorrow");
+    if (!mount || !bk) return;
+    buildQuarterRules(mount, ".fq-ch-rule");
+    const c = bk.rule.replace("#", "");
+    const rgb = [0, 2, 4].map(i => parseInt(c.slice(i, i + 2), 16)).join(",");
+    mount.querySelectorAll(".fq-ch-rule").forEach(el => el.style.setProperty("--rule-ink", "rgb(" + rgb + ")"));
+    // THE HIGHLIGHT TAKES THE RULE, NOT THE INK. Measured on the real page:
+    // the stone brown at the swash's 0.42 drew a dark band through the
+    // chosen words and read as a strikethrough; the rule is the same book
+    // with less body in it, and reads as a highlighter.
+    const page = mount.querySelector(".tm-page");
+    if (page) page.style.setProperty("--cat", rgb);
+  }
+  function openTomorrow(prefill) {
+    tmState = { thing: null, own: "", tell: null, feel: null, draft: null, hint: "", editId: null };
+    if (prefill && prefill.mechId != null) {
+      const t = tomorrowThings().find(x => x.mechId === prefill.mechId
+        && (prefill.goalId == null || x.goalId === prefill.goalId));
+      if (t) tmState.thing = t;
+    }
+    renderTomorrow();
+    openBookPage(document.getElementById("tomorrowOverlay"));
+    tomorrowPaint();
+  }
+  function closeTomorrow() {
+    closeBookPage(document.getElementById("tomorrowOverlay"));
+  }
+  document.getElementById("tomorrowClose").addEventListener("click", closeTomorrow);
+
   // An empty board's "find out what you actually want" ALWAYS means the
   // discovery journal — never the weekly check-in. Someone onboarded who
   // deleted every goal still has has_onboarded set, and openCheckin() would
@@ -30805,6 +31295,8 @@
         reminders: (profile.data && profile.data.reminders) || [],
         // The garden's rakings (0012): null is smooth sand.
         twSand: (profile.data && profile.data.tw_sand) || null,
+        // TOMORROW, AND TOMORROW's pages (0013): the same name both sides.
+        unstuck: (profile.data && profile.data.unstuck) || [],
         journalBook: Object.fromEntries((journalRows.data || []).map(r => [r.day, r.text])),
       };
     },
@@ -31327,6 +31819,7 @@
         && twCollect.pos && Object.keys(twCollect.pos).length)
         ? { wk: twCollect.wk, pos: twCollect.pos }
         : null,
+      unstuck: unstuck.slice(),
     };
   }
 
@@ -31403,6 +31896,7 @@
     twCollect = (state.twCollect && state.twCollect.wk && state.twCollect.pos)
       ? { wk: state.twCollect.wk, pos: state.twCollect.pos }
       : { wk: null, pos: {} };
+    unstuck = Array.isArray(state.unstuck) ? state.unstuck.slice() : [];
     recentCheckins = (state.checkins || []).slice();
     deriveGates();
     visionQuote = state.profile.vision || "";
@@ -34129,10 +34623,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           // terminal period) that complete "If …, then …." — the compose side
           // still defends: shed one trailing period, lowercase the first
           // character, and flag (not fix) an old-data obstacle that runs long.
-          const clause = x => {
-            const t = (x || "").trim().replace(/\.+$/, "");
-            return t ? t.charAt(0).toLowerCase() + t.slice(1) : "";
-          };
+          // HOISTED (2026-09-05): the sentence is parsed by one rule app-wide,
+          // ifThenClause / parseIfThenSentence beside TOMORROW, AND TOMORROW.
+          const clause = ifThenClause;
           const ifThenText = o => {
             if (((o.obstacle || "").match(/\S+/g) || []).length > 25) {
               console.warn("[quarters] stored obstacle is over 25 words, old data shown as-is:",
@@ -34140,13 +34633,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             }
             return `If ${clause(o.obstacle) || "…"}, then ${clause(o.obstaclePlan) || "…"}.`;
           };
-          const parseIfThen = text => {
-            const t = (text || "").trim().replace(/\.\s*$/, "");
-            const m = /^\s*if\s+([\s\S]*?)(?:,\s*|\s+)then\s+([\s\S]*)$/i.exec(t);
-            const clean = x => { const v = (x || "").trim(); return v === "…" ? "" : v; };
-            if (m) return { obstacle: clean(m[1]), obstaclePlan: clean(m[2]) };
-            return { obstacle: clean(t.replace(/^\s*if\s+/i, "")), obstaclePlan: "" };
-          };
+          const parseIfThen = parseIfThenSentence;
           // A quarter dot on the road: drawn with the rough filter, filled
           // ink for the committed quarter, an open ring (paper-filled, so it
           // masks the line behind it) for a sketch.
@@ -36454,6 +36941,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // area's colour fails a test rather than being noticed by eye.
     specimenSvg, paintAddPlate,
     releaseWishesGet: () => releaseWishes,
+    // TOMORROW, AND TOMORROW: the pools, the chooser and its inverse, the page.
+    tomorrowPools: () => ({ tells: TM_TELLS, feels: TM_FEELS, readings: TM_READINGS, moves: TM_MOVES,
+      forgive: TM_FORGIVE, subLine: TM_SUB_LINE, hints: [TM_HINT_IFTHEN, TM_HINT_LINE, TM_HINT_MISSING] }),
+    tomorrowRoute, tomorrowReading, tomorrowForgive, tomorrowFill, tomorrowLineOk,
+    openTomorrow, closeTomorrow, renderTomorrow, unstuckGet: () => unstuck,
+    parseIfThenSentence, ifThenSentence,
     // Wave 2 seams: the journal book — day math, saves, the queue, the doors.
     journalDays, journalPagesBetween, journalPagesInWeek, journalSaveEntry,
     journalFlush, journalFlipDays, openJournal, closeJournal, journalLeafCount, journalPaintVine,
@@ -37521,6 +38014,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       ["tensionOverlay", "tensionClose"],
       ["helpOverlay", "helpClose"],
       ["portraitOverlay", "portraitClose"],
+      ["tomorrowOverlay", "tomorrowClose"],
       ["faqOverlay", "faqClose"],
       ["weekOverlay", "weekClose"],
       ["quarterOverlay", "quarterClose"],
