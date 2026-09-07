@@ -19542,11 +19542,13 @@
     // The shelf is an <svg> sized inline by mountShelf, so it is scaled by
     // capping its width rather than by a rule it does not read. Its natural
     // width is read once, with the factor cleared.
-    const shelfW = shelf ? shelf.getBoundingClientRect().width : 0;
-    const apply = f => {
-      root.style.setProperty("--lv-fit", f.toFixed(3));
-      if (shelf && shelfW) shelf.style.maxWidth = Math.round(shelfW * f) + "px";
-    };
+    // THE SHELF KEEPS ITS OWN SIZE, NOW IN FACT (2026-09-07, owner: "bookshelf
+    // way too small, doesn't match size of screen"). The ruling beside
+    // .sb-wrap said the books are navigation and the last inch of scroll is
+    // for reaching them; this loop was still shrinking the shelf with the
+    // rest of the board, to half its size on a laptop. The fit scales the
+    // board's own measures; the shelf is drawn at the width the screen gives it.
+    const apply = f => { root.style.setProperty("--lv-fit", f.toFixed(3)); };
     const fits = () => root.scrollHeight <= window.innerHeight + 1;
     if (fits()) { clear(); return; }
     // BINARY SEARCH FOR THE LARGEST FACTOR THAT FITS, and the search is the
