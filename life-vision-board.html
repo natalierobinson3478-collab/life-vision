@@ -6597,6 +6597,10 @@
      quarter, a shade quieter, and the one word that brings it back is always
      readable, since a control that shows on hover is no way back on a phone. */
   .ch-work-off { opacity: 0.62; }
+  /* A day or a week off sits under its row in the metadata's own voice. */
+  .ch-work-abs { display: flex; align-items: baseline; gap: 9px; margin: 0 0 0 33px;
+    font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.05em;
+    color: var(--ink-muted); line-height: var(--lead); }
   .ch-work-name-off { font-style: italic; }
   .ch-work-back { background: none; border: none; padding: 0 0 0 2px; cursor: pointer;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.06em;
@@ -17673,6 +17677,33 @@
       m.drivesObjectiveId === o.id && !m.dropped);
     const offFor = o => (g.mechanisms || []).filter(m =>
       m.drivesObjectiveId === o.id && m.dropped);
+    // OFF FOR A DAY OR A WEEK, AND THE WAY BACK (2026-09-07, owner: "if
+    // someone deletes for that day or week, if they go to the chapters
+    // they have the option to bring it back"). A row's box and the swipes
+    // write a day off (a move to "off") or a week off (a skip) into the
+    // week's record, this week or the next; the chapter reads the same
+    // records back and says so under the row, with one word beside each.
+    const wkNow = weekKeyOf();
+    const wkNext = localDateKey(new Date(new Date(wkNow + "T00:00:00").getTime() + 7 * 86400000));
+    const absences = m => {
+      const out = [];
+      [[wkNow, "this week"], [wkNext, "next week"]].forEach(([wk, when]) => {
+        if (isSkipped(g.id, m.id, wk)) { out.push({ kind: "week", wk, text: "off " + when }); return; }
+        const mv = movesFor(g.id, m.id, wk);
+        const offs = Object.keys(mv).filter(k => mv[k] === "off");
+        if (!offs.length) return;
+        const dates = weekDates(wk);
+        const words = offs.map(k => /^f\d+$/.test(k) ? "one any day" : (WK_DAY_WORDS[dates.indexOf(k)] || k));
+        out.push({ kind: "days", wk, offs, text: "off " + words.join(", ") + (wk === wkNext ? " next week" : "") });
+      });
+      return out;
+    };
+    const absLine = m => absences(m).map(a => `<div class="ch-work-abs" data-type-area="chapters/work">
+        <span>${escHtml(a.text)}</span>
+        <button type="button" class="ch-work-back" data-back-abs="${escHtml(m.id)}" data-abs-kind="${a.kind}"
+          data-abs-wk="${escHtml(a.wk)}" data-abs-offs="${escHtml((a.offs || []).join("|"))}"
+          aria-label="bring this back">bring back</button>
+      </div>`).join("");
     const workRows = o => {
       const ms = workFor(o), off = offFor(o);
       const rows = ms.map(m => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
@@ -17686,7 +17717,7 @@
           <button type="button" class="ch-work-drop" data-drop-mech="${escHtml(m.id)}"
             aria-label="stop doing this">remove</button>
         </span>
-      </div>`).join("");
+      </div>${absLine(m)}`).join("");
       // OFF YOUR WEEK, AND THE WAY BACK (2026-09-07, owner: a series swiped
       // off by accident, and the undo gone by the time she looked). A
       // removed thing is only marked, never deleted (its ticks stay
@@ -17874,6 +17905,18 @@
         again();
         if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
       }, { inline: btn.closest(".ch-work-row") });
+    }));
+    mount.querySelectorAll("[data-back-abs]").forEach(btn => btn.addEventListener("click", () => {
+      const gNow = goals.find(x => x.id === g.id) || g;
+      const m = (gNow.mechanisms || []).find(x => x.id === btn.dataset.backAbs);
+      if (!m) return;
+      const wk = btn.dataset.absWk;
+      if (btn.dataset.absKind === "week") skipThisWeek(gNow.id, m.id, false, wk);
+      else String(btn.dataset.absOffs || "").split("|").filter(Boolean).forEach(k => moveOccurrence(gNow.id, m.id, k, k, wk));
+      renderAll();
+      again();
+      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+      showToast(`"${appVoice(m.weekLabel ?? m.label, wroteIt(m)).slice(0, 40)}" is back ${btn.dataset.absKind === "week" ? (wk === weekKeyOf() ? "this week" : "next week") : "on its day"}.`);
     }));
     mount.querySelectorAll("[data-back-mech]").forEach(btn => btn.addEventListener("click", () => {
       // looked up on the live board at the tap, not held from the render:
