@@ -10762,7 +10762,10 @@
                          // the account's board as this device last saw it
                          // (2026-09-01, the phone's own copy): a fixture
                          // must not be able to pose as the last sync either
-                         "lifevision.mirror.v1"];
+                         "lifevision.mirror.v1",
+                         // the last board this device knew to be in the
+                         // account (2026-09-07, the merge): same rule
+                         "lifevision.base.v1"];
   // Published to storage, not just held in this window, because the write that
   // actually did the damage came from ANOTHER TAB: a live page sitting open
   // through a run, holding board state from before it, flushing a debounced
@@ -22916,6 +22919,10 @@
       // not ground.
       ["#twStripMount", "#twCollectionMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
       document.querySelectorAll("#thisWeekMount .tw-row, #thisWeekMount .tw-sec-h, #thisWeekMount .tw-unplaced").forEach(take);
+      // AND THE GROUND ENDS WHERE THE SAND ENDS (2026-09-07): no target
+      // below the garden's foot, which would stretch the page past it.
+      const ground = document.getElementById("twSandGround");
+      if (ground) { const gr = ground.getBoundingClientRect(); if (gr.height) vp.h = Math.max(0, Math.min(vp.h, gr.bottom)); }
     } else if (roam.scope === "atlas" || roam.scope === "faq") {
       // Both are one page-sheet on the book backdrop, with the ✕ as the
       // only thing on it that isn't ground.
@@ -23926,6 +23933,16 @@
     const slot = document.getElementById("twCompanion");
     const sheet = document.querySelector("#thisWeekMount .tw-sheet");
     if (!slot || !sheet) return;
+    // THE FOOT LANE HAS NO MARGIN TO WANDER DOWN (2026-09-07). On a phone
+    // the companion's home is the open sand at the FOOT of the page, and a
+    // drift "down the margin toward the goal" from there would be a drift
+    // off the end of the page, stretching the scroll past the sand. Where
+    // the margin stands below the sheet's last line there is no drift; the
+    // roam alone moves the figure, and it keeps to the sand. (Today the
+    // goal blocks this aims at are gone from the sheet, item 138, so the
+    // drift lands nowhere on any screen; the rule stands for their return.)
+    const margin = slot.closest(".tw-margin");
+    if (margin && margin.getBoundingClientRect().top >= sheet.getBoundingClientRect().bottom - 1) return;
     let y = 0;
     if (goalId != null) {
       const sec = document.querySelector(`#thisWeekMount .tw-goal[data-goal="${goalId}"]`);
@@ -28086,6 +28103,14 @@
       const back = document.getElementById(focusedId);
       if (back) back.focus();
     }
+    // THE SAND IS MEASURED ONCE THE WHOLE PAGE STANDS (2026-09-07, owner:
+    // "random cream at the bottom", the desk and the phone). The ground was
+    // measured above, before the pile of finished stones was laid out below
+    // it, so a week with stones in the pile ran that much longer than its
+    // sand and the paper showed through at the foot. Measured again here,
+    // when nothing else will move; a length that did not change costs a
+    // read and no paint.
+    twSandGroundPaint();
     // ...and every reader keeps theirs. The strip has its height by now, so
     // the page is back to full length and the old position exists again. A
     // fresh open captures 0 (a hidden overlay reads scrollTop as 0), so
@@ -28754,6 +28779,19 @@
     const ov = document.getElementById("thisWeekOverlay");
     if (ov && ov.classList.contains("open")) twSandGroundPaint();
   });
+  // THE GROUND FOLLOWS THE PAGE (2026-09-07): whatever stretches the page
+  // after the sand was measured, a stone carried low, a figure landing at
+  // the foot, is caught at the next scroll and the sand is measured again
+  // to the page's new length. Growth only; a shorter page waits for the
+  // next render, since shrinking the ground under a finger would move it.
+  (function () {
+    const ov = document.getElementById("thisWeekOverlay");
+    if (!ov) return;
+    ov.addEventListener("scroll", () => {
+      const host = document.getElementById("twSandGround");
+      if (host && ov.classList.contains("open") && ov.scrollHeight > host.offsetHeight + 1) twSandGroundPaint();
+    }, { passive: true });
+  })();
   // ---- THE RAKE (session B; DECISIONS: the rake is a page-level mode) ----
   // THE WEEK-TURN READER IS weekKeyOf AND NOTHING ELSE. There is no "the
   // week has turned" event anywhere in this app: the recurring reopen
@@ -32464,13 +32502,14 @@
     // On the offline road the copy has the save and the reconnect carries
     // it up; the account is not asked, so no toast can be wrong.
     if (offlineBoard) { offlineDirty = true; return { ok: true, offline: true }; }
-    const run = () => store.save(serializeState())
-      .catch(err => ({ ok: false, reason: err.message }));
+    let body = null;
+    const run = () => { body = serializeState(); return store.save(body)
+      .catch(err => ({ ok: false, reason: err.message })); };
     const mine = (saveInFlight ?? Promise.resolve()).then(run, run);
     saveInFlight = mine;
     const r = await mine;
     if (saveInFlight === mine) saveInFlight = null;
-    if (r.ok) { mirrorWrite(); syncNoteSaved(r); }
+    if (r.ok) { mirrorWrite(); baseWrite(body); syncNoteSaved(r); }   // the account has this board: it is the base now
     else if (store !== localStore && looksOffline(r.reason)) {
       // The network went mid-session: step onto the offline road with the
       // change kept, rather than a toast that says the account refused it.
@@ -32600,8 +32639,9 @@
         if (localReal && localReal.profile && localReal.profile.has_onboarded
             && applyState(localReal)) {
           renderAll();
-          const up = await store.save(serializeState());
-          if (up.ok) showToast("your board is in your account now, it follows you anywhere you sign in.");
+          const body0 = serializeState();
+          const up = await store.save(body0);
+          if (up.ok) { baseWrite(body0); showToast("your board is in your account now, it follows you anywhere you sign in."); }
           else cloudSaveProblemBar(up.reason);
           return true;
         }
@@ -32629,8 +32669,9 @@
       if (applyState(state)) {
         renderAll();
         // The account answered: this is the board the phone keeps for the
-        // next time it cannot.
+        // next time it cannot, and the base the next merge measures from.
         mirrorWrite();
+        baseWrite();
         return true;
       }
       // Empty localStorage isn't necessarily a first visit: the browser pane's
@@ -32721,10 +32762,186 @@
   // a missing network dies, boots the mirror instead, under a bar that says
   // so. Changes made on that road are kept in the mirror and carried up
   // when the network returns; if nothing was changed, the account's copy is
-  // taken instead, since it may be newer. Carrying up is the app's ordinary
-  // last-writer-wins save, no cleverer than any other save; a board edited
-  // on the desktop while the phone was offline AND edited on the phone is
-  // the one case this does not resolve, and DECISIONS names it.
+  // taken instead, since it may be newer. Carrying up used to be the app's
+  // ordinary last-writer-wins save; since 2026-09-07 what the account holds
+  // comes in under the copy first and the MERGED board goes up (the block
+  // below), so a board edited on the desk while the phone was offline AND
+  // edited on the phone keeps both.
+  //
+  // ---- THE BOARD MERGES, IT IS NOT REPLACED (2026-09-07, owner: the phone
+  // and the desk each showing a different week of the same board; "they
+  // should all be in sync"). Until today every answer from the account and
+  // every save to it moved the WHOLE board, so two devices that had each
+  // changed something resolved to whichever spoke last, and the other's
+  // changes were gone: a rename and three ticks on the desk, a task added
+  // on the phone. The rule now: a device remembers the last board it knew
+  // to be in the account (the BASE, its own key below), and when the
+  // account holds something newer while this device holds changes it has
+  // not sent, the three are merged, field by field and record by record.
+  // What only one side changed is taken from that side. What both changed
+  // goes to this device, whose hand is the one on the page. What one side
+  // removed and the other left alone stays removed. A tick, a task, a page
+  // added on either side is kept. A device with no base yet (the first
+  // open after this landed) keeps everything both sides hold and lets the
+  // account settle from there. Nothing here reads a clock: the base is the
+  // only memory, and a board that comes back equal to the account's is
+  // never sent up again, so two devices cannot pass one change back and
+  // forth. Test 199. ----
+  const BASE_KEY = "lifevision.base.v1";
+  function baseRead() {
+    try { return JSON.parse(localStorage.getItem(BASE_KEY) || "null"); }
+    catch (e) { return null; }
+  }
+  function baseWrite(state) {
+    if (store === localStore) return;   // the local store is its own memory
+    try { localStorage.setItem(BASE_KEY, JSON.stringify(state || serializeState())); } catch (e) {}
+  }
+  function baseClear() { try { localStorage.removeItem(BASE_KEY); } catch (e) {} }
+  const boardSnapshot = () => JSON.parse(JSON.stringify(serializeState()));
+  // Empty is empty however it is spelled: a missing field, null, false,
+  // zero, an empty string, list or object all read as the same absence, so
+  // a board that came back through the wire never differs from the one
+  // that went up merely by the spelling of nothing.
+  function boardEmptyish(v) {
+    if (v == null || v === "" || v === false || v === 0) return true;
+    if (Array.isArray(v)) return v.length === 0;
+    if (typeof v === "object") return Object.keys(v).length === 0;
+    return false;
+  }
+  function boardSame(a, b) {
+    if (a === b) return true;
+    const ea = boardEmptyish(a), eb = boardEmptyish(b);
+    if (ea || eb) return ea && eb;
+    if (typeof a !== typeof b) return false;
+    if (Array.isArray(a) || Array.isArray(b)) {
+      if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+      return a.every((x, i) => boardSame(x, b[i]));
+    }
+    if (typeof a === "object") {
+      const ka = Object.keys(a).filter(k => !boardEmptyish(a[k]));
+      const kb = Object.keys(b).filter(k => !boardEmptyish(b[k]));
+      if (ka.length !== kb.length) return false;
+      return ka.every(k => boardSame(a[k], b[k]));
+    }
+    return false;
+  }
+  const boardIsObj = v => !!v && typeof v === "object" && !Array.isArray(v);
+  // A record's name across devices. Goals have no stable id (the apply
+  // numbers them by position), so a goal is its handle, else its title;
+  // everything else on the board carries an id.
+  function boardKeyOf(item, name) {
+    if (!boardIsObj(item)) return undefined;
+    if (name === "goals") return item.handle || item.title || (item.id != null ? String(item.id) : undefined);
+    return item.id != null ? String(item.id) : undefined;
+  }
+  // The list as a map by record name, or null when it is not that kind of
+  // list (a name missing, or two records sharing one).
+  function boardKeyed(list, name) {
+    if (!Array.isArray(list) || !list.length) return null;
+    const map = new Map();
+    for (const it of list) {
+      const k = boardKeyOf(it, name);
+      if (k == null || map.has(k)) return null;
+      map.set(k, it);
+    }
+    return map;
+  }
+  // Pure. base may be null (no memory yet): then nothing either side holds
+  // is dropped, and where the two disagree this device's line stands.
+  function mergeBoards(base, local, remote) {
+    const walk = (b, l, r, name) => {
+      if (boardSame(l, r)) return l;
+      const hasB = b !== undefined && !(boardEmptyish(b) && name === "");
+      if (hasB && boardSame(l, b)) return r;              // only the account moved
+      if (hasB && boardSame(r, b)) return l;              // only this device moved
+      if (boardIsObj(l) && boardIsObj(r)) {
+        const bb = boardIsObj(b) ? b : null;
+        const out = {};
+        new Set([...Object.keys(l), ...Object.keys(r)]).forEach(k => {
+          const inL = !boardEmptyish(l[k]), inR = !boardEmptyish(r[k]);
+          const bk = bb ? bb[k] : undefined;
+          const held = bb && !boardEmptyish(bk);           // the base had this field
+          if (inL && inR) out[k] = walk(bk, l[k], r[k], k);
+          else if (inL) { if (!(held && boardSame(l[k], bk))) out[k] = l[k]; }   // new here, or emptied there on purpose
+          else if (inR) { if (!(held && boardSame(r[k], bk))) out[k] = r[k]; }   // new there, or emptied here on purpose
+          else out[k] = l[k] !== undefined ? l[k] : r[k];
+        });
+        return out;
+      }
+      if (Array.isArray(l) && Array.isArray(r)) {
+        const lm = boardKeyed(l, name), rm = boardKeyed(r, name);
+        if ((lm || !l.length) && (rm || !r.length)) return keyed(b, l, r, name);
+        const prim = x => x == null || typeof x !== "object";
+        if (l.every(prim) && r.every(prim)) return set(b, l, r);
+      }
+      return l;                                            // both moved: the hand on the page
+    };
+    // Records by name: each side's additions kept, a record one side removed
+    // and the other left alone stays removed, a record both hold merges.
+    // This device's order is the spine; the account's additions follow.
+    const keyed = (b, l, r, name) => {
+      const bm = boardKeyed(b, name) || new Map();
+      const rm = new Map(r.map(x => [boardKeyOf(x, name), x]));
+      const out = [];
+      l.forEach(x => {
+        const k = boardKeyOf(x, name);
+        if (rm.has(k)) out.push(walk(bm.get(k), x, rm.get(k), name));
+        else if (!(bm.has(k) && boardSame(x, bm.get(k)))) out.push(x);
+      });
+      const have = new Set(out.map(x => boardKeyOf(x, name)));
+      r.forEach(x => {
+        const k = boardKeyOf(x, name);
+        if (have.has(k)) return;
+        if (bm.has(k) && boardSame(x, bm.get(k))) return;   // removed here on purpose
+        out.push(x); have.add(k);
+      });
+      return out;
+    };
+    // Plain values as a set: kept if both hold it or either added it.
+    const set = (b, l, r) => {
+      const bs = new Set(Array.isArray(b) ? b : []), ls = new Set(l), rs = new Set(r);
+      const out = [];
+      l.forEach(x => { if ((rs.has(x) || !bs.has(x)) && out.indexOf(x) < 0) out.push(x); });
+      r.forEach(x => { if (!ls.has(x) && !bs.has(x) && out.indexOf(x) < 0) out.push(x); });
+      return out;
+    };
+    const merged = walk(base == null ? undefined : base, local || {}, remote || {}, "");
+    if (Array.isArray(merged.goals)) merged.goals = merged.goals.map((g, i) => Object.assign({}, g, { position: i }));
+    if (Array.isArray(merged.checkins)) merged.checkin = merged.checkins[0] || null;
+    return merged;
+  }
+  const boardBlank = s => !s || (!(s.goals || []).length && !(s.profile && s.profile.has_onboarded));
+  // The account's board comes in, under whatever this device has not sent.
+  // Returns null when it could not be applied; else whether the board on
+  // the page now differs from the account's and so must go up.
+  function takeAccount(remote) {
+    const base = baseRead();
+    const m = mirrorRead();
+    const local = boardSnapshot();
+    const unsent = !!(m && m.dirty) || offlineDirty || (!!base && !boardSame(local, base));
+    if (!applyState(remote)) return null;
+    const theirs = boardSnapshot();
+    if (!unsent && base) { baseWrite(theirs); return { needSave: false }; }
+    const merged = mergeBoards(base, local, theirs);
+    if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return { needSave: false }; }
+    return { needSave: true };
+  }
+  // Before an unsent copy goes up: ask the account, take what it holds in
+  // under the copy, and only then let the copy go up. A dead network or a
+  // blank account changes nothing here, and the ordinary save follows.
+  async function mergeDownFirst() {
+    let state = null;
+    try { state = await store.load(); } catch (e) { return false; }
+    if (boardBlank(state)) return false;
+    const took = takeAccount(state);
+    if (!took) return false;
+    if (!syncBusy()) {
+      renderAll();
+      const twOv = document.getElementById("thisWeekOverlay");
+      if (twOv && twOv.classList.contains("open")) renderThisWeek();
+    }
+    return true;
+  }
   const MIRROR_KEY = "lifevision.mirror.v1";
   let offlineBoard = false;   // this window booted, or fell back, onto the mirror
   let offlineDirty = false;   // and has changes the account has not received
@@ -32777,8 +32994,8 @@
   // ONCE — the app opens like an app — and asks the account afterwards,
   // quietly: a newer board comes in under the same page; a stalled or
   // dead network changes nothing on screen (the offline bar says so); and
-  // a person who has already moved on — a save went up while the question
-  // was out — is never overwritten by an older answer. An account that
+  // a change made while the question is out waits for the answer and goes
+  // up merged with it (2026-09-07, below), never over it. An account that
   // holds LESS than this device (blank, or brand new) receives the copy,
   // the first-sign-in rule as it has always stood. Returns false when this
   // device has no copy for this account, and the old road runs instead.
@@ -32788,43 +33005,62 @@
     if (!applyState(m.state)) return false;
     renderAll();
     bootHoldHide();
-    boot();
-    // THIS DEVICE HOLDS CHANGES THE ACCOUNT NEVER RECEIVED (2026-09-06):
-    // they go up, and no answer comes down over them. The save is the
-    // ordinary one, so the offline road and its bar are the same as ever;
-    // an account that refuses gets the persistent bar, since a toast is
-    // gone before anyone reads it.
-    if (m.dirty) {
-      const up = await saveState();
-      if (up && !up.ok && !up.offline) cloudSaveProblemBar(up.reason);
-      return true;
-    }
-    const seq0 = saveSeq;
-    let state;
-    try {
-      state = await store.load();
-    } catch (err) {
-      console.warn("reconcile failed, the copy stands:", err.message);
-      if (looksOffline(err.message)) { offlineBoard = true; offlineBar(); }
-      return true;
-    }
-    if (saveSeq !== seq0) { mirrorWrite(uid); return true; }   // the person moved first
-    const cloudBlank = !state
-      || (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded));
-    if (cloudBlank) {
-      const up = await store.save(serializeState());
-      if (!up.ok) cloudSaveProblemBar(up.reason);
-      mirrorWrite(uid);
-      return true;
-    }
-    if (applyState(state)) {
+    // THE ACCOUNT IS ASKED BEFORE ANYTHING GOES UP (2026-09-07). The copy is
+    // on screen; the account is asked what it holds, and until it answers
+    // (or six seconds pass) every save waits behind the question: the
+    // landing's own, and any change the person makes meanwhile. Each goes up
+    // after the answer has come in under it, merged, so a copy that is
+    // behind the account can never write the account back to where the
+    // copy was. (Until today the landing's save went up first, whole, and a
+    // person who moved first kept the account's answer out; either way the
+    // other device's work was lost.) A marked copy, changes the account
+    // never received, goes up the same way; an account that holds nothing
+    // receives the copy, the first-sign-in rule as it has always stood; a
+    // dead network leaves the copy standing under the offline bar.
+    const consult = (async () => {
+      let state;
+      try {
+        state = await Promise.race([
+          store.load(),
+          new Promise((_, rej) => setTimeout(
+            () => rej(new Error("load_timeout: the account did not answer in time")), 6000)),
+        ]);
+      } catch (err) {
+        console.warn("reconcile failed, the copy stands:", err.message);
+        if (looksOffline(err.message)) { offlineBoard = true; offlineBar(); }
+        return "failed";
+      }
+      if (boardBlank(state)) {
+        const body = serializeState();
+        const up = await store.save(body);
+        if (!up.ok) cloudSaveProblemBar(up.reason); else baseWrite(body);
+        mirrorWrite(uid);
+        return "pushed";
+      }
+      const took = takeAccount(state);
+      if (!took) return "failed";
       renderAll();
       // renderAll paints the board; a This Week the landing already opened
       // is its own page and takes the newer board itself.
       const twOv = document.getElementById("thisWeekOverlay");
       if (twOv && twOv.classList.contains("open")) renderThisWeek();
+      if (!took.needSave) mirrorWrite(uid);
+      return took.needSave ? "merged" : "taken";
+    })();
+    // The hold: the save chain waits on the question, and the chain's own
+    // rule (a save that finds the chain busy queues behind it) does the rest.
+    const hold = consult.then(() => ({ ok: true }), () => ({ ok: true }));
+    saveInFlight = hold;
+    hold.then(() => { if (saveInFlight === hold) saveInFlight = null; });
+    boot();
+    const result = await consult;
+    if (result !== "pushed" && (m.dirty || result === "merged")) {
+      // the ordinary save, so the offline road and its bar are the same as
+      // ever; an account that refuses gets the persistent bar, since a
+      // toast is gone before anyone reads it
+      const up = await saveState();
+      if (up && !up.ok && !up.offline) cloudSaveProblemBar(up.reason);
     }
-    mirrorWrite(uid);
     return true;
   }
   function bootOffline() {
@@ -32848,10 +33084,12 @@
     if (reconnecting) return reconnecting;
     reconnecting = (async () => {
       if (offlineDirty) {
-        const r = await store.save(serializeState());
+        await mergeDownFirst();       // what the account holds comes in under the copy first
+        const body = serializeState();
+        const r = await store.save(body);
         if (!r.ok) return false;      // still out of reach; the bar stays
         offlineDirty = false; offlineBoard = false;
-        mirrorWrite();
+        mirrorWrite(); baseWrite(body); syncNoteSaved(r);
         offlineBarHide();
         showToast("back online. your changes are in your account now.");
         return true;
@@ -32892,25 +33130,39 @@
   async function pullFromAccount(force) {
     if (store === localStore || offlineBoard || saveInFlight || syncBusy()) return false;
     const m = mirrorRead();
-    if (m && m.dirty) { await saveState(); return true; }
+    const unsent = !!(m && m.dirty);
     let at = null;
     if (!force) {
       if (typeof store.freshness !== "function") return false;
       try { at = await store.freshness(); } catch (e) { return false; }
       if (at == null) return false;
-      if (cloudSeen != null && at === cloudSeen) return false;
+      if (cloudSeen != null && at === cloudSeen) {
+        // nothing new there: an unsent copy simply goes up
+        if (unsent) { await saveState(); return true; }
+        return false;
+      }
+    }
+    if (unsent) {
+      // THE ACCOUNT HAS MOVED, AND SO HAS THIS DEVICE (2026-09-07): what it
+      // holds comes in under the unsent changes, and the merged board goes
+      // up. Neither side's work is written over.
+      await mergeDownFirst();
+      if (at != null) cloudSeen = at;
+      await saveState();
+      return true;
     }
     const seq0 = saveSeq;
     let state;
     try { state = await store.load(); } catch (e) { return false; }
     if (saveSeq !== seq0 || !state || syncBusy()) return false;
-    if (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded)) return false;
-    if (!applyState(state)) return false;
+    if (boardBlank(state)) return false;
+    const took = takeAccount(state);
+    if (!took) return false;
     if (at != null) cloudSeen = at;
     renderAll();
     const twOv = document.getElementById("thisWeekOverlay");
     if (twOv && twOv.classList.contains("open")) renderThisWeek();
-    mirrorWrite();
+    if (took.needSave) await saveState(); else mirrorWrite();
     return true;
   }
   const refreshOnReturn = () => pullFromAccount(true);
@@ -37482,7 +37734,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     journalBookGet: () => journalBook, journalDirtyGet: () => journalDirty,
     journalOpen: () => journalOpenNow,
     // 169 seams: the pure math and a debug handle the harness drives.
-    roamRng, roamTarget, roamActPlan, companionRecallHome, companionRoamStart, companionRoamStop,
+    roamRng, roamTarget, roamActPlan, companionRecallHome, companionRoamStart, companionRoamStop, companionWanderTo,
     roamDebug: {
       state: () => roam.state, napping: roamNapping, napTwitch: roamNapTwitch,
       warmSpot: () => roam.warmSpot, held: () => roam.held,
@@ -37512,6 +37764,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
+    // The merge (2026-09-07): the base, the pure merge, and the take.
+    mergeBoards, boardSame, baseRead, baseWrite, baseClear, takeAccount,
     bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount, weekLearnings, acceptLearning,
     shelfOn, shelfSet, shelfPrefs: () => profileShelf, mgSplash,
     cloudSeenGet: () => cloudSeen, syncRules: () => ({ SYNC_POLL_MS, RETURN_REFRESH_MS }),
@@ -38354,7 +38608,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
         // The mirror belongs to ONE account. A different person signing in
         // on this device must not be offered the last one's board.
         const m = mirrorRead();
-        if (m && m.uid && uid && m.uid !== uid) { mirrorClear(); bootHoldShow(); }
+        if (m && m.uid && uid && m.uid !== uid) { mirrorClear(); baseClear(); bootHoldShow(); }
         if (uid && await bootFromMirror(uid)) return;
         if (!document.getElementById("bootHoldOverlay")) bootHoldShow();
         await restoreState();
@@ -38364,7 +38618,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
         boot();
         if (uid && !offlineBoard) mirrorWrite(uid);
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
-        if (event === "SIGNED_OUT") mirrorClear();
+        if (event === "SIGNED_OUT") { mirrorClear(); baseClear(); }
         bootHoldHide();
         openAuth(true);
       }
@@ -38845,8 +39099,38 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   if (!("serviceWorker" in navigator)) return;
   if (location.port === "8731") return;
   if (location.protocol !== "https:" && location.hostname !== "localhost") return;
-  navigator.serviceWorker.register("sw.js").catch(e => {
+  // A NEWER PUBLISH IS TAKEN WHEN THE APP COMES BACK (2026-09-07, owner's
+  // phone: a page left open since before a publish, still showing a box
+  // the publish had removed). The page is fetched fresh at every OPEN, but
+  // an app brought back from the background is the same page it was. So a
+  // return asks the worker to look for a newer copy, and when a newer
+  // worker takes the page over, the page reloads itself at the first quiet
+  // moment: no unsent copy, no cursor in a line, no finger on a stone. The
+  // very first worker to take a page is not a newer one and reloads nothing.
+  const hadWorker = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").then(reg => {
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) reg.update().catch(() => {});
+    });
+  }).catch(e => {
     console.warn("[the phone's copy] not kept on this device:", e && e.message);
+  });
+  if (!hadWorker) return;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading) return;
+    reloading = true;
+    const quiet = () => {
+      try {
+        const m = JSON.parse(localStorage.getItem("lifevision.mirror.v1") || "null");
+        if (m && m.dirty) return false;
+      } catch (e) {}
+      const a = document.activeElement;
+      if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return false;
+      return !document.hidden && !document.querySelector(".dragging");
+    };
+    const go = () => { if (quiet()) location.reload(); else setTimeout(go, 4000); };
+    setTimeout(go, 800);
   });
 })();
 </script>
