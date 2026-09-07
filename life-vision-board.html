@@ -6597,6 +6597,8 @@
      quarter, a shade quieter, and the one word that brings it back is always
      readable, since a control that shows on hover is no way back on a phone. */
   .ch-work-off { opacity: 0.62; }
+  /* OFF YOUR BOARD (2026-09-07): the bin, at the foot of the workshop. */
+  .ch-bin { margin-top: calc(var(--lead) * 2); }
   /* A day or a week off sits under its row in the metadata's own voice. */
   .ch-work-abs { display: flex; align-items: baseline; gap: 9px; margin: 0 0 0 33px;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.05em;
@@ -13789,6 +13791,8 @@
   function removeReminder(id) {
     const i = reminders.findIndex(r => r.id === id);
     if (i < 0) return false;
+    // OFF THE BOARD, NEVER GONE (2026-09-07): to the bin, with the day it left.
+    binPut("tasks", { id: reminders[i].id, at: appNow().toISOString(), record: JSON.parse(JSON.stringify(reminders[i])) }, 60);
     reminders.splice(i, 1);
     saveState();
     return true;
@@ -13833,6 +13837,41 @@
   // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
   // score. Same name on both sides, column `unstuck` (0013).
   let unstuck = [];
+  // THE BIN (2026-09-07, owner: "this will happen for anything i delete
+  // right?"). What was taken off the board, never thrown away: a hand-added
+  // task removed from This Week, a whole chapter removed from the workshop,
+  // each with the day it left, and the workshop lists them with one word
+  // that brings each back. Same name on both sides, column `bin` (0019).
+  let bin = { tasks: [], goals: [] };
+  function binPut(kind, entry, cap) {
+    bin[kind] = [entry].concat((bin[kind] || []).filter(x => x.id !== entry.id)).slice(0, cap);
+  }
+  function restoreTask(id) {
+    const e = (bin.tasks || []).find(x => x.id === id);
+    if (!e) return false;
+    bin.tasks = bin.tasks.filter(x => x.id !== id);
+    if (!reminders.some(r => r.id === id)) {
+      reminders.push(Object.assign({ kind: "reminder", goalId: null, completions: {}, occSchema: 1 }, JSON.parse(JSON.stringify(e.record || {}))));
+    }
+    saveState();
+    return true;
+  }
+  function restoreGoal(binId) {
+    const e = (bin.goals || []).find(x => x.id === binId);
+    if (!e) return false;
+    bin.goals = bin.goals.filter(x => x.id !== binId);
+    const copy = JSON.parse(JSON.stringify(e.record || {}));
+    // A GOAL'S NUMBER IS ITS PLACE IN THE ROW (the apply numbers by
+    // position), so a chapter brought back lands in its old place where it
+    // can, and its number is kept unless another chapter took it.
+    if (copy.id == null || goals.some(x => x.id === copy.id)) copy.id = goals.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
+    const pos = Math.max(0, Math.min(Number.isInteger(e.position) ? e.position : goals.length, goals.length));
+    goals.splice(pos, 0, copy);
+    goals.forEach((x, i) => { x.position = i; });
+    nextId = goals.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
+    saveState();
+    return true;
+  }
   function addReleaseWish(habit, under) {
     const w = { habit: String(habit || "").trim(), under: String(under || "").trim(), at: appNow().toISOString() };
     if (!w.habit) return null;
@@ -16820,6 +16859,28 @@
     // the same piece of paper: the hub is not a stack of surfaces, and a
     // chapter that arrived on a slab of its own was the thing that made this
     // page read as two pages badly joined.
+    // OFF YOUR BOARD, AND THE WAY BACK (2026-09-07, owner: "this will
+    // happen for anything i delete right?"). A hand-added task removed from
+    // This Week and a whole chapter removed from here go to the bin, not
+    // away: listed at the foot of the workshop with the day they left and
+    // one word each. The section is absent while the bin is empty.
+    const binDay = iso => { const d = new Date(iso); return isNaN(d) ? "" : ", off " + MONTHS[d.getMonth()].slice(0, 3).toLowerCase() + " " + d.getDate(); };
+    const binSection = () => {
+      const rows = (bin.tasks || []).map(e => `<div class="ch-work-row ch-work-off" data-bin-task="${escHtml(e.id)}" data-type-area="chapters/bin">
+          <span class="ch-work-name ch-work-name-off">${escHtml(appVoice((e.record && e.record.label) || "", true))}</span>
+          <span class="ch-work-meta"><span>a task${binDay(e.at)}</span>
+            <button type="button" class="ch-work-back" data-back-task="${escHtml(e.id)}" aria-label="bring this task back">bring back</button></span></div>`)
+        .concat((bin.goals || []).map(e => `<div class="ch-work-row ch-work-off" data-bin-goal="${escHtml(e.id)}" data-type-area="chapters/bin">
+          <span class="ch-work-name ch-work-name-off">${escHtml(appVoice((e.record && e.record.title) || "", titleIsTheirs(e.record || {})))}</span>
+          <span class="ch-work-meta"><span>a chapter${binDay(e.at)}</span>
+            <button type="button" class="ch-work-back" data-back-goal="${escHtml(e.id)}" aria-label="bring this chapter back">bring back</button></span></div>`));
+      if (!rows.length) return ``;
+      return `<div class="ch-bin" data-type-area="chapters/bin">
+        <div class="ch-q-label rm-qlabel">off your board</div>
+        <div class="ch-rule ch-bin-rule"></div>
+        ${rows.join("")}
+      </div>`;
+    };
     mount.innerHTML = `<div class="at-page ch-page ch-sheet ${openCls}">
       <div class="at-sheet torn-paper"><div class="torn-sheet at-inner">
       <div class="ch-flecks" id="chFlecks" aria-hidden="true"></div>
@@ -16859,6 +16920,7 @@
       </div>
       <div class="ch-rule" id="chStripRule"></div>` : ``}
       ${open ? `<div id="chChapterMount"></div>` : ``}
+      ${binSection()}
       </div></div>
       <!-- A4: help lives in one book; pages carry no help chrome -->
       <div class="at-margin" id="chCompanion"></div></div>`;
@@ -16933,6 +16995,19 @@
       if (strip.scrollLeft > left) strip.scrollLeft = Math.max(0, left);
       else if (strip.scrollLeft < right) strip.scrollLeft = right + 8;
     }
+    // the bin's way back, looked up on the live board at the tap
+    mount.querySelectorAll("[data-back-task]").forEach(btn => btn.addEventListener("click", () => {
+      if (!restoreTask(btn.dataset.backTask)) return;
+      renderChapters();
+      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+      showToast("it's back on your week.");
+    }));
+    mount.querySelectorAll("[data-back-goal]").forEach(btn => btn.addEventListener("click", () => {
+      if (!restoreGoal(btn.dataset.backGoal)) return;
+      renderAll();
+      renderChapters();
+      showToast("the chapter is back on your board.");
+    }));
     wireHelpDot(mount);
     if (profileCompanion && profileCompanion.enabled !== false) {
       mountCompanion(document.getElementById("chCompanion"), profileCompanion, { pose: "idle", silent: true })
@@ -19074,6 +19149,11 @@
   // Removal is the same wherever it is asked for: the goal, its objectives and
   // mechanisms go together, and the category becomes an open room again.
   function deleteGoal(g) {
+    // OFF THE BOARD, NEVER GONE (2026-09-07): the whole chapter goes to the
+    // bin with its place in the row, and the workshop offers the way back.
+    const at = goals.indexOf(g);
+    binPut("goals", { id: "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: appNow().toISOString(),
+      position: at < 0 ? goals.length : at, record: JSON.parse(JSON.stringify(g)) }, 20);
     goals = goals.filter(x => x.id !== g.id);
     goals.forEach((x, i) => { x.position = i; });
     renderAll();
@@ -28307,9 +28387,8 @@
         skipThisWeek(null, mid, true, wkR);
         return () => skipThisWeek(null, mid, false, wkR);
       }
-      const copy = JSON.parse(JSON.stringify(r));
       removeReminder(mid);
-      return () => { reminders.push(copy); saveState(); };
+      return () => restoreTask(mid);   // through the bin, on the live board
     }
     const g = goals.find(x => x.id === gid);
     const m = g && (g.mechanisms || []).find(x => x.id === mid);
@@ -31842,6 +31921,8 @@
         twSand: (profile.data && profile.data.tw_sand) || null,
         // TOMORROW, AND TOMORROW's pages (0013): the same name both sides.
         unstuck: (profile.data && profile.data.unstuck) || [],
+        // THE BIN (0019): absent while the account has none, so the apply keeps this device's.
+        bin: (profile.data && profile.data.bin) || undefined,
         // THE RECORDS (0016): closed weeks, sealed plans, quarters and the
         // portrait, which lived on one device until 2026-09-07. Absent while
         // the account has none, so the apply keeps this device's.
@@ -31885,12 +31966,13 @@
         const at = await supabaseStore.freshness().catch(() => null);
         if (at != null) return { ok: false, reason: "stale" };
       }
-      let res = await sbc.rpc("save_board", { board: state, seen: cloudSeen });
-      // Before 0018 the account knows only save_board(board): the same
-      // write, without the stamp.
-      if (res.error && (res.error.code === "PGRST202" || /could not find the function/i.test(res.error.message || ""))) {
-        res = await sbc.rpc("save_board", { board: state });
-      }
+      // THE DAY RIDES THE SAVE (0019): the account keeps each day's last
+      // board, by this device's own calendar. Before 0019 the account knows
+      // save_board(board, seen); before 0018 only save_board(board).
+      const notThere = r => r.error && (r.error.code === "PGRST202" || /could not find the function/i.test(r.error.message || ""));
+      let res = await sbc.rpc("save_board", { board: state, seen: cloudSeen, saved_day: todayKey() });
+      if (notThere(res)) res = await sbc.rpc("save_board", { board: state, seen: cloudSeen });
+      if (notThere(res)) res = await sbc.rpc("save_board", { board: state });
       if (res.error) {
         const msg = res.error.message || res.error.code || "save_failed";
         return { ok: false, reason: /^stale\b/i.test(msg) ? "stale" : msg };
@@ -31900,6 +31982,29 @@
       return { ok: true, at: (typeof res.data === "string" && res.data) || null };
     },
 
+    // YOUR BOARD, DAY BY DAY (0019, 2026-09-07): the account keeps the last
+    // board of each day for five weeks, and a copy taken just before any
+    // going back. Listed newest first; one board fetched on demand.
+    async snapshots() {
+      const session = await currentSession();
+      if (!session) return [];
+      const { data, error } = await sbc.from("board_snapshots").select("day,kind,saved_at")
+        .eq("user_id", session.user.id).order("day", { ascending: false }).order("saved_at", { ascending: false });
+      return error ? [] : (data || []);
+    },
+    async snapshot(day, kind) {
+      const session = await currentSession();
+      if (!session) return null;
+      const { data, error } = await sbc.from("board_snapshots").select("board")
+        .eq("user_id", session.user.id).eq("day", day).eq("kind", kind || "day").maybeSingle();
+      return error || !data ? null : data.board;
+    },
+    async keepSnapshot(board, day, kind) {
+      const session = await currentSession();
+      if (!session) return { ok: false, reason: "not_signed_in" };
+      const { error } = await sbc.rpc("keep_snapshot", { board, saved_day: day, kind: kind || "before" });
+      return error ? { ok: false, reason: error.message || error.code || "keep_failed" } : { ok: true };
+    },
     // A dismissal is written the moment it happens, not deferred to the next save.
     async dismissTension(t) {
       const session = await currentSession();
@@ -32408,6 +32513,7 @@
         ? { wk: twCollect.wk, pos: twCollect.pos }
         : null,
       unstuck: unstuck.slice(),
+      bin: { tasks: (bin.tasks || []).slice(), goals: (bin.goals || []).slice() },
     };
   }
 
@@ -32495,6 +32601,12 @@
       ? { wk: state.twCollect.wk, pos: state.twCollect.pos }
       : { wk: null, pos: {} };
     unstuck = Array.isArray(state.unstuck) ? state.unstuck.slice() : [];
+    // THE BIN (2026-09-07): kept when the account has never carried it,
+    // like the records; a fixture or a mirror says what it says.
+    bin = (state.bin && typeof state.bin === "object")
+      ? { tasks: Array.isArray(state.bin.tasks) ? state.bin.tasks.slice() : [],
+          goals: Array.isArray(state.bin.goals) ? state.bin.goals.slice() : [] }
+      : (state.fromAccount ? bin : { tasks: [], goals: [] });
     recentCheckins = (state.checkins || []).slice();
     deriveGates();
     visionQuote = state.profile.vision || "";
@@ -32645,7 +32757,7 @@
     saveInFlight = mine;
     const r = await mine;
     if (saveInFlight === mine) saveInFlight = null;
-    if (r.ok) { mirrorWrite(); baseWrite(body); syncNoteSaved(r); }   // the account has this board: it is the base now
+    if (r.ok) { mirrorWrite(); baseWrite(body); syncNoteSaved(r); unsentBarHide(); }   // the account has this board: it is the base now
     else if (store !== localStore && looksOffline(r.reason)) {
       // The network went mid-session: step onto the offline road with the
       // change kept, rather than a toast that says the account refused it.
@@ -33073,8 +33185,44 @@
   // hand: the pull itself does not run then.
   function refreshOpenPages() {
     const isOpen = id => { const el = document.getElementById(id); return !!(el && el.classList.contains("open")); };
-    if (isOpen("thisWeekOverlay")) renderThisWeek();
-    if (isOpen("chaptersOverlay")) renderChapters();
+    const redraw = (id, fn) => { if (!isOpen(id)) return; try { fn(); } catch (e) { console.warn("redraw after sync failed:", id, e && e.message); } };
+    redraw("thisWeekOverlay", renderThisWeek);
+    redraw("chaptersOverlay", renderChapters);
+    // the books that read the board (the journal keeps its own local-first road)
+    redraw("portraitOverlay", () => renderPortrait());
+    redraw("tomorrowOverlay", () => renderTomorrow());
+    redraw("atlasOverlay", () => renderAtlas());
+    redraw("releaseOverlay", () => renderReleasePage());
+  }
+  // A CHANGE THAT HAS WAITED (2026-09-07, the owner's fifth suggestion).
+  // Saving is silent, so a phone and a desk could disagree for hours with
+  // nobody told. A change the account has not taken within a minute gets
+  // one quiet line and a way to try now; silence stays the ordinary case,
+  // and nothing here counts anything.
+  const UNSENT_AFTER_MS = 60 * 1000;
+  function unsentCheck(now) {
+    if (store === localStore) return false;
+    const m = mirrorRead();
+    const t = now || Date.now();
+    const waiting = !!(m && m.dirty && t - (m.at || 0) >= UNSENT_AFTER_MS && !offlineBoard
+      && (typeof navigator === "undefined" || navigator.onLine !== false));
+    if (waiting) unsentBar(); else unsentBarHide();
+    return waiting;
+  }
+  function unsentBar() {
+    if (document.getElementById("unsentBar") || document.getElementById("offlineBar") || document.getElementById("cloudSaveBar")) return;
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="fresh-bar" id="unsentBar" role="status" aria-label="a change is waiting to reach your account">
+        <span>a change from a minute ago hasn't reached your account yet. it's kept here on this device.</span>
+        <button class="brushed-link" id="unsentRetry" type="button">try now</button>
+      </div>`);
+    document.getElementById("unsentRetry").addEventListener("click", () => {
+      pullFromAccount(true).then(() => unsentCheck()).catch(() => {});
+    });
+  }
+  function unsentBarHide() {
+    const el = document.getElementById("unsentBar");
+    if (el) el.remove();
   }
   // Before an unsent copy goes up: ask the account, take what it holds in
   // under the copy, and only then let the copy go up. A dead network or a
@@ -33270,10 +33418,21 @@
   // saves never read as news. Never while a finger is on a stone or a
   // cursor is in a line, and never over unsent changes, which go up.
   const SYNC_POLL_MS = 8 * 1000;
+  // NEVER UNDER A SHEET IN PROGRESS (2026-09-07, the sweep after the undo
+  // that did nothing). A flow holds its answers in hand until it closes,
+  // and a box or a picker holds the row it opened on; the account's board
+  // coming in under either would change a copy nothing reads, or wipe what
+  // was being written. So no pull while one is open; it resumes the moment
+  // it closes. The pages that redraw safely (the board, This Week, the
+  // workshop, the books) are not in this list.
+  const SYNC_FLOWS = ["checkinOverlay", "weekOverlay", "quarterOverlay", "addOverlay", "goalTitleOverlay",
+    "visionOverlay", "nameOverlay", "companionIntroOverlay", "companionOverlay", "tensionOverlay",
+    "rcSheetOverlay", "authOverlay", "welcomeOverlay", "walkOverlay", "covOverlay", "booksSheetOverlay"];
   const syncBusy = () => {
     const a = document.activeElement;
     if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return true;
-    return !!document.querySelector(".dragging");
+    if (document.querySelector(".dragging, .when-pop, .move-pop, .tw-row-pop")) return true;
+    return SYNC_FLOWS.some(id => { const el = document.getElementById(id); return !!(el && el.classList.contains("open")); });
   };
   async function pullFromAccount(force) {
     if (store === localStore || offlineBoard || saveInFlight || syncBusy()) return false;
@@ -33331,7 +33490,7 @@
   });
   setInterval(() => {
     if (document.hidden || lsNamespace || DEMO) return;
-    pullFromAccount(false);
+    pullFromAccount(false).then(() => unsentCheck()).catch(() => {});
   }, SYNC_POLL_MS);
 
   // ---------- blocking persistence screens ----------
@@ -37774,6 +37933,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     repairCompletionCounts, repairDuplicateMechIds,
     repairStaleWeekRecords, scheduleFloats,
     reminderList, addReminder, removeReminder, remindersInWeek, remindersOn, tickReminder,
+    // THE BIN, the unsent line, and the days (2026-09-07)
+    restoreTask, restoreGoal, deleteGoal, binGet: () => bin, unsentCheck, restoreDay, dayWords,
     parseCapture, captureNote, minsText, minutesOf, roundStep, MIN_STEP, twDayMarks, twSank,
     isUnplaced, isSettledAny, placeCommitment, settleAnyDay, markPlacement,
     twEditingGet: () => twEditing, twSetEditing(v) { twEditing = v || null; },
@@ -38022,6 +38183,34 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // this page makes this sentence a lie — remove the sentence, or arm the
   // row. Named as a constant so a test can hold the page to it.
   const FQ_SAFETY_LINE = "lost? everything that isn't a goal lives here, and nothing changes until you say so.";
+  // "monday 7 september", the way the page speaks. (A declaration, not a
+  // const: the pipeline names it above this line.)
+  function dayWords(iso) {
+    const d = new Date(String(iso) + "T12:00:00");
+    if (isNaN(d)) return String(iso || "");
+    return WK_DAY_WORDS[(d.getDay() + 6) % 7] + " " + d.getDate() + " " + MONTHS[d.getMonth()].toLowerCase();
+  }
+  // GOING BACK TO A DAY: today's board is kept first, then that day's board
+  // opens on this device and goes up to the account like any other save.
+  async function restoreDay(day, kind) {
+    if (typeof store.snapshot !== "function" || typeof store.keepSnapshot !== "function") return false;
+    const kept = await store.keepSnapshot(serializeState(), todayKey(), "before");
+    if (!kept || !kept.ok) {
+      showToast("couldn't keep today's board first, so nothing moved. " + ((kept && kept.reason) || ""));
+      return false;
+    }
+    const b = await store.snapshot(day, kind || "day");
+    if (!b || !applyState(b)) { showToast("that day's board would not open. nothing changed."); return false; }
+    renderAll();
+    refreshOpenPages();
+    const r = await saveState();
+    showToast(r && r.ok
+      ? "your board is back to " + dayWords(day) + ". today's is kept in the same list, under before you went back."
+      : "your board is back to " + dayWords(day) + " on this device. the account hasn't taken it yet.");
+    const fq = document.getElementById("faqOverlay");
+    if (fq && fq.classList.contains("open")) openFaqPage();
+    return true;
+  }
   function openFaqPage() {
     let hasRun = false;
     try { hasRun = !!localStorage.getItem(LASTRUN_KEY); } catch (err) {}
@@ -38087,6 +38276,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             ? row("companion", "your companion", "swap it, name it, pick its voice, or turn it off.")
             : row("companion", "choose a companion", "a small creature that sits with you while you work, or none at all.")}
           ${accountLabel ? row("account", escHtml(accountLabel), "sync across your phone and laptop.") : ``}`)}
+        ${store !== localStore && typeof store.snapshots === "function" ? ch("your board, day by day", `
+          <div id="fqDays"><span class="fq-sub">looking for the days your account kept…</span></div>`) : ``}
         ${ch("begin again", `
           ${canRetest ? row("retest", "run the discovery again", "your answers come back prefilled, change any, get fresh goals.") : ``}
           ${row("fresh", "start over blank", "the full discovery from an empty page.")}`, "fq-quiet")}
@@ -38106,11 +38297,51 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
            Declared as a type area so anything it says lands in a counted
            region instead of arriving as unclaimed type. -->
       <div class="at-margin" id="fqCompanion" data-type-area="faq/margin"></div></div>`;
+    // YOUR BOARD, DAY BY DAY (2026-09-07, the owner's first suggestion:
+    // "if a merge ever went wrong, a goal got deleted, or an old page wrote
+    // over things, there is nothing to go back to"). The account keeps the
+    // board as it stood at the end of each day, for five weeks; this lists
+    // those days, newest first, and going back to one keeps today's board
+    // first, under "before you went back", in the same list.
+    const daysHost = mount.querySelector("#fqDays");
+    if (daysHost) {
+      store.snapshots().then(list => {
+        if (!daysHost.isConnected) return;
+        const days = (list || []).slice(0, 40);
+        if (!days.length) {
+          daysHost.innerHTML = `<span class="fq-sub">nothing kept yet. from today, the account keeps the board as it stood at the end of each day, for five weeks.</span>`;
+          return;
+        }
+        daysHost.innerHTML = days.map(d => {
+          const before = d.kind === "before";
+          return row("day", escHtml(dayWords(d.day)) + (before ? ", before you went back" : ""),
+            before ? "the board as it was just before you went back to an earlier day. tap to return to it."
+                   : "the board as it stood at the end of that day. tap to go back to it.")
+            .replace('data-act="day"', `data-act="day" data-day="${escHtml(d.day)}" data-kind="${escHtml(d.kind || "day")}"`);
+        }).join("");
+      }).catch(() => {});
+    }
     mount.querySelector(".fq-page").addEventListener("click", (ev) => {
       const item = ev.target.closest(".fq-row");
       if (!item) return;
       const act = item.dataset.act;
       const close = closeFaqPage;
+      if (act === "day") {
+        // GOING BACK ARMS FIRST, the two-step every quiet destructive wears.
+        const b = item.querySelector("b");
+        if (!item.classList.contains("arm")) {
+          item.classList.add("arm");
+          if (b) b.textContent = "tap again to go back to this day";
+          setTimeout(() => {
+            if (!item.isConnected) return;
+            item.classList.remove("arm");
+            if (b) b.textContent = dayWords(item.dataset.day) + (item.dataset.kind === "before" ? ", before you went back" : "");
+          }, 4000);
+          return;
+        }
+        restoreDay(item.dataset.day, item.dataset.kind);
+        return;
+      }
       if (act === "books") { openBooksSheet(); return; }
       if (act === "tour") { close(); replayShelfTour(); return; }
       if (act === "intro") { close(); if (window.__introFilm) window.__introFilm.replay(); return; }
