@@ -2570,6 +2570,19 @@
      breakpoints. Width is intrinsic to the drawn shelf, not capped by
      margin math, so a shelf that gains books later just gets wider. */
   .notebook-slot { margin: calc(28px * var(--lv-fit, 1)) auto 0; width: fit-content; max-width: 100%; }
+  /* THE SHELF MAY STAND WIDER THAN THE COLUMN (2026-09-07, owner: "bookshelf
+     way too small, doesn't match size of screen"). The board's column is
+     1180 at most and the shelf's own layout is wider than that, so on a
+     desk the books were being shrunk to fit the column. Past 900 the shelf
+     keeps its own width up to 92% of the screen and centres on the column's
+     centre, which is the screen's. A phone keeps the stack. */
+  @media (min-width: 900px) {
+    .notebook-slot { max-width: none; position: relative; left: 50%; transform: translateX(-50%); }
+    /* by id: the shelf's own rule below (min(92vw, 100%)) comes later in
+       the sheet and would win on equal footing, and 100% of a fit-content
+       slot is the circle that kept the shelf at the column's width */
+    #boardNotebook.notebook-slot .sb-full { max-width: 92vw; }
+  }
   .notebook-slot .tw-notebook { width: 132px; }
   /* RETIRED 2026-08-27 with thisWeekNotebook: .rm-notebook-slot and its two
      sizes. .rm-page keeps `position: relative` — it is the chapter's own
@@ -14091,7 +14104,7 @@
             ${text}
           </g></g>`;
       };
-      return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${totalW}px"
+      return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${innerWidth >= 900 ? `min(${Math.round(totalW * 1.35)}px, 92vw)` : `${totalW}px`}"
           fill="none" stroke="#3a3a2e" stroke-width="2.2" stroke-linecap="round" aria-hidden="false">
         ${books.map(barSvg).join("\n        ")}
       </svg>`;
@@ -14178,7 +14191,7 @@
       return `<g transform="translate(${b.x + 13},${b.top + 3})${ln ? ` rotate(${ln} ${(bw / 2).toFixed(0)} ${bh})` : ""}"
         filter="url(#shade)" opacity=".13"><path d="${shape}" fill="#54503c" stroke="none"/></g>`;
     }).join("");
-    return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${totalW}px"
+    return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${innerWidth >= 900 ? `min(${Math.round(totalW * 1.35)}px, 92vw)` : `${totalW}px`}"
         fill="none" stroke="#3a3a2e" stroke-width="2.2" stroke-linecap="round" aria-hidden="false">
       <g filter="url(#shade-wide)" opacity=".28"><path stroke="none" fill="#6d6a52"
         d="M26 ${baseY + 20} L${totalW - 30} ${baseY + 16} L${totalW - 34} ${baseY + 50} C${(totalW * 0.6).toFixed(0)} ${baseY + 60} 200 ${baseY + 56} 30 ${baseY + 48} Z"/></g>
@@ -17547,9 +17560,19 @@
       ? `<button class="rm-mark-rc" data-rc="${escHtml(o.id)}">mark as the reality check</button>` : ``;
     // Hard date is small-caps text after the label — the 📌 pill is retired.
     const labelBits = o => `${o && o.hardDate ? ` · by ${escHtml(fmtDate(o.hardDate))}` : ``}`;
+    // DONE IS A LINE, NOT A BUTTON (2026-09-07, owner: "I answer it, then it
+    // still shows that button even though it's done. Where is this
+    // logged?"). Answered, the row says when the world answered and, when
+    // one was written, what it said; the ask stays a button until then.
+    const rcDone = o => {
+      const cap = g.rcCapture && g.rcCapture.oid === o.id && g.rcCapture.text ? g.rcCapture.text : "";
+      const day = String(o.evidenceDoneAt || "").slice(0, 10);
+      return `<span class="rm-meta-txt rc-done-line">the world answered${/^\d{4}-\d{2}-\d{2}$/.test(day) ? ", " + escHtml(fmtDate(day)) : ""}${
+        cap ? `: “${escHtml(wordTrunc(cap, 90))}”` : ``}</span>`;
+    };
     const metaRow = o => o && o.evidence
-      ? `<div data-type-area="roadmap/rc" class="rm-rc-row"><button class="rm-q-rc${o.evidenceDoneAt ? " rc-done" : " rm-rc-ask"}"
-          data-rcsheet="${escHtml(o.id)}" title="what this is, and its choices">reality check${o.evidenceDoneAt ? " · done" : ""}</button>${
+      ? `<div data-type-area="roadmap/rc" class="rm-rc-row">${o.evidenceDoneAt ? rcDone(o) : `<button class="rm-q-rc rm-rc-ask"
+          data-rcsheet="${escHtml(o.id)}" title="what this is, and its choices">reality check</button>`}${
           o.source === "user" ? `<span class="rm-meta-txt">your step</span>` : ``}</div>`
       : ``;
     const ifBlock = o => o.obstacle ? `<div class="rm-block-label">${o.kind === "exploration" ? "What you're finding out" : "If it goes wrong"}</div>
@@ -22679,6 +22702,12 @@
       const p = document.querySelector("#thisWeekMount .bark-paper") || document.querySelector("#thisWeekMount .tw-paper");
       if (p) { const r = p.getBoundingClientRect(); sheet = { x: r.x, y: r.y, w: r.width, h: r.height }; }
       ["#thisWeekOverlay .checkin-close", ".notebook-slot", "#twCompanion .tw-sprout"].forEach(s => take(document.querySelector(s)));
+      // AND EVERY WORD ON THE PAGE (2026-09-07, owner: "companion should be
+      // able to move anywhere except on the words or graphics"): the rows,
+      // the strip, the pile and its line, the corner. What is not sand is
+      // not ground.
+      ["#twStripMount", "#twCollectionMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
+      document.querySelectorAll("#thisWeekMount .tw-row, #thisWeekMount .tw-sec-h, #thisWeekMount .tw-unplaced").forEach(take);
     } else if (roam.scope === "atlas" || roam.scope === "faq") {
       // Both are one page-sheet on the book backdrop, with the ✕ as the
       // only thing on it that isn't ground.
@@ -22766,8 +22795,27 @@
     }, ms);
   }
   // One stroll: pick legal ground, travel there in the species' gait.
+  // WHERE IT LANDED IS CHECKED, NOT ASSUMED (2026-09-07). The target was
+  // chosen against the page as it stood when the stroll began; the page
+  // can have scrolled or re-laid by the time the walk ends, and a companion
+  // sitting on a row is a companion that takes the tap meant for the row.
+  // Landed on words, it strolls again at once, once.
+  function roamOnWords() {
+    if (!roam.el || !roam.el.isConnected) return false;
+    const { sheet, obstacles } = roamWorld();
+    const r = roam.el.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    const hits = o => o && r.x < o.x + o.w && r.x + r.width > o.x && r.y < o.y + o.h && r.y + r.height > o.y;
+    return (sheet && sheet.w > 2 && hits(sheet)) || obstacles.some(hits);
+  }
   function roamStroll(then, forcedTarget) {
     const { vp, sheet, obstacles } = roamWorld();
+    const land = () => {
+      roam.state = "sit";
+      if (roamOnWords() && !roam.rehop) { roam.rehop = true; roamStroll(then); return; }
+      roam.rehop = false;
+      then();
+    };
     const home = roamHomeRect();
     const fig = { w: home.width || 140, h: home.height || 150 };
     let t = forcedTarget || roamTarget(vp, sheet, obstacles, fig, roam.rng, roam.kind);
@@ -22789,18 +22837,18 @@
         i++;
         roamMove(roam.x + (dx - roam.x) / (hops - i + 1), roam.y + (dy - roam.y) / (hops - i + 1), 420);
         if (i < hops) roamNext(500 + roam.rng() * 400, hop);
-        else roamNext(600, () => { roam.state = "sit"; then(); });
+        else roamNext(600, land);
       };
       hop();
     } else if (roam.kind === "moth") {                   // slow rising S
       const midx = roam.x + (dx - roam.x) * 0.5 + (roam.rng() - 0.5) * 60;
       const midy = Math.min(roam.y, dy) - 20 - roam.rng() * 30;
       roamMove(midx, midy, 2600);
-      roamNext(2700, () => { roamMove(dx, dy, 2600); roamNext(2700, () => { roam.state = "sit"; then(); }); });
+      roamNext(2700, () => { roamMove(dx, dy, 2600); roamNext(2700, land); });
     } else {
       const ms = Math.max(2400, Math.min(3600, dist * 9));
       roamMove(dx, dy, ms);
-      roamNext(ms + 150, () => { roam.state = "sit"; then(); });
+      roamNext(ms + 150, land);
     }
   }
   // The chain's heartbeat: from sit, the session decides what's next.
@@ -23780,7 +23828,7 @@
     const key = g.id + ":" + m.drivesObjectiveId;
     if (rcToastShown.has(key)) return;
     rcToastShown.add(key);
-    showToast("that was this quarter's reality check, the world got to answer.");
+    showToast("that one was the step where someone outside your head gets to answer. it's what keeps this goal real.");
   }
 
   // RETIRED 2026-08-27: tickOf returned a week record for a commitment, and
@@ -27243,7 +27291,13 @@
         // same call, the same state. A pebble under the pointer isolates its
         // commitment; moving off puts the page back as it was.
         const asSel = () => ({ gid: Number(el.dataset.goal), mid: el.dataset.mech });
-        el.addEventListener("pointerenter", () => { if (!stripMount.classList.contains("dragging")) twPreview(asSel()); });
+        // A FINGER IS NOT A HOVER (2026-09-07, owner: "when I scroll down
+        // and touch a task I don't want the highlight to come up"). Touch
+        // fires pointerenter as it lands; a finger never previews, a mouse
+        // or a pen still does (and so does an event with no type, which is
+        // what the instrument sends).
+        el.addEventListener("pointerenter", e => { if (e.pointerType === "touch") return;
+          if (!stripMount.classList.contains("dragging")) twPreview(asSel()); });
         el.addEventListener("pointerleave", () => { if (!stripMount.classList.contains("dragging")) twPreview(null); });
         el.addEventListener("focus", () => twPreview(asSel()));
         el.addEventListener("blur", () => twPreview(null));
@@ -27272,7 +27326,7 @@
           twHover = null;
           twPaintSelection();
         });
-        el.addEventListener("pointerenter", () => {
+        el.addEventListener("pointerenter", e => { if (e.pointerType === "touch") return;
           if (!stripMount.classList.contains("dragging")) twPreview({ day: iso }); });
         el.addEventListener("pointerleave", () => {
           if (!stripMount.classList.contains("dragging")) twPreview(null); });
@@ -27478,7 +27532,7 @@
         }
       };
       btn.addEventListener("click", hold);
-      btn.addEventListener("pointerenter", () => twPreview(as()));
+      btn.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") twPreview(as()); });
       btn.addEventListener("pointerleave", () => twPreview(null));
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
@@ -29186,6 +29240,12 @@
     // before renderThisWeek runs, same reasoning as the Atlas road.
     twClearSelection();              // a path never survives a reopen
     twLaterOpen = false;             // ...and neither does the open later line
+    // AND NEITHER DOES A TURNED PAGE (2026-09-07). The sheet's "which week"
+    // is view state that was meant to land on now at every open (see the
+    // ruling beside twWeek), but only the week-name tap ever cleared it,
+    // so a page flipped to next week and closed reopened on next week,
+    // where nothing records. Every open lands on this week.
+    twWeek = null;
     twSandGroundPaint();
     openBookPage(document.getElementById("thisWeekOverlay"));
     renderThisWeek();
@@ -31287,7 +31347,7 @@
       // wire format is this store's problem, so the mapping lives here — and
       // objective ids surface as the generator's ext_id ("o1"), which is what
       // goals.mechanisms reference. The row uuid never leaves this function.
-      return {
+      const loaded = {
         profile: profile.data || {},
         intake: intake.data ? intake.data.data : null,
         goals: (goalRows.data || []).map(g => ({
@@ -31300,6 +31360,9 @@
           mechanisms: g.mechanisms || [], deferredMechanisms: g.deferred_mechanisms || [],
           mechanismLoad: g.mechanism_load, quartersWithoutContact: g.quarters_without_contact || 0,
           realityCheck: g.reality_check, readinessAnswers: g.readiness_answers,
+          // THE FIELDS THE WIRE DROPPED (0016): stored now, read back here.
+          barName: g.bar_name || null, targetDate: g.target_date || null, targetSpec: g.target_spec || null,
+          titleSource: g.title_source || null, rcCapture: g.rc_capture || null,
           target: g.target || "", progress: g.progress || 0,
           provenance: g.provenance, source: g.source, tension: g.tension, position: g.position,
           share: typeof g.share === "number" ? g.share : null,
@@ -31310,6 +31373,7 @@
             theme: o.is_theme, source: o.source, done: o.done, evidence: o.evidence,
             sketch: o.sketch, hardDate: o.hard_date,
             obstacle: o.obstacle, obstaclePlan: o.obstacle_plan,
+            evidenceSource: o.evidence_source || null, evidenceDoneAt: o.evidence_done_at || null, note: o.note || null,
           })),
         })),
         dismissedTensions: (dismissed.data || []).map(d => d.tension_id),
@@ -31324,8 +31388,20 @@
         twSand: (profile.data && profile.data.tw_sand) || null,
         // TOMORROW, AND TOMORROW's pages (0013): the same name both sides.
         unstuck: (profile.data && profile.data.unstuck) || [],
+        // THE RECORDS (0016): closed weeks, sealed plans, quarters and the
+        // portrait, which lived on one device until 2026-09-07. Absent while
+        // the account has none, so the apply keeps this device's.
+        weeks: (profile.data && profile.data.weeks) || undefined,
+        weekPlans: (profile.data && profile.data.week_plans) || undefined,
+        quarters: (profile.data && profile.data.quarters) || undefined,
+        portrait: (profile.data && profile.data.portrait) || undefined,
         journalBook: Object.fromEntries((journalRows.data || []).map(r => [r.day, r.text])),
       };
+      // FROM THE ACCOUNT: a mark the apply reads (not enumerable, so it never
+      // rides a save), so records the account has never carried are kept
+      // from this device rather than wiped at every answer.
+      Object.defineProperty(loaded, "fromAccount", { value: true });
+      return loaded;
     },
 
     // IS THERE ANYTHING NEWER? One tiny read of the profile's own stamp,
@@ -31878,9 +31954,17 @@
     profileSeen = Object.assign({}, profileSeen, state.profile.seen || {});
     try { localStorage.setItem(SEEN_KEY, JSON.stringify(profileSeen)); } catch (e) {}
     weeklyTicks = state.weeklyTicks || {};
-    weekPlans = state.weekPlans || {};
-    weeks = state.weeks || {};
-    quarters = state.quarters || {};
+    // RECORDS THE ACCOUNT NEVER CARRIED STAY ON THE DEVICE (2026-09-07,
+    // owner: LITTLE WINS back on the shelf on Monday). The account did not
+    // hold closed weeks, sealed plans, quarters or the portrait, so every
+    // answer from it wiped this device's, and a closed week reopened its
+    // book. A board marked as the account's keeps them when it lacks them;
+    // since 0016 the account carries them too. A fixture or a mirror says
+    // what it says.
+    const keepRecords = !!state.fromAccount;
+    weekPlans = state.weekPlans || (keepRecords ? weekPlans : {});
+    weeks = state.weeks || (keepRecords ? weeks : {});
+    quarters = state.quarters || (keepRecords ? quarters : {});
     // Wave 2: the journal. Local is authoritative for any day still queued —
     // a cloud load must not overwrite words the cloud never received. The
     // localStorage fallback applies ONLY to the cloud-load signature (a
@@ -31909,7 +31993,8 @@
       // A board with no portrait yet gets an EMPTY one, never a missing one:
       // every reader downstream is then free of a null check, and a state
       // written before the portrait existed loads without special-casing.
-      const inb = state.portrait && typeof state.portrait === "object" ? state.portrait : {};
+      const inb = state.portrait && typeof state.portrait === "object" ? state.portrait
+        : (state.fromAccount && portrait && typeof portrait === "object" ? portrait : {});
       portrait = {
         lines: Array.isArray(inb.lines) ? inb.lines.slice() : [],
         readWeeks: Array.isArray(inb.readWeeks) ? inb.readWeeks.slice() : [],
@@ -31994,6 +32079,7 @@
       titleSource: g.titleSource || null,
       quartersWithoutContact: g.quartersWithoutContact || 0,
       whyCheck: g.whyCheck || null, kind: g.kind || null,
+      rcCapture: g.rcCapture || null,   // what the world said back, with the done mark
       share: typeof g.share === "number" ? g.share : null,
       shareSource: g.shareSource || null,
       hardDate: g.hardDate || null,
