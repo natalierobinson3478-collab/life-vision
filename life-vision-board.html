@@ -6593,6 +6593,14 @@
     color: var(--ink-soft); opacity: 0; transition: opacity 0.14s ease; }
   .ch-work-row:hover .ch-work-drop, .ch-work-drop:focus-visible { opacity: 0.85; }
   .ch-work-drop.armed { opacity: 1; color: var(--ink); }
+  /* OFF YOUR WEEK (2026-09-07): a removed thing stays on the page under its
+     quarter, a shade quieter, and the one word that brings it back is always
+     readable, since a control that shows on hover is no way back on a phone. */
+  .ch-work-off { opacity: 0.62; }
+  .ch-work-name-off { font-style: italic; }
+  .ch-work-back { background: none; border: none; padding: 0 0 0 2px; cursor: pointer;
+    font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.06em;
+    color: var(--ink); }
   @media (max-width: 640px) {
     .ch-work-row { flex-wrap: wrap; }
     .ch-work-meta { width: 100%; margin-left: 33px; }
@@ -17569,7 +17577,7 @@
     // roadmap's own mount and open its overlay — popping the person out of
     // the book mid-edit, with two editors on screen at once. `again` is the
     // only way this function re-enters itself.
-    const again = extra => openRoadmap(g, Object.assign({}, o, extra || {}));
+    const again = extra => openRoadmap(goals.find(x => x.id === g.id) || g, Object.assign({}, o, extra || {}));
     const c = CATS[g.category];
     const objs = g.objectives || [];
     const committed = objs.filter(o => !o.theme && !o.sketch);
@@ -17663,10 +17671,11 @@
     // to tick a thing is how two records of one fact start disagreeing.
     const workFor = o => (g.mechanisms || []).filter(m =>
       m.drivesObjectiveId === o.id && !m.dropped);
+    const offFor = o => (g.mechanisms || []).filter(m =>
+      m.drivesObjectiveId === o.id && m.dropped);
     const workRows = o => {
-      const ms = workFor(o);
-      if (!ms.length) return `<p class="ch-none-work">nothing weekly under this one yet.</p>`;
-      return ms.map(m => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
+      const ms = workFor(o), off = offFor(o);
+      const rows = ms.map(m => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
         <i class="ch-work-mark" aria-hidden="true">${twRowMark(m, false)}</i>
         <span class="ch-work-name edit-signal" contenteditable="true" role="textbox"
           spellcheck="false" data-mech="${escHtml(m.id)}"
@@ -17678,6 +17687,20 @@
             aria-label="stop doing this">remove</button>
         </span>
       </div>`).join("");
+      // OFF YOUR WEEK, AND THE WAY BACK (2026-09-07, owner: a series swiped
+      // off by accident, and the undo gone by the time she looked). A
+      // removed thing is only marked, never deleted (its ticks stay
+      // attached to it), so it is listed here under its quarter, a shade
+      // quieter, with the one word that brings it back.
+      const back = off.map(m => `<div class="ch-work-row ch-work-off" data-off-mech="${escHtml(m.id)}" data-type-area="chapters/work">
+        <i class="ch-work-mark" aria-hidden="true">${twRowMark(m, false)}</i>
+        <span class="ch-work-name ch-work-name-off">${escHtml(appVoice(m.weekLabel ?? m.label, wroteIt(m)))}</span>
+        <span class="ch-work-meta"><span>off your week</span>
+          <button type="button" class="ch-work-back" data-back-mech="${escHtml(m.id)}"
+            aria-label="bring this back to your week">bring back</button></span>
+      </div>`).join("");
+      if (!rows && !back) return `<p class="ch-none-work">nothing weekly under this one yet.</p>`;
+      return rows + back;
     };
     // A quarter: its name, the inky line, the step written on it, and the
     // weekly work beneath. Three of the four things this page exists to
@@ -17852,6 +17875,19 @@
         if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
       }, { inline: btn.closest(".ch-work-row") });
     }));
+    mount.querySelectorAll("[data-back-mech]").forEach(btn => btn.addEventListener("click", () => {
+      // looked up on the live board at the tap, not held from the render:
+      // a sync between the two replaces the board's objects (2026-09-07)
+      const gNow = goals.find(x => x.id === g.id) || g;
+      const m = (gNow.mechanisms || []).find(x => x.id === btn.dataset.backMech);
+      if (!m) return;
+      m.dropped = false;
+      saveState();
+      renderAll();
+      again();
+      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+      showToast(`"${appVoice(m.weekLabel ?? m.label, wroteIt(m)).slice(0, 40)}" is back on your week.`);
+    }));
     mount.querySelectorAll("[data-drop-mech]").forEach(btn => {
       let armed = false;
       btn.addEventListener("click", () => {
@@ -17865,7 +17901,8 @@
           }, 4000);
           return;
         }
-        const m = (g.mechanisms || []).find(x => x.id === btn.dataset.dropMech);
+        const gNow = goals.find(x => x.id === g.id) || g;   // the live goal, as bring back reads it
+        const m = (gNow.mechanisms || []).find(x => x.id === btn.dataset.dropMech);
         if (!m) return;
         // `dropped`, not a splice: completions already recorded against this
         // stay attached to something that still exists, which is the same
@@ -28232,7 +28269,17 @@
       return () => skipThisWeek(gid, mid, false, wk);
     }
     m.dropped = true; saveState();
-    return () => { m.dropped = false; saveState(); };
+    // THE UNDO LOOKS AGAIN (2026-09-07, owner: "i pressed undo when i did
+    // it but it didnt undo"). The undo used to hold the row's object from
+    // the moment of the swipe; a sync in the seconds between (the account
+    // answering the swipe's own save with a merge) replaces the board's
+    // objects, and the undo then flipped yesterday's copy, which nothing
+    // reads. It finds the series by name on the live board at the tap.
+    return () => {
+      const g2 = goals.find(x => x.id === gid);
+      const m2 = g2 && (g2.mechanisms || []).find(x => x.id === mid);
+      if (m2) { m2.dropped = false; saveState(); }
+    };
   }
   // The nearest open occurrence, today or ahead, else the earliest open —
   // the checkbox's own reading order, shared with the row's box.
@@ -28529,7 +28576,12 @@
         return;
       }
       if (isRem) removeReminder(mid);
-      else { m.dropped = true; saveState(); }
+      else {
+        // on the live board at the tap, not the object held at the open
+        const g2 = goals.find(x => x.id === gid);
+        const m2 = g2 && (g2.mechanisms || []).find(x => x.id === mid);
+        if (m2) { m2.dropped = true; saveState(); }
+      }
       done();
     });
     document.body.appendChild(pop);
@@ -32955,6 +33007,19 @@
     if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return { needSave: false }; }
     return { needSave: true };
   }
+  // WHAT IS OPEN IS REDRAWN (2026-09-07). A page holds the board's objects
+  // as they were when it opened; once the account's board has come in
+  // under it, those objects are yesterday's, and a tap on the page would
+  // change a copy nothing reads. This Week and the workshop (the chapter,
+  // with the editor drawn inside it) redraw themselves from the live
+  // board; the editor is only ever entered through the workshop (test
+  // 148), so the workshop's redraw is the editor's. Never under a busy
+  // hand: the pull itself does not run then.
+  function refreshOpenPages() {
+    const isOpen = id => { const el = document.getElementById(id); return !!(el && el.classList.contains("open")); };
+    if (isOpen("thisWeekOverlay")) renderThisWeek();
+    if (isOpen("chaptersOverlay")) renderChapters();
+  }
   // Before an unsent copy goes up: ask the account, take what it holds in
   // under the copy, and only then let the copy go up. A dead network or a
   // blank account changes nothing here, and the ordinary save follows.
@@ -32964,11 +33029,7 @@
     if (boardBlank(state)) return false;
     const took = takeAccount(state);
     if (!took) return false;
-    if (!syncBusy()) {
-      renderAll();
-      const twOv = document.getElementById("thisWeekOverlay");
-      if (twOv && twOv.classList.contains("open")) renderThisWeek();
-    }
+    if (!syncBusy()) { renderAll(); refreshOpenPages(); }
     return true;
   }
   const MIRROR_KEY = "lifevision.mirror.v1";
@@ -33069,10 +33130,9 @@
       const took = takeAccount(state);
       if (!took) return "failed";
       renderAll();
-      // renderAll paints the board; a This Week the landing already opened
-      // is its own page and takes the newer board itself.
-      const twOv = document.getElementById("thisWeekOverlay");
-      if (twOv && twOv.classList.contains("open")) renderThisWeek();
+      // renderAll paints the board; a page the landing already opened is
+      // its own page and takes the newer board itself.
+      refreshOpenPages();
       if (!took.needSave) mirrorWrite(uid);
       return took.needSave ? "merged" : "taken";
     })();
@@ -33192,8 +33252,7 @@
     if (!took) return false;
     if (at != null) cloudSeen = at;
     renderAll();
-    const twOv = document.getElementById("thisWeekOverlay");
-    if (twOv && twOv.classList.contains("open")) renderThisWeek();
+    refreshOpenPages();
     if (took.needSave) await saveState(); else mirrorWrite();
     return true;
   }
@@ -37802,7 +37861,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     shelfOn, shelfSet, shelfPrefs: () => profileShelf, mgSplash,
     cloudSeenGet: () => cloudSeen, syncRules: () => ({ SYNC_POLL_MS, RETURN_REFRESH_MS }),
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
-    twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
+    twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn, twDeleteForSwipe,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
     analyzeThemes, detectPatterns, prioritizeAreas, generateGoals, draftPlan, detectTensions,
     // The wheel step, so the harness can drive the real controls and check
