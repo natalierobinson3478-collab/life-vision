@@ -7233,8 +7233,21 @@
   .tw-col-handle:focus-visible { outline: none /* A1: the drawn ring */; }
   .tw-collection.dragging .tw-col-handle { cursor: grabbing; }
   .tw-collection svg { display: block; margin: 0 auto; }
+  /* THE LINE KEEPS ITS PLACE WHETHER OR NOT IT SPEAKS (2026-09-07, owner:
+     "the page is insanely jumping, like the page flickers up and down and
+     up and down"). An empty paragraph is no paragraph at all: the line was
+     0px tall until a hover, a tap or a collected stone gave it words and a
+     line's height, and back to 0px the moment the choice cleared, so the
+     page's own length changed with every name it said. Standing at the
+     foot, each clear shrank the page and the scroll was clamped to the
+     shorter one, the content slid down a row, the pointer landed on the
+     next row up, which named itself, and so on down the sheet. The ruling
+     is "nothing moves" (DECISIONS, 2026-09-02): the line is exactly one
+     lead tall, words or none, and a name long enough to wrap spills into
+     the sheet's own bottom padding rather than lengthening the page. */
   .tw-col-line { text-align: center; font-family: var(--voice-hand); font-style: italic;
-    font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0; }
+    font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0;
+    height: var(--lead); overflow: visible; }
   .tw-turn-row { display: flex; justify-content: space-between; align-items: center;
     height: var(--lead); margin-top: 0; }
   .tw-turn { background: none; border: none; padding: 0 4px; cursor: pointer;
