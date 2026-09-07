@@ -6607,9 +6607,13 @@
      widths, where inheriting the page's body size made it the loudest. */
   .ch-foot > span { font-family: var(--voice-body); font-size: var(--t-label);
     letter-spacing: 0.05em; color: var(--ink-muted); }
+  /* TIGHTER ON A PHONE (2026-09-07, owner: "especially on the phone its so
+     cramped together"). The head no longer reserves a fixed height, and the
+     plate steps down so the words get the width; the rows below are the
+     page's reason to exist and should be reached in one thumb. */
   @media (max-width: 700px) {
-    .ch-head { gap: 12px; min-height: 92px; }
-    .ch-plate { flex-basis: 66px; }
+    .ch-head { gap: 10px; min-height: 0; }
+    .ch-plate { flex-basis: 54px; }
   }
   /* NO EMPTY-STATE LINE OF ITS OWN. With no goals there is no strip and no
      chapter, so the page is the front matter alone — and the subtitle says
@@ -6702,6 +6706,15 @@
   /* :focus, not :focus-visible — Chrome/Safari draw their own orange ring on a
      plain-clicked svg book, which :focus-visible rules never reach. */
   .sb-book:focus { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
+  /* THE LIBRARY'S WORD (2026-09-07): inherits the row's caption and wears
+     the brush; a book put away keeps its row, a shade quieter. */
+  .bs-where { background: none; border: none; padding: 0 2px; margin-left: 8px; font: inherit; color: inherit; cursor: pointer; }
+  .bs-row.bs-away .bs-name { opacity: 0.55; }
+  /* A POKE IN THE WATER (2026-09-07): rings in the water's own line, two
+     drops that rise and fall. Drawn for a second and gone. */
+  .mg-splash-ring { fill: none; stroke: #6F8A8C; stroke-width: 1.1; }
+  .mg-drop { fill: #6F8A8C; }
+  .lv-headwash svg.mg-gate { cursor: pointer; }
   /* v31: "the books, again" — the FAQ sheet's rows, spine colors as dots */
   .bs-title { font-family: var(--voice-hand); font-weight: 400; font-size: var(--t-read);
     margin: 0 0 var(--lead); text-align: left; line-height: var(--lead); }
@@ -8612,6 +8625,15 @@
   .wk-feel:focus { outline: none; background: var(--paper-tint); border-radius: 6px; }
   .wk-feel-row { display: flex; gap: 10px; align-items: flex-start; }
   .wk-tune-btn, .wk-close-btn { display: block; margin-top: 14px; }
+  /* THE WEEK THAT LEARNS (2026-09-07): the line in the hand at reading
+     size, each change a row of what and why with the highlighted word
+     that keeps it; kept says so in the caption's italic. On the ruling,
+     whole leads, like every block on this sheet. */
+  .wk-learn-line { margin: 0; font-family: var(--voice-hand); font-size: var(--t-read); line-height: var(--lead); color: var(--ink); }
+  .wk-learn { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; line-height: var(--lead); }
+  .wk-learn-what { font-family: var(--voice-hand); font-size: var(--t-read); color: var(--ink); }
+  .wk-learn-why, .wk-learn-kept { font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label); color: var(--ink-muted); }
+  .wk-learn .wk-act { margin: 0; }
 
   /* THE RULING IS THE WRITING LINE. This box drew its own brushed baseline —
      right on a card with no ruling behind it, and a second line on a page
@@ -10689,7 +10711,7 @@
         <details><summary>what are habits and tasks?</summary>
           <div class="faq-a"><p>the weekly work that actually moves a goal, habits that happen on a rhythm, one-time tasks, capabilities that build. they're deliberately budgeted under your available hours, so one bad week doesn't end the whole thing.</p></div></details>
         <details><summary>what if I keep not doing one of my habits?</summary>
-          <div class="faq-a"><p>that's TOMORROW, AND TOMORROW on the shelf. pick the thing, say what happens when it's time, and it hands you one small move and remembers it. nothing in there counts or keeps score.</p></div></details>
+          <div class="faq-a"><p>that's BREAKING BAD on the shelf. say the thing in your own words, say what happens when it's time, and it hands you one small move and remembers it. nothing in there counts or keeps score.</p></div></details>
         <details><summary>what are the check-ins?</summary>
           <div class="faq-a"><p>weekly: about two minutes, how did each area of life feel, one optional honest line. A rough week may gently shrink a goal's weekly work; a good one may raise it a notch, always with your say-so. quarterly: the deeper look, progress, tensions you chose to hold, and what leads next quarter.</p></div></details>
         <details><summary>my goal has a deadline a few weeks away, does it fit here?</summary>
@@ -13162,6 +13184,9 @@
     if (!s) return s;
     const first = s.split(/\s+/)[0];
     if (first.length > 1 && first === first.toUpperCase() && /[A-Z]/.test(first)) return s;
+    // "I write for an hour" keeps its I (2026-09-07, the plan in the
+    // person's own voice): a lowered pronoun is a typo, not the lowercase law.
+    if (/^I(\s|'|$)/.test(s)) return s;
     return s.charAt(0).toLowerCase() + s.slice(1);
   };
   // WHOSE WORDS ARE THESE? Read from provenance, never guessed from the render
@@ -13826,7 +13851,7 @@
       lines: [["a week in the", "s"], ["CERULEAN", "b"], ["SEA", "b"]],
       board: "#c8c5a9", ink: "#4a4331", rule: "#9a9678", dress: "frame", gapAfter: 4, hx: 26,
       tour: "your week lives in here, the list you'll tick through." },
-    { door: "atlas", aria: "open quarter by quarter", open: openAtlas,
+    { door: "atlas", aria: "open quarter by quarter", open: openAtlas, library: true,
       lines: [["the", "s"], ["MIDNIGHT", "b"], ["ATLAS", "b"]],
       board: "#7d8a6d", ink: "#f0ecd8", rule: "#657252", dress: "bands", gapAfter: 2, hx: 64,
       tour: "every goal, quarter by quarter, the long view." },
@@ -13837,11 +13862,13 @@
     // TOMORROW, AND TOMORROW (2026-09-05): the book for the one thing you
     // keep meaning to do. Inside the cluster of the person's own books, so
     // it carries no breath; the FAQ catalogue and the tour read this line.
-    { door: "tomorrow", aria: "open tomorrow and tomorrow, for the thing you keep putting off", open: openTomorrow,
-      lines: [["tomorrow, and", "s"], ["TOMORROW", "b"]],
+    // RENAMED 2026-09-07 (owner: "it could be breaking bad. Like a joke on the
+    // show"). The door id stays `tomorrow`, so nothing that keys on it moves.
+    { door: "tomorrow", aria: "open breaking bad, for the habit you keep not doing", open: openTomorrow, library: true,
+      lines: [["breaking", "s"], ["BAD", "b"]],
       board: "#c9a58a", ink: "#4a3528", rule: "#a9836a", dress: "plain", gapAfter: 3, hx: 22,
-      tour: "for the thing you keep meaning to do. it asks what happens when it's time, and hands you one small move." },
-    { door: "journal", aria: "open your journal", open: openJournal,
+      tour: "for the habit you keep not doing. say what happens when it's time, and it hands you one small move." },
+    { door: "journal", aria: "open your journal", open: openJournal, library: true,
       lines: [["the secret", "s"], ["HISTORY", "b"]],
       // 24, not the cluster's 3: this book LEANS 5 degrees and pivots from
       // its base, so its head travels about twenty pixels right. At 3 it lay
@@ -13854,7 +13881,7 @@
       // privacy is worse than no promise at all. What replaced it says what
       // actually happens, and points at the book where the reading shows up.
       tour: "your journal. write freely, and what it teaches the plan shows up in THINGS I'VE NOTICED, yours to strike." },
-    { door: "portrait", aria: "things I've noticed, what the plan has learned about you", open: openPortrait,
+    { door: "portrait", aria: "things I've noticed, what the plan has learned about you", open: openPortrait, library: true,
       lines: [["things I've", "s"], ["NOTICED", "b"]],
       board: "#9aa9b4", ink: "#2e3941", rule: "#7c8b96", dress: "plain", lean: -1.4, gapAfter: 34, hx: 16,
       tour: "what the plan has noticed about you, with where each line came from, and any line yours to strike." },
@@ -13987,7 +14014,10 @@
   function shelfRoster() {
     const out = [];
     SHELF_BOOKS.forEach(bk => {
-      if (bk.show && !bk.show()) {
+      // A BOOK IN THE LIBRARY IS OFF THE SHELF THE SAME WAY A CHECK-IN THAT
+      // IS NOT DUE IS (2026-09-07): absent, never dimmed. It is still a
+      // permanent book, with no come-and-go rule of its own.
+      if ((bk.show && !bk.show()) || (bk.library && !shelfOn(bk.door))) {
         const prev = out[out.length - 1];
         if (prev) prev.gapAfter = Math.max(prev.gapAfter || 0, bk.gapAfter || 0);
         return;
@@ -15006,6 +15036,27 @@
   // which are different constraints. An earlier version knew only the first
   // and solved it by walking the stand DOWNWARD, straight onto the title.
   let mgRipSeq = 0;
+  function mgSplash(svg, x, y) {
+    const live = svg.querySelector(".mg-live");
+    if (!live) return null;
+    const NS = "http://www.w3.org/2000/svg";
+    const g = document.createElementNS(NS, "g");
+    g.setAttribute("class", "mg-splash");
+    const f = v => Number(v).toFixed(1);
+    g.innerHTML = [0, 1, 2].map(i => {
+      const dur = (0.9 + i * 0.25).toFixed(2), begin = (i * 0.12).toFixed(2);
+      return `<ellipse class="mg-splash-ring" cx="${f(x)}" cy="${f(y)}" rx="2" ry="1" opacity="0.55">
+        <animate attributeName="rx" from="2" to="${26 + i * 10}" dur="${dur}s" begin="${begin}s" fill="freeze"/>
+        <animate attributeName="ry" from="1" to="${9 + i * 3.5}" dur="${dur}s" begin="${begin}s" fill="freeze"/>
+        <animate attributeName="opacity" from="0.55" to="0" dur="${dur}s" begin="${begin}s" fill="freeze"/></ellipse>`;
+    }).join("") + [-1, 1].map(sg => `<circle class="mg-drop" cx="${f(x)}" cy="${f(y)}" r="1.4" opacity="0.6">
+        <animate attributeName="cx" from="${f(x)}" to="${f(x + sg * 9)}" dur="0.55s" fill="freeze"/>
+        <animate attributeName="cy" values="${f(y)};${f(y - 12)};${f(y + 1)}" keyTimes="0;0.45;1" dur="0.55s" fill="freeze"/>
+        <animate attributeName="opacity" from="0.6" to="0" dur="0.55s" fill="freeze"/></circle>`).join("");
+    live.appendChild(g);
+    setTimeout(() => { if (g.isConnected) g.remove(); }, 1600);
+    return g;
+  }
   function paintHeaderWash() {
     const app = document.querySelector(".app");
     const title = document.getElementById("boardTitle");
@@ -15022,6 +15073,26 @@
     // wash this replaces): .lv-vision carries `hidden` until there is
     // something to show, and a zero rect on a scrolled page computed a height
     // of the whole document.
+    // A POKE IN THE WATER SPLASHES (2026-09-07, owner: "want to be able to
+    // poke my water in my name and it splashes a bit"). Rings spread from
+    // the finger in the water's own line and two drops rise. Nothing is
+    // written; it is the pond answering a touch. Wired once on the mount;
+    // the water's box is read off the drawing as it stands.
+    if (!el.dataset.splash) {
+      el.dataset.splash = "1";
+      el.addEventListener("pointerdown", e => {
+        const svg = el.querySelector("svg.mg-gate");
+        if (!svg || !svg.dataset.wy) return;
+        const wy = Number(svg.dataset.wy), gx = Number(svg.dataset.cx), gy = Number(svg.dataset.cy);
+        const grx = Number(svg.dataset.rx), gry = Number(svg.dataset.ry);
+        const ctm = svg.getScreenCTM && svg.getScreenCTM();
+        if (!ctm) return;
+        let u; try { u = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse()); } catch (err) { return; }
+        const inside = ((u.x - gx) * (u.x - gx)) / (grx * grx) + ((u.y - gy) * (u.y - gy)) / (gry * gry) <= 1;
+        if (!inside || u.y < wy + 2) return;
+        mgSplash(svg, u.x, u.y);
+      });
+    }
     if (!block.offsetParent) { el.innerHTML = ""; el.style.height = "0px"; return; }
     const ar = app.getBoundingClientRect();
     const tr = (title && title.offsetParent) ? title.getBoundingClientRect() : block.getBoundingClientRect();
@@ -15195,7 +15266,8 @@
     const startA = Math.max(-Math.PI + 0.22, endA - 1.55);
     const nameArc = (userName && title && title.textContent)
       ? mgNameArc(cx, cy, nrx, nry, startA, endA, userName, rid) : "";
-    el.innerHTML = `<svg class="mg-gate" viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    el.innerHTML = `<svg class="mg-gate" viewBox="0 0 ${W} ${H}" aria-hidden="true"
+        data-wy="${Wt.wy.toFixed(1)}" data-cx="${cx}" data-cy="${cy}" data-rx="${rx}" data-ry="${ry}">
       <g class="mg-halo"><ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.94}" ry="${ry * 0.94}"/></g>
       <g class="mg-live">${Wt.svg}
         <clipPath id="mgw${rid}"><ellipse cx="${cx}" cy="${cy}" rx="${rx * 0.96}" ry="${ry * 0.96}"/></clipPath>
@@ -17629,8 +17701,12 @@
         ${o && !sk ? `<div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" data-oid="${escHtml(o.id)}" type="button">+ add weekly work</button></div>` : ``}
       </div>`;
     };
+    // SAID IN PLAIN WORDS (2026-09-07, owner: "what is the keep section").
+    // These are the goal's THEMES, directions without a commitment; the
+    // one-word label read as a mystery, so the block says what it holds.
     const keeps = themes.length ? `<div data-type-area="chapters/quarter" class="ch-q rm-qblock rm-keeps">
-        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">keep</span></div>
+        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">keeping in mind</span>
+          <span class="rm-meta-txt">directions, not commitments. looked at each quarter, never graded.</span></div>
         <div class="ch-q-rule"></div>
         ${themes.map(o => `<div class="rm-keep-line">${escHtml(appVoice(o.label, wroteIt(o)))}</div>`).join("")}
       </div>` : ``;
@@ -19796,21 +19872,19 @@
 
   function openBooksSheet() {
     const list = document.getElementById("booksSheetList");
-    list.innerHTML = SHELF_BOOKS.map(bk => `<div data-type-area="books/row" class="bs-row">
+    // THE CATALOGUE IS THE LIBRARY (2026-09-07): every book is listed, and
+    // a book that may be put away carries one word saying where it is,
+    // which flips it. The essentials carry no word and cannot leave.
+    list.innerHTML = SHELF_BOOKS.map(bk => `<div data-type-area="books/row" class="bs-row${bk.library && !shelfOn(bk.door) ? " bs-away" : ""}">
       ${bookSwatch(bk)}
       <span class="bs-name">${escHtml(bookTitle(bk))}</span>
-      <span class="bs-line">${escHtml(bk.tour)}</span></div>`).join("");
+      <span class="bs-line">${escHtml(bk.tour)}${bk.library
+        ? ` <button type="button" class="bs-where" data-shelf="${bk.door}"><span class="ch-hi">${shelfOn(bk.door) ? "on my shelf" : "in the library"}</span></button>` : ``}</span></div>`).join("");
+    list.querySelectorAll(".bs-where").forEach(b => b.addEventListener("click", () => {
+      shelfSet(b.dataset.shelf, !shelfOn(b.dataset.shelf));
+      openBooksSheet();
+    }));
     const ov = document.getElementById("booksSheetOverlay");
-    // NO tornify HERE. The markup already declares the full torn pair —
-    // .modal.torn-paper > .pm-sheet.torn-sheet — exactly as the welcome
-    // note and the name page do. tornify wrapped a SECOND pair inside it,
-    // so the sheet carried two torn-paper filters and three masks: the
-    // cream fibre drop-shadow was drawn twice and read as a GLOW around the
-    // paper, and .surf-sheet's padding stacked on .pm-sheet's own and
-    // squeezed the text into a narrow column. This was the ONLY doubled
-    // surface in the app (the other two hand-written modals are not
-    // tornified); if a torn surface ever glows again, look for the second
-    // wrapper before reaching for the shadow.
     openBookPage(ov);
   }
   // Re-runs the walk's book beat only — it never re-arms the full walk and
@@ -20222,6 +20296,116 @@
   }
 
   // ---- the sheet ----
+  // ---- THE WEEK THAT LEARNS (2026-09-07) ----
+  // Owner: "prompt me 'hey this is what I learned and this is what we should
+  // prob change to get your life goals in time'". Closing a week hands back
+  // one line and up to three changes, read off the person's own last three
+  // closed weeks with no model: which habits held, which keep landing on
+  // days they never happen, which ask for more sittings than any week has
+  // held. Patterns, never scores: no digit is spoken, no streak is kept, and
+  // a change lands only on a tap (law 1). Once accepted it is the person's
+  // own step (whenSource "user"), which the budget then protects (law 4).
+  const WK_DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const WK_DAY_WORDS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  const WK_NUM_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
+  function weekLearnings(wk) {
+    const key = wk || (wkState && wkState.week) || weekKeyOf();
+    const closedKeys = Object.keys(weeks || {}).filter(k => k <= key && weeks[k] && weeks[k].ticks).sort().slice(-3);
+    const line = [], changes = [];
+    const days = (rec, gid, mid) => {
+      const t = rec && rec.ticks && rec.ticks[gid] && rec.ticks[gid][mid];
+      return t && Array.isArray(t.days) ? t.days.map(Boolean) : [false, false, false, false, false, false, false];
+    };
+    goals.filter(g => g.status === "active").forEach(g => {
+      (g.mechanisms || []).forEach(m => {
+        if (!m || m.dropped || m.type !== "habit" || m.kind === "reminder") return;
+        const sched = scheduleOf(m, g.id, key);
+        const askedIdx = Array.isArray(sched) ? sched.map(d => WK_DAY_NAMES.indexOf(d)).filter(i => i >= 0) : [];
+        const want = askedIdx.length || Math.max(1, Math.min(7, Number(m.timesPerWeek) || (sched === "daily" ? 7 : 1)));
+        const name = appVoice(m.weekLabel ?? m.label, wroteIt(m));
+        const perWeek = closedKeys.map(k => days(weeks[k], g.id, m.id));
+        const thisWeek = perWeek[perWeek.length - 1] || days(null);
+        const doneThis = thisWeek.filter(Boolean).length;
+        // HELD: every asked day, or the count, this week
+        const heldThis = askedIdx.length ? askedIdx.every(i => thisWeek[i]) : doneThis >= want;
+        if (heldThis && doneThis > 0) { line.push(`${name} held its week`); return; }
+        if (perWeek.length < 2) return;                    // one week is not a pattern
+        // MOVE: the asked days rarely happen, other days do, and the same ones
+        if (askedIdx.length) {
+          const askedHits = perWeek.reduce((n, d) => n + askedIdx.filter(i => d[i]).length, 0);
+          const askedSlots = askedIdx.length * perWeek.length;
+          const other = [0, 1, 2, 3, 4, 5, 6].filter(i => !askedIdx.includes(i))
+            .map(i => ({ i, n: perWeek.filter(d => d[i]).length })).filter(x => x.n >= 2).sort((a, b) => b.n - a.n);
+          if (askedHits * 3 <= askedSlots && other.length) {
+            const to = other.slice(0, Math.max(1, askedIdx.length)).map(x => x.i).sort((a, b) => a - b);
+            const toNames = to.map(i => WK_DAY_NAMES[i]), toWords = to.map(i => WK_DAY_WORDS[i]);
+            const fromWords = askedIdx.map(i => WK_DAY_WORDS[i]);
+            line.push(`${name} keeps landing on ${fromWords.join(" and ")}, where it doesn't happen. ${toWords.join(" and ")} ${to.length > 1 ? "do" : "does"}`);
+            changes.push({ id: "mv:" + g.id + ":" + m.id, verb: "move", goalId: g.id, mechId: m.id,
+              label: `move ${name} to ${toWords.join(" and ")}`,
+              why: "the days it actually happens, these last weeks",
+              patch: { schedule: toNames, timesPerWeek: toNames.length } });
+            return;
+          }
+        }
+        // LIGHTER: it asks for more sittings than any of the last weeks held
+        const counts = perWeek.map(d => d.filter(Boolean).length).sort((a, b) => a - b);
+        const median = counts[Math.floor(counts.length / 2)];
+        if (want >= 2 && median <= want - 2 && median >= 1) {
+          line.push(`${name} asks for ${WK_NUM_WORDS[Math.min(7, want)]} sittings, and ${WK_NUM_WORDS[median]} is what the weeks hold`);
+          const keepDays = askedIdx.length
+            ? askedIdx.map(i => ({ i, n: perWeek.filter(d => d[i]).length })).sort((a, b) => b.n - a.n).slice(0, median).map(x => x.i).sort((a, b) => a - b)
+            : [];
+          changes.push({ id: "lt:" + g.id + ":" + m.id, verb: "lighter", goalId: g.id, mechId: m.id,
+            label: `make ${name} ${WK_NUM_WORDS[median]} ${median === 1 ? "sitting" : "sittings"} a week`,
+            why: "smaller than the mood, and it still counts",
+            patch: Object.assign({ timesPerWeek: median }, keepDays.length ? { schedule: keepDays.map(i => WK_DAY_NAMES[i]) } : {}) });
+        }
+      });
+    });
+    const rec = weeks[key];
+    const kept = (rec && rec.learned && rec.learned.kept) || [];
+    const keptChanges = (rec && rec.learned && rec.learned.changes) || [];
+    // A KEPT CHANGE STAYS ON THE PAGE, SAID AS KEPT: once it has landed the
+    // habit no longer earns the same proposal, so the record keeps the
+    // change itself, not only its id.
+    const live = changes.filter(c => !kept.includes(c.id)).slice(0, 3).map(c => Object.assign({}, c, { kept: false }));
+    const done = keptChanges.map(c => Object.assign({}, c, { kept: true }));
+    return { week: key, line: line.length ? line.slice(0, 3).join(". ") + "." : "a quiet week says nothing yet.",
+             changes: done.concat(live).slice(0, 3 + done.length) };
+  }
+  // A CHANGE LANDS ON A TAP, AND BECOMES THE PERSON'S OWN STEP.
+  function acceptLearning(wk, id) {
+    const out = weekLearnings(wk);
+    const c = out.changes.find(x => x.id === id);
+    if (!c) return false;
+    const g = goals.find(x => x.id === c.goalId);
+    const m = g && (g.mechanisms || []).find(x => x.id === c.mechId);
+    if (!m) return false;
+    Object.assign(m, c.patch, { whenSource: "user" });
+    if (c.patch.schedule) m.cadence = "weekly";
+    const rec = weeks[out.week];
+    if (rec) {
+      rec.learned = rec.learned || { kept: [], changes: [] };
+      rec.learned.changes = rec.learned.changes || [];
+      if (!rec.learned.kept.includes(id)) {
+        rec.learned.kept.push(id);
+        rec.learned.changes.push({ id: c.id, verb: c.verb, goalId: c.goalId, mechId: c.mechId, label: c.label, why: c.why, patch: c.patch });
+      }
+    }
+    saveState();
+    return true;
+  }
+  function learningsHtml(wk) {
+    const L = weekLearnings(wk);
+    const rows = L.changes.map(c => `<div data-type-area="weekly/learn" class="wk-learn">
+        <span class="wk-learn-what">${escHtml(c.label)}</span><span class="wk-learn-why">${escHtml(c.why)}</span>
+        ${c.kept ? `<span class="wk-learn-kept">kept</span>` : `<button class="wk-act ch-hi" type="button" data-learn="${escHtml(c.id)}">keep this change</button>`}
+      </div>`).join("");
+    return `<div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">what this week says</div><div class="wk-sec-rule"></div></div>
+      <p data-type-area="weekly/learn" class="wk-learn-line">${escHtml(L.line)}</p>${rows}`;
+  }
+
   let wkState = null;   // { week, mode, feel, diffs, notes, registers, partial, pre }
   function openWeekSheet(weekKey2, mode) {
     // E3: no goals, no week to close — never a trapping empty sheet.
@@ -20366,6 +20550,7 @@
           return c ? `<span class="wk-opening-quote">"${escHtml(wordTrunc(c.text, 90))}"</span>` : ``;
         })()}</div>` : ``}
         ${wkState.closed ? `
+          ${learningsHtml(wk)}
           <div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">next week</div><div class="wk-sec-rule"></div>${mini()}</div>
           <div data-type-area="weekly/lands" class="wk-lands">this lands Monday.</div>
           <div class="wk-acts" data-type-area="weekly/acts"><button class="btn-solid wk-close-btn" id="wkBackToWeek" type="button">done, back to your week ${DRAWN_ARROW}</button></div>
@@ -20897,6 +21082,13 @@
       closeWeekSheet();
       openThisWeek();
     });
+    // THE WEEK THAT LEARNS: a change lands on its tap and the sheet says so
+    mount.querySelectorAll("[data-learn]").forEach(btn => btn.addEventListener("click", () => {
+      if (!acceptLearning(wkState && wkState.week, btn.dataset.learn)) return;
+      renderWeekSheet();
+      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+      showToast("kept. it's your own step now.");
+    }));
     const feel = mount.querySelector("#wkFeel");
     if (feel) feel.addEventListener("input", () => { wkState.feel = feel.value; });
     // THE DOOR'S LABEL, SWAPPED WITHOUT LOSING THE MARK. It read and wrote
@@ -22081,6 +22273,20 @@
   // punished). Chosen from the intake, swappable, nameable, and switchable
   // off with no consequence. No state on it can get worse.
   let profileCompanion = null;   // { kind, name, detail, voice, enabled, arrived }
+  // THE LIBRARY (2026-09-07, owner: "allow user to add or remove books from
+  // their bookshelf. Like if they don't want clutter"). Which books stand on
+  // the shelf: a map door -> false for one put back in the library. Absent
+  // means on the shelf. Carried on the profile (column `shelf`, 0017).
+  let profileShelf = {};
+  const shelfOn = door => !(profileShelf && profileShelf[door] === false);
+  function shelfSet(door, on) {
+    if (!SHELF_BOOKS.some(b => b.door === door && b.library)) return false;
+    profileShelf = Object.assign({}, profileShelf);
+    if (on) delete profileShelf[door]; else profileShelf[door] = false;
+    saveState();
+    renderAll();
+    return true;
+  }
   // One-time view flags (the wheel demo, the edit hint) — never goal data.
   // Mirrored to localStorage so a refresh doesn't replay them, and carried on
   // profile.seen through the normal save so a second device doesn't either.
@@ -25286,7 +25492,11 @@
            the capacity band sums hours per area against the person's stated
            weekly hours, so a per-session reading would break that arithmetic
            silently and nothing on screen would show the error. -->
-      <div class="when-pop-row wp-note">hrs a week</div>`;
+      <div class="when-pop-row wp-note">hrs a week</div>
+      <!-- WHEN A CHANGE COUNTS (2026-09-07, owner: "should it start that week
+           or the next"): from today. This week's strip reads the standing
+           plan as it stands, and a stone already finished stays finished. -->
+      <div class="when-pop-row wp-note">a change counts from today. what's already done stays done.</div>`;
     const sync = () => {
       pop.querySelectorAll(".wp-day").forEach(b => {
         const d = b.dataset.d || null;
@@ -27208,7 +27418,7 @@
         // the day it was carried from; a stone from the lane has no day and
         // is done today. The write is the row's own tick, so the pile, the
         // row and the week's record all agree.
-        if (!d.done && twOnPile(e.clientX, e.clientY)) {
+        if (!d.done && twIsNow() && twOnPile(e.clientX, e.clientY)) {
           tickOccurrence(d.gid, d.mid, d.date || null);
           renderThisWeek();
           return;
@@ -27225,13 +27435,18 @@
         // A FINISHED PEBBLE CANNOT GO THERE. Its day is the day it was DONE,
         // which is a fact rather than a plan, and "done on no day" is not a
         // thing that can be true. It goes home instead.
+        // THE DAYS ARE THE PAGE'S OWN (2026-09-07, owner: "on Saturday and
+        // Sundays I want to be able to move around my rocks for the next
+        // week"). Next week's sheet is plannable, so its stones drag too,
+        // and a drop lands on THAT week's days, written to that week.
+        const wkV = twViewWk();
         if (di === "any") {
           if (d.done || !d.date) return;
-          moveOccurrence(d.gid, d.mid, d.from || d.date, "any");
+          moveOccurrence(d.gid, d.mid, d.from || d.date, "any", wkV);
           renderThisWeek();
           return;
         }
-        const to = weekDates(weekKeyOf())[di];
+        const to = weekDates(wkV)[di];
         if (!to || to === d.date) return;
         if (d.done) {
           // A FILLED PEBBLE carries its day in its COMPLETION, not in the
@@ -27242,12 +27457,14 @@
         } else {
           // Keyed to where the SCHEDULE put it ("f0" for a flex slot), so it
           // can be moved again and again, and out of the flex lane onto a day.
-          moveOccurrence(d.gid, d.mid, d.from || d.date, to);
+          moveOccurrence(d.gid, d.mid, d.from || d.date, to, wkV);
         }
         renderThisWeek();
       };
       stripMount.querySelectorAll(".tw-stone[data-mech]").forEach(el => {
-        if (!twRO) el.addEventListener("pointerdown", e => {
+        // A PLANNABLE WEEK DRAGS TOO (2026-09-07): the live week and the one
+        // ahead. A past week is a record and its stones only select.
+        if (!twRO || twPlan) el.addEventListener("pointerdown", e => {
           e.preventDefault();
           // Both paths of an undone pebble share its identity, so both move.
           // TWINS ARE THE TWO PATHS OF ONE PEBBLE, matched by SLOT — not by
@@ -27282,7 +27499,7 @@
         // the drag's own pointerup, and the drag is not wired here — so
         // selection gets its own plain click, or looking at a past week
         // would be the one thing a pebble could not do.
-        if (twRO) el.addEventListener("click", () => {
+        if (twRO && !twPlan) el.addEventListener("click", () => {
           twSelectMech(el.dataset.goal, el.dataset.mech);
           twHover = null;
           twPaintSelection();
@@ -28194,9 +28411,9 @@
         <span class="mp-a">change the day</span>
         <span class="mp-b">${isRem ? "pick the day it belongs to" : "this week, or the standing plan"}</span>
       </button>
-      ${repeating ? `<button type="button" class="mp-opt tw-pop-danger" id="rpOffDay">
-        <span class="mp-a">not this day</span>
-        <span class="mp-b">just this one, next week is untouched</span>
+      ${repeating ? `<button type="button" class="mp-opt" id="rpOffDay">
+        <span class="mp-a">skip just this one</span>
+        <span class="mp-b">this one time. the rhythm, and next week, are untouched</span>
       </button>` : ``}
       <button type="button" class="mp-opt tw-pop-danger" id="rpDrop">
         <span class="mp-a">${repeating ? "delete the whole repeat" : "delete"}</span>
@@ -29614,7 +29831,7 @@
     "nothing here is counting. start from today.",
     "you noticed. that's the whole first step, and you've already taken it.",
   ];
-  const TM_SUB_LINE = "for the one thing you keep meaning to do. nothing here counts, and nothing keeps score.";
+  const TM_SUB_LINE = "for the one thing I keep meaning to do. nothing here counts, and nothing keeps score.";
   const TM_HINT_IFTHEN = "one sentence. the first half is something that already happens every day.";
   const TM_HINT_LINE = "small enough for a bad week.";
   const TM_HINT_MISSING = "write the missing piece, and it keeps.";
@@ -29696,7 +29913,54 @@
     let j = "";
     try { j = ((buildIntake().journals || {}).obstacles || "").trim(); } catch (e) { j = ""; }
     if (j) out.push("you wrote, at the start: " + trimQuote(sentencesOf(j)[0] || j));
+    // AND WHAT THE WEEKS SAY (2026-09-07, owner: "consider their past
+    // completion history"): the closed weeks' own reading of this habit, in
+    // words, never a count, with its change offered below.
+    const lc = tomorrowLearning(thing);
+    if (lc) out.push("your weeks say: " + lc.label + ", " + lc.why);
     return out;
+  }
+  function tomorrowLearning(thing) {
+    if (!thing || thing.goalId == null || thing.mechId == null || typeof weekLearnings !== "function") return null;
+    const closed = Object.keys(weeks || {}).filter(k => weeks[k] && weeks[k].ticks).sort();
+    if (!closed.length) return null;
+    const L = weekLearnings(closed[closed.length - 1]);
+    return (L.changes || []).find(c => c.goalId === thing.goalId && c.mechId === thing.mechId && !c.kept) || null;
+  }
+  // THE WRITTEN LINE, MATCHED TO THE BOARD. "I want to make sure I brush my
+  // teeth every day" and a habit called "brush teeth" are the same thing;
+  // the words that carry it are compared with the wanting and the rhythm
+  // stripped. Half the meaningful words shared, or one label inside the
+  // other, is a match. Nothing is fuzzier than that on purpose.
+  const TM_STOP = new Set(["i", "me", "my", "to", "a", "an", "the", "and", "of", "for", "in", "on", "at", "it",
+    "want", "wanna", "need", "make", "sure", "keep", "start", "stop", "actually", "really", "just", "do", "doing",
+    "every", "everyday", "daily", "day", "days", "week", "weekly", "morning", "night", "evening", "each", "again",
+    "more", "not", "dont", "don't", "should", "gotta", "get", "be", "am", "im", "i'm", "that", "this", "with"]);
+  const tmWords = t => String(t || "").toLowerCase().replace(/[^a-z0-9' ]+/g, " ").split(/\s+/).filter(w => w && !TM_STOP.has(w));
+  function tomorrowMatch(text) {
+    const mine = tmWords(text);
+    if (!mine.length) return null;
+    let best = null, bestScore = 0;
+    tomorrowThings().forEach(t => {
+      const theirs = tmWords(t.label);
+      if (!theirs.length) return;
+      const shared = mine.filter(w => theirs.includes(w)).length;
+      const inside = String(t.label).toLowerCase().includes(String(text).toLowerCase())
+        || String(text).toLowerCase().includes(String(t.label).toLowerCase());
+      const score = inside ? 1 : shared / Math.max(mine.length, theirs.length);
+      if (score >= 0.5 && score > bestScore) { best = t; bestScore = score; }
+    });
+    return best;
+  }
+  // The thing's own words, with the wanting stripped: "I want to make sure I
+  // brush my teeth every day" keeps "brush my teeth".
+  function tomorrowThingWords(text) {
+    let t = String(text || "").trim();
+    t = t.replace(/^(i\s+)?((really|actually|just|always|finally)\s+)*(want|wanna|need|would like|have|gotta|got)\s+(to\s+)?(make sure\s+(that\s+)?(i\s+)?|actually\s+|really\s+|start\s+(to\s+)?)?/i, "");
+    t = t.replace(/^(i\s+)?((should|keep|actually|really|just|always|finally)\s+)+/i, "");
+    t = t.replace(/\s+(every|each)\s+(day|morning|night|evening|week|weekday|weekend)s?\.?$/i, "").replace(/\s+(daily|everyday)\.?$/i, "");
+    t = t.replace(/[.!]+$/, "").trim();
+    return t || String(text || "").trim();
   }
   const tmDateWords = iso => {
     const d = new Date(String(iso) + "T12:00:00");
@@ -29719,12 +29983,24 @@
     const things = tomorrowThings();
     const chosenKey = st.thing ? st.thing.key : null;
     if (st.thing && st.thing.own && !things.some(t => t.key === chosenKey)) things.unshift(st.thing);
+    // THE WRITTEN LINE COMES FIRST (2026-09-07, owner: "it's just a long list
+    // of all of my tasks and habits ... maybe a simple addition like how we
+    // add a task or goal in the weekly book where they type what they
+    // want"). The person says the thing in their own words; it is matched
+    // to work already on the board, or kept as its own; the board's list
+    // waits behind one word for anyone who would rather point.
     const thingRows = things.map(t => row(`data-tm="thing" data-key="${escHtml(t.key)}"`,
       hi(escHtml(t.label), t.key === chosenKey),
       t.from ? `from ${escHtml(t.from)}` : (t.own ? `written here before` : ``))).join("");
     const ownRow = `<div data-type-area="tomorrow/own" class="tm-own"><input type="text" class="tm-own-input" id="tmOwn"
-      placeholder="or something not on the board, in your words" value="${escHtml(st.own || "")}"
-      aria-label="something not on the board, in your words"></div>`;
+      placeholder="what do I keep not doing?" value="${escHtml(st.own || "")}"
+      aria-label="what I keep not doing, in my words"></div>`;
+    const ownRows = things.filter(t => t.own && t.key === chosenKey).map(t => row(`data-tm="thing" data-key="${escHtml(t.key)}"`,
+      hi(escHtml(t.label), true), t.from ? `` : ``)).join("");
+    const listBlock = (st.showList || (st.thing && !st.thing.own))
+      ? thingRows
+      : ownRows + (things.some(t => !t.own || t.key !== chosenKey) ? row(`data-tm="showlist"`, `<span class="ch-hi">or pick one from my board</span>`) : ``);
+    const matchedNote = st.thing && st.matched ? `<p data-type-area="tomorrow/said" class="tm-quote">that's already on my board, as ${escHtml(st.thing.label)}${st.thing.from ? `, part of ${escHtml(st.thing.from)}` : ``}.</p>` : ``;
     const tellRows = TM_TELLS.map(t => row(`data-tm="tell" data-id="${t.id}"`, hi(escHtml(t.key), st.tell === t.id), escHtml(t.line))).join("");
     const feelRows = TM_FEELS.map(f => row(`data-tm="feel" data-id="${f}"`, hi(escHtml(f), st.feel === f))).join("");
     const route = (st.thing && st.tell) ? tomorrowRoute(st.tell, st.feel) : null;
@@ -29737,7 +30013,9 @@
         ${said.map(s => `<p data-type-area="tomorrow/said" class="tm-quote">${escHtml(s)}</p>`).join("")}
         <p data-type-area="tomorrow/reading" class="tm-read">${escHtml(reading)}</p>`);
       const mv = route.move;
-      const keep = `<div data-type-area="tomorrow/keep" class="tm-keep"><button class="btn-solid" type="button" data-tm="keep">${
+      const lc = tomorrowLearning(st.thing);
+      const keep = `${lc ? `<div data-type-area="tomorrow/row" class="fq-item"><button class="fq-row" type="button" data-tm="learn" data-learn="${escHtml(lc.id)}"><b><span class="ch-hi">${escHtml(lc.label)}</span></b></button><span class="fq-sub">what the weeks suggest. one tap, and it's my own step</span></div>` : ``}
+        <div data-type-area="tomorrow/keep" class="tm-keep"><button class="btn-solid" type="button" data-tm="keep">${
         st.editId ? "keep the change" : "keep this"}</button></div>`;
       if (mv.kind === "door") {
         const g = st.thing.goalId != null ? goals.find(x => x.id === st.thing.goalId) : null;
@@ -29765,17 +30043,19 @@
       const th = u.thing || {};
       const g = th.goalId != null ? goals.find(x => x.id === th.goalId) : null;
       const canWeek = !u.landed && u.tell !== "unwanted" && u.move;
+      const standing = canWeek && th.goalId == null && th.mechId == null && u.repeat;
       return row(`data-tm="rec" data-id="${escHtml(u.id)}"`, `${escHtml(th.label || "")}: ${escHtml(u.move || "")}`,
         `<span class="tm-date">${escHtml(tmDateWords(u.at))}</span>${
-          canWeek ? `<button class="tm-word" type="button" data-tm="week" data-id="${escHtml(u.id)}"><span class="ch-hi">put it in this week</span></button>`
+          canWeek ? `<button class="tm-word" type="button" data-tm="${standing ? "standing" : "week"}" data-id="${escHtml(u.id)}"><span class="ch-hi">${
+            standing ? "make it a standing habit" : "put it in this week"}</span></button>`
                   : (u.landed ? `, in your week` : ``)}${
           g && u.tell === "unwanted" ? `<button class="tm-word" type="button" data-tm="goal" data-gid="${escHtml(String(g.id))}"><span class="ch-hi">look at the goal</span></button>` : ``}`);
     }).join("") : `<p data-type-area="tomorrow/empty" class="fq-sub-line">nothing kept yet. the first page is the one you're writing.</p>`;
     mount.innerHTML = `<div class="fq-page tm-page">
       <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
-        <div data-type-area="tomorrow/header"><h1 class="fq-h1">tomorrow, and tomorrow.</h1>
+        <div data-type-area="tomorrow/header"><h1 class="fq-h1">breaking bad.</h1>
           <p class="fq-sub-line">${escHtml(TM_SUB_LINE)}</p></div>
-        ${ch("the thing", thingRows + ownRow)}
+        ${ch("the thing", ownRow + matchedNote + listBlock)}
         ${st.thing ? ch("when it's time, what happens?", tellRows) : ``}
         ${st.thing && st.tell === "avoid" ? ch("right before, it feels…", feelRows) : ``}
         ${readingBlock}${moveBlock}${forgive}
@@ -29789,7 +30069,9 @@
       if (act === "thing") {
         const t = tomorrowThings().find(x => x.key === b.dataset.key)
           || (st.thing && st.thing.key === b.dataset.key ? st.thing : null);
-        if (t) tomorrowPick(t);
+        if (t) { tmState.matched = false; tomorrowPick(t); }
+      } else if (act === "showlist") {
+        tmState.showList = true; renderTomorrow();
       } else if (act === "tell") {
         tmState.tell = b.dataset.id; tmState.feel = null; tmState.draft = null; tmState.hint = "";
         renderTomorrow(); tomorrowScrollTo("what's going on");
@@ -29798,6 +30080,10 @@
         renderTomorrow();
       } else if (act === "keep") { tomorrowKeep();
       } else if (act === "week") { tomorrowLand(b.dataset.id);
+      } else if (act === "standing") { tomorrowStand(b.dataset.id);
+      } else if (act === "learn") {
+        const closed = Object.keys(weeks || {}).filter(k => weeks[k] && weeks[k].ticks).sort();
+        if (closed.length && acceptLearning(closed[closed.length - 1], b.dataset.learn)) { renderTomorrow(); showToast("kept. it's your own step now."); }
       } else if (act === "goal") {
         const g = goals.find(x => String(x.id) === b.dataset.gid);
         if (g) { closeTomorrow(); openChapters(g.id); }
@@ -29809,9 +30095,14 @@
       own.addEventListener("keydown", e => {
         if (e.key !== "Enter") return;
         e.preventDefault();
-        const label = own.value.replace(/\s+/g, " ").trim();
-        if (!label) return;
-        tomorrowPick({ key: "own|" + label.toLowerCase(), label, goalId: null, mechId: null, from: "", own: true });
+        const raw = own.value.replace(/\s+/g, " ").trim();
+        if (!raw) return;
+        const found = tomorrowMatch(raw);
+        if (found) { tmState.matched = true; tomorrowPick(found); return; }
+        const p = parseCapture(raw);
+        const label = tomorrowThingWords(p.label || raw);
+        tmState.matched = false;
+        tomorrowPick({ key: "own|" + label.toLowerCase(), label, goalId: null, mechId: null, from: "", own: true, repeat: p.repeat || null });
       });
     }
     const write = mount.querySelector("#tmWrite");
@@ -29861,7 +30152,8 @@
       unstuck.push({ id: userId("us"), at: todayKey(),
         thing: { label: st.thing.label, goalId: st.thing.goalId != null ? st.thing.goalId : null,
                  mechId: st.thing.mechId != null ? st.thing.mechId : null },
-        tell: route.tell, feel: st.feel || null, move, ifThen, landed: null });
+        tell: route.tell, feel: st.feel || null, move, ifThen, landed: null,
+        repeat: st.thing.repeat || null });
     }
     saveState();
     tmState = { thing: null, own: "", tell: null, feel: null, draft: null, hint: "", editId: null };
@@ -29879,6 +30171,20 @@
     saveState();
     renderTomorrow();
     showToast("it's in this week's lane now.");
+  }
+  // A THING SAID WITH A RHYTHM BECOMES A STANDING HABIT (2026-09-07): "every
+  // day" in the person's line is read by the capture parser, and the habit
+  // is filed the way the corner files one, a standing reminder in the app's
+  // own schedule shapes, on the week from Monday.
+  function tomorrowStand(id) {
+    const rec = unstuck.find(u => u.id === id);
+    if (!rec || rec.landed || !rec.thing) return;
+    const r = addReminder({ label: rec.thing.label, repeat: rec.repeat || "daily" });
+    if (!r) return;
+    rec.landed = r.id;
+    saveState();
+    renderTomorrow();
+    showToast("it's a standing habit now. it shows up on the week.");
   }
   function tomorrowReopen(id) {
     const u = unstuck.find(x => x.id === id);
@@ -31903,7 +32209,7 @@
       profile: { has_onboarded: hasOnboarded, last_checkin_label: lastCheckinLabel, vision: visionQuote,
         display_name: userName, focus_goal_id: focusGoalId,
         discovery_started_at: discoveryStartedAt, next_step_dismissed: nextStepDismissed,
-        companion: profileCompanion, seen: profileSeen },
+        companion: profileCompanion, seen: profileSeen, shelf: profileShelf },
       intake: buildIntake(),
       goals: goals.map((g, i) => Object.assign({}, g, { position: i })),
       dismissedTensions: ciDismissedTensions.slice(),
@@ -31948,6 +32254,7 @@
     discoveryStartedAt = state.profile.discovery_started_at || null;
     nextStepDismissed = state.profile.next_step_dismissed || null;
     profileCompanion = state.profile.companion || null;
+    profileShelf = (state.profile.shelf && typeof state.profile.shelf === "object") ? state.profile.shelf : {};
     lastCompanionLogged = JSON.stringify(profileCompanion || null);   // dev log baseline
     // Seen-flags union with this device's own, so neither side replays a
     // demo the other already showed.
@@ -37203,7 +37510,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
-    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount,
+    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount, weekLearnings, acceptLearning,
+    shelfOn, shelfSet, shelfPrefs: () => profileShelf, mgSplash,
     cloudSeenGet: () => cloudSeen, syncRules: () => ({ SYNC_POLL_MS, RETURN_REFRESH_MS }),
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
