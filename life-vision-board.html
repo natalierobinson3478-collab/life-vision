@@ -31767,11 +31767,29 @@
       if (!sbc) return { ok: false, reason: "not_configured" };
       const session = await currentSession();
       if (!session) return { ok: false, reason: "not_signed_in" };
-      const { data, error } = await sbc.rpc("save_board", { board: state });
-      if (error) return { ok: false, reason: error.message || error.code || "save_failed" };
+      // NEVER OVER WHAT THIS DEVICE HAS NOT SEEN (0018, 2026-09-07). The
+      // save carries the account's stamp as this tab last saw it; an
+      // account that has moved since refuses the write ("stale"), and the
+      // caller looks, merges, and sends again. A tab that has never looked
+      // at all asks for the stamp first: if the account holds a board, this
+      // tab has not seen it, and the same road is taken.
+      if (cloudSeen == null) {
+        const at = await supabaseStore.freshness().catch(() => null);
+        if (at != null) return { ok: false, reason: "stale" };
+      }
+      let res = await sbc.rpc("save_board", { board: state, seen: cloudSeen });
+      // Before 0018 the account knows only save_board(board): the same
+      // write, without the stamp.
+      if (res.error && (res.error.code === "PGRST202" || /could not find the function/i.test(res.error.message || ""))) {
+        res = await sbc.rpc("save_board", { board: state });
+      }
+      if (res.error) {
+        const msg = res.error.message || res.error.code || "save_failed";
+        return { ok: false, reason: /^stale\b/i.test(msg) ? "stale" : msg };
+      }
       // THE STAMP COMES BACK (0015): the profile's updated_at as written, so
       // this tab knows its own save from someone else's when it next asks.
-      return { ok: true, at: (typeof data === "string" && data) || null };
+      return { ok: true, at: (typeof res.data === "string" && res.data) || null };
     },
 
     // A dismissal is written the moment it happens, not deferred to the next save.
@@ -32503,8 +32521,18 @@
     // it up; the account is not asked, so no toast can be wrong.
     if (offlineBoard) { offlineDirty = true; return { ok: true, offline: true }; }
     let body = null;
-    const run = () => { body = serializeState(); return store.save(body)
-      .catch(err => ({ ok: false, reason: err.message })); };
+    const run = async () => {
+      body = serializeState();
+      let r = await store.save(body).catch(err => ({ ok: false, reason: err.message }));
+      if (!r.ok && r.reason === "stale") {
+        // THE ACCOUNT MOVED SINCE THIS DEVICE LAST LOOKED (0018): what it
+        // holds comes in under this change, and the merged board goes up.
+        await mergeDownFirst();
+        body = serializeState();
+        r = await store.save(body).catch(err => ({ ok: false, reason: err.message }));
+      }
+      return r;
+    };
     const mine = (saveInFlight ?? Promise.resolve()).then(run, run);
     saveInFlight = mine;
     const r = await mine;
@@ -32521,6 +32549,7 @@
     if (!r.ok) {
       console.warn("save failed:", r.reason);
       if (r.reason === "not_signed_in") showSignedOutWarning();
+      else if (r.reason === "stale") { /* the copy is marked; the next ask carries it up, merged */ }
       else if (r.reason === "fixture_guard")
         showToast("a test run is using this browser \u2014 saving is paused so your board can't be written over.");
       else if (r.reason !== "local_only")
@@ -33085,8 +33114,11 @@
     reconnecting = (async () => {
       if (offlineDirty) {
         await mergeDownFirst();       // what the account holds comes in under the copy first
-        const body = serializeState();
-        const r = await store.save(body);
+        let body = serializeState();
+        let r = await store.save(body);
+        if (!r.ok && r.reason === "stale") {   // it moved again meanwhile: once more
+          await mergeDownFirst(); body = serializeState(); r = await store.save(body);
+        }
         if (!r.ok) return false;      // still out of reach; the bar stays
         offlineDirty = false; offlineBoard = false;
         mirrorWrite(); baseWrite(body); syncNoteSaved(r);
