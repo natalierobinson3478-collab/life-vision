@@ -31244,6 +31244,10 @@
     return data.session || null;
   }
 
+  // THE ACCOUNT'S STAMP AS THIS TAB LAST SAW IT (2026-09-07): the profile's
+  // updated_at from the last load, or from the last save this tab made.
+  // Anything newer than this is someone else's change, and news.
+  let cloudSeen = null;
   // The store is swapped out by the fixture harness so save/load can be tested
   // round-trip without a Supabase project. Passing null restores the real one.
   const supabaseStore = {
@@ -31276,6 +31280,7 @@
       }
       if (failed) throw new Error("load_failed: " + (failed.error.message || failed.error.code || "unknown"));
       const [profile, intake, goalRows, objRows, dismissed, checkins, journalRows] = results;
+      cloudSeen = (profile.data && profile.data.updated_at) || null;
       const byGoal = {};
       (objRows.data || []).forEach(o => { (byGoal[o.goal_id] = byGoal[o.goal_id] || []).push(o); });
       // Rows come back snake_case; the state the app holds is camelCase. The
@@ -31323,15 +31328,28 @@
       };
     },
 
+    // IS THERE ANYTHING NEWER? One tiny read of the profile's own stamp,
+    // which every save_board touches. Null when not signed in or refused.
+    async freshness() {
+      if (!sbc) return null;
+      const session = await currentSession();
+      if (!session) return null;
+      const { data, error } = await sbc.from("profiles").select("updated_at").eq("id", session.user.id).maybeSingle();
+      if (error || !data) return null;
+      return data.updated_at || null;
+    },
+
     // One RPC, one transaction (supabase/migrations/0002): delete+insert can
     // no longer half-happen, and every failure comes back as a real reason.
     async save(state) {
       if (!sbc) return { ok: false, reason: "not_configured" };
       const session = await currentSession();
       if (!session) return { ok: false, reason: "not_signed_in" };
-      const { error } = await sbc.rpc("save_board", { board: state });
+      const { data, error } = await sbc.rpc("save_board", { board: state });
       if (error) return { ok: false, reason: error.message || error.code || "save_failed" };
-      return { ok: true };
+      // THE STAMP COMES BACK (0015): the profile's updated_at as written, so
+      // this tab knows its own save from someone else's when it next asks.
+      return { ok: true, at: (typeof data === "string" && data) || null };
     },
 
     // A dismissal is written the moment it happens, not deferred to the next save.
@@ -32057,7 +32075,7 @@
     saveInFlight = mine;
     const r = await mine;
     if (saveInFlight === mine) saveInFlight = null;
-    if (r.ok) mirrorWrite();
+    if (r.ok) { mirrorWrite(); syncNoteSaved(r); }
     else if (store !== localStore && looksOffline(r.reason)) {
       // The network went mid-session: step onto the offline road with the
       // change kept, rather than a toast that says the account refused it.
@@ -32462,28 +32480,65 @@
   // on the offline road, or when the local store is the only store.
   let hiddenAt = null;
   const RETURN_REFRESH_MS = 30 * 1000;
-  async function refreshOnReturn() {
-    if (store === localStore || offlineBoard || saveInFlight) return false;
+  // LIVE, WITHOUT BEING ASKED (2026-09-07, owner: "they should all be in
+  // sync and update without me having to do anything"). While the page is
+  // on screen it asks the account every few seconds whether anything is
+  // newer, one tiny read of the profile's own updated_at, and pulls the
+  // whole board only when the answer is yes. `cloudSeen` is the stamp this
+  // tab last loaded or wrote itself (the save reports it), so its own
+  // saves never read as news. Never while a finger is on a stone or a
+  // cursor is in a line, and never over unsent changes, which go up.
+  const SYNC_POLL_MS = 8 * 1000;
+  const syncBusy = () => {
+    const a = document.activeElement;
+    if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return true;
+    return !!document.querySelector(".dragging");
+  };
+  async function pullFromAccount(force) {
+    if (store === localStore || offlineBoard || saveInFlight || syncBusy()) return false;
     const m = mirrorRead();
     if (m && m.dirty) { await saveState(); return true; }
+    let at = null;
+    if (!force) {
+      if (typeof store.freshness !== "function") return false;
+      try { at = await store.freshness(); } catch (e) { return false; }
+      if (at == null) return false;
+      if (cloudSeen != null && at === cloudSeen) return false;
+    }
     const seq0 = saveSeq;
     let state;
     try { state = await store.load(); } catch (e) { return false; }
-    if (saveSeq !== seq0 || !state) return false;
+    if (saveSeq !== seq0 || !state || syncBusy()) return false;
     if (!(state.goals || []).length && !(state.profile && state.profile.has_onboarded)) return false;
     if (!applyState(state)) return false;
+    if (at != null) cloudSeen = at;
     renderAll();
     const twOv = document.getElementById("thisWeekOverlay");
     if (twOv && twOv.classList.contains("open")) renderThisWeek();
     mirrorWrite();
     return true;
   }
+  const refreshOnReturn = () => pullFromAccount(true);
+  // The save reports the account's stamp; an account that does not yet
+  // (before 0015) is read back once, so this tab's own write is not
+  // mistaken for news at the next ask.
+  function syncNoteSaved(r) {
+    if (r && r.at) { cloudSeen = r.at; return; }
+    if (store !== localStore && typeof store.freshness === "function") {
+      store.freshness().then(at => { if (at) cloudSeen = at; }).catch(() => {});
+    }
+  }
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) { hiddenAt = Date.now(); return; }
     const away = hiddenAt ? Date.now() - hiddenAt : 0;
     hiddenAt = null;
     if (away >= RETURN_REFRESH_MS) refreshOnReturn();
+    else if (away > 0) pullFromAccount(false);
   });
+  setInterval(() => {
+    if (document.hidden || lsNamespace || DEMO) return;
+    pullFromAccount(false);
+  }, SYNC_POLL_MS);
 
   // ---------- blocking persistence screens ----------
   // Same register as the analysis failures: a paper card that says what
@@ -37062,7 +37117,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     serializeState, applyState, saveState, restoreState,
     // The phone's own copy of the board: the mirror, the road, the way back.
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
-    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn,
+    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount,
+    cloudSeenGet: () => cloudSeen, syncRules: () => ({ SYNC_POLL_MS, RETURN_REFRESH_MS }),
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
