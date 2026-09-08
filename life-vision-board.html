@@ -10092,6 +10092,22 @@
        second copy here is exactly how the pages drifted apart from each
        other in the first place. This rule only takes the mark OUT OF FLOW. */
     order: 0; align-self: auto; margin: 0; z-index: 165; }
+  /* THE QUIZ DECLINES THE SEAT (owner, 2026-09-08, three screenshots: "my X
+     are all over the place on the different pages... ensure they are always
+     in the top right"). 169b seats the mark on the first torn paper in the
+     page, and the check-in is the one book whose steps are not one sheet:
+     the journal step has no paper, the themes step is six cards, the
+     capacity step one sheet, the goals step a card per goal. So the mark
+     rode whichever paper came first: across a card's title on one step,
+     inside the sheet on the next, half a screen down on the third.
+     --x-seat: corner is the knob (the same discipline as --x-w and
+     --x-in-top): seatCloseMark leaves a page that says it alone, and its
+     mark takes the one inset written on .checkin-close, against the
+     overlay, the same coordinate on every step. The lane every page
+     reserves above its paper (--bf-x-lane) is exactly the room it stands
+     in. Still absolute, still out of flow, still travels with the page when
+     it scrolls, like every other book's. Test 186b measures it. */
+  #checkinOverlay { --x-seat: corner; }
   /* 169: `.book-page > div` LEAVES this rule. Its top margin was zeroed
      because the riding ✕ carried the block's top auto margin and the sheet
      carried the bottom one — the pair centred as one. The ✕ is out of flow
@@ -18571,7 +18587,15 @@
   function seatCloseMark(ov) {
     const btn = ov.querySelector(":scope > .checkin-close");
     if (!btn || !ov.classList.contains("open")) return;
-    const sheet = pageSheetOf(ov);
+    // A PAGE MAY DECLINE THE SEAT (owner, 2026-09-08: "my X are all over the
+    // place on the different pages"). The check-in's steps are not one
+    // sheet, so "the first torn paper" was a different paper on every step
+    // and the mark went with it. A page that says --x-seat: corner keeps
+    // the one inset on .checkin-close, against the overlay, and never moves
+    // as its steps change under it. Declared on #checkinOverlay in the
+    // stylesheet, beside the 169b rule it steps out of.
+    const seat = getComputedStyle(ov).getPropertyValue("--x-seat").trim();
+    const sheet = seat === "corner" ? null : pageSheetOf(ov);
     if (!sheet) { btn.style.top = btn.style.left = btn.style.right = ""; return; }
     // A PAGE MAY PULL ITS MARK TIGHTER (owner, 2026-09-01: "the X mark...
     // should be more toward the corner"). The insets were solved for a
@@ -34133,6 +34157,17 @@
     }
     const sel = (intake.themes && intake.themes.selected) || [];
     if (sel.length) out.push("=== THEMES THEY CONFIRMED AS CORE ===\n" + sel.map(t => "- " + t).join("\n"));
+    // The cards they left on the table, each with the kind the sheet showed
+    // on it, so the follow-up step can see what the picks passed over (its
+    // "one left on the table" rule reads the costing-you ones here) and the
+    // goals step is told they never earn a goal on their own. The sheet's
+    // own reading, never their words: the entry above is the only quotable
+    // text. Ruling of 2026-09-08 in DECISIONS.md.
+    const KIND_WORD = { pull: "pulls you", stressor: "costing you", pattern: "a pattern", tension: "in tension", value: "matters to you" };
+    const left = ((intake.themes && intake.themes.offered) || [])
+      .filter(t => t && t.label && !sel.includes(t.label));
+    if (left.length) out.push("=== THEMES OFFERED AND LEFT UNPICKED (the sheet's reading, context only, never quote as their words) ===\n"
+      + left.map(t => `- (${KIND_WORD[t.kind] || "matters to you"}) ${t.label}` + (t.insight ? `: ${t.insight}` : "")).join("\n"));
     if (intake.patterns && intake.patterns.abandonment) {
       out.push("=== DETECTED PATTERN ===\nA history of starting things and dropping them"
         + (intake.patterns.evidence ? `, from their own words: ${intake.patterns.evidence}` : "") + ".");
@@ -37877,14 +37912,23 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // "capacity" outranks even the picks: when the claim and the entry
     // disagree about the hours, that question is the one the plan most needs
     // answered, and it must never fall off the end of the cap.
-    const rank = q => q.theme === "capacity" ? -1
+    // The aside (2026-09-08, "the one left on the table": one question about
+    // the strongest costing-you theme the person left unpicked) keeps its
+    // seat. For the cut it stands behind capacity and ahead of the picks, so
+    // it is never the one that falls; on the page it reads after the picks'
+    // questions, where an aside belongs.
+    const isAside = q => /^aside:/.test(q.theme || "");
+    const rank = q => q.theme === "capacity" ? -2
+      : isAside(q) ? -1
       : picked.has(q.theme) ? 0
       : /^gap:/.test(q.theme || "") ? 1
       : q.theme === "conditions" ? 3 : 2;
+    const shown = q => isAside(q) ? 0.5 : rank(q);
     const kept = data.questions.filter(q => q && q.key && q.q)
       .map((q, i) => ({ q, i }))
       .sort((a, b) => (rank(a.q) - rank(b.q)) || (a.i - b.i))   // stable within a rank
       .slice(0, DIG_HARD_CAP)
+      .sort((a, b) => (shown(a.q) - shown(b.q)) || (a.i - b.i))
       .map(x => x.q);
     const dig = { questions: kept };
     registerFollowupText(dig);
