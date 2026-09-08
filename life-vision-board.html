@@ -8296,6 +8296,11 @@
   .when-pop-dur .wp-hours { min-width: 58px; text-align: center; font-size: var(--t-read);
     font-variant-numeric: tabular-nums; color: var(--ink); }
   .when-pop-dur .wp-done { margin-left: auto; font-size: var(--t-label); padding: 7px 14px; }
+  /* THE COUNT (2026-09-07): x1 to x7 on any day, or the sentence that reads
+     the named days back ("x4 a week, on those days"), in the figure's ink
+     because it is the answer, not a note. */
+  .when-pop .wp-count-tag { font-size: var(--t-label); color: var(--ink-muted); }
+  .when-pop .wp-count-read { font-size: var(--t-read); color: var(--ink); font-variant-numeric: tabular-nums; }
   /* THE SAME PICKER, OPENED ON THE PAPER. The workshop is a hub, so nothing
      on it may lift onto a surface of its own: the panel's position, board,
      border and shadow all come off, and what is left is the chips and the
@@ -13375,6 +13380,27 @@
       m.timesPerWeek = Math.max(1, Math.min(7, Math.round(Number(spec.timesPerWeek) || 1)));
     }
     if (spec.when) { m.when = spec.when; m.whenSource = "user"; }
+    // THE COUNT IS PART OF THE SCHEDULE (2026-09-07). The form's x1 to x7
+    // chips wrote timesPerWeek, which the week never read: a hand-added
+    // "x4, any day" showed once. The picker may already have written the
+    // schedule onto the draft; otherwise it is the days named in `when`, or
+    // the count on any day, or plain any day. A one-off never grows a count.
+    if (spec.schedule != null) m.schedule = spec.schedule;
+    else {
+      const days = daysFor(null, m);
+      m.schedule = days.length >= 7 ? "daily" : days.length ? days
+        : (type === "habit" && m.timesPerWeek > 1 ? { any: m.timesPerWeek } : "any");
+    }
+    if (type !== "habit" && m.schedule && typeof m.schedule === "object" && !Array.isArray(m.schedule)) m.schedule = "any";
+    if (type === "habit" && Array.isArray(m.schedule)) m.timesPerWeek = m.schedule.length;
+    if (type === "habit" && m.schedule === "daily") { m.timesPerWeek = 7; m.cadence = "daily"; }
+    // Per session, the canonical length; the weekly total kept in step.
+    const mins = Number(spec.durationMin) > 0 ? Math.max(MIN_STEP, Math.round(Number(spec.durationMin))) : null;
+    if (mins != null) {
+      const n = type === "habit" ? (m.timesPerWeek || 1) : 1;
+      m.durationMin = mins;
+      m.estWeeklyHours = Math.round((mins / 60) * n * 100) / 100;
+    }
     goal.mechanisms = goal.mechanisms || [];
     goal.mechanisms.push(m);
     return m;
@@ -18239,7 +18265,7 @@
       const oid = btn.dataset.oid;
       const row = btn.closest(".rm-add-work-row");
       if (row.querySelector(".rm-work-form")) return;
-      const draft = { type: "habit", timesPerWeek: 2, estWeeklyHours: 1 };
+      const draft = { type: "habit", timesPerWeek: 2, durationMin: 60, estWeeklyHours: 2 };
       row.insertAdjacentHTML("beforeend", `<div class="rm-work-form">
           <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?">
           <div class="ci-review-actions rm-work-kinds">
@@ -18269,24 +18295,32 @@
         form.querySelectorAll(".rm-work-kinds .ci-chip").forEach(x => x.classList.toggle("on", x === chip));
         form.querySelector(".rm-work-freq").style.display = draft.type === "habit" ? "" : "none";
       });
+      // THE CHIPS AND THE PICKER ARE TWO DOORS TO ONE COUNT (2026-09-07):
+      // the last one touched wins. A chip is the count on any day; the
+      // picker may name days instead, and the chips then read those back.
+      const syncFreq = () => form.querySelectorAll(".rm-work-freq .ci-chip").forEach(x =>
+        x.classList.toggle("on", Number(x.dataset.n) === Number(draft.timesPerWeek)));
       form.querySelector(".rm-work-freq").addEventListener("click", e => {
         const chip = e.target.closest(".ci-chip");
         if (!chip) return;
         draft.timesPerWeek = Number(chip.dataset.n);
-        form.querySelectorAll(".rm-work-freq .ci-chip").forEach(x => x.classList.toggle("on", x === chip));
+        draft.schedule = draft.timesPerWeek >= 7 ? "daily" : draft.timesPerWeek > 1 ? { any: draft.timesPerWeek } : "any";
+        draft.when = composeWhen([], parseWhen(draft).part);
+        syncFreq();
       });
       form.querySelector(".rm-work-when").addEventListener("click", e => {
         openWhenPicker(e.target, draft, () => {
           draft.estWeeklyHours = Number(draft.estWeeklyHours) || 1;
+          syncFreq();
           form.querySelector(".rm-work-when").innerHTML =
-            "when: " + escHtml(draft.when || "any") + " " + DRAWN_CHECK_INLINE;
+            "when: " + escHtml(whenLineFor(draft)) + " " + DRAWN_CHECK_INLINE;
         });
       });
       form.querySelector(".rm-work-cancel").addEventListener("click", () => form.remove());
       addBtn.addEventListener("click", () => {
         const m = addUserWork(g, oid, { label: labelIn.value, type: draft.type,
           timesPerWeek: draft.timesPerWeek, estWeeklyHours: draft.estWeeklyHours,
-          when: draft.when });
+          when: draft.when, schedule: draft.schedule, durationMin: draft.durationMin });
         if (!m) return;
         saveState();
         again();
@@ -20454,8 +20488,28 @@
     if (!prior) return next;
     const keep = {};
     if (next.weekLabel == null && prior.weekLabel != null) keep.weekLabel = prior.weekLabel;
-    if (prior.whenSource === "user") { keep.when = prior.when; keep.whenSource = "user"; }
-    if (prior.hoursSource === "user") { keep.estWeeklyHours = prior.estWeeklyHours; keep.hoursSource = "user"; }
+    if (prior.whenSource === "user") {
+      keep.when = prior.when; keep.whenSource = "user";
+      // THE SCHEDULE TRAVELS WITH THE WHEN (2026-09-07): since the picker
+      // writes the schedule the week reads, a kept `when` alone would leave
+      // the model's copy with no schedule, and "x4, any day" would come back
+      // as once. Same for the count and the placement answer.
+      // The count is the schedule's, and the schedule outranks timesPerWeek
+      // wherever it carries one (the week, the register, the chapter's
+      // line), so the proposal's own number may land in that field and
+      // change nothing the person set (test 122f keeps its day and takes
+      // the lighter count).
+      if (prior.schedule != null) keep.schedule = prior.schedule;
+      if (prior.placement != null) keep.placement = prior.placement;
+    }
+    if (prior.hoursSource === "user") {
+      keep.estWeeklyHours = prior.estWeeklyHours; keep.hoursSource = "user";
+      if (prior.durationMin != null) keep.durationMin = prior.durationMin;
+    }
+    // WHAT WAS DONE IS THE PERSON'S RECORD (1a), and the model's mechanism
+    // never carries it: without this an accepted lighter or heavier row
+    // replaced the object and the habit's ticks went with it.
+    if (prior.completions != null) keep.completions = prior.completions;
     return Object.assign({}, next, keep);
   }
   function applyWeekDiffs(goal, preMechs, diffs) {
@@ -25521,19 +25575,31 @@
   // rather than quietly claiming its standing day. Without it the line is
   // the standing schedule, which is what every non-week surface wants.
   function whenLineFor(m, goalId) {
-    const dur = durLabel(m.estWeeklyHours);
+    // THE LINE SAYS WHAT THE WEEK SAYS (2026-09-07): the length per session
+    // and the count, off the same fields the week row reads (durationMin and
+    // the schedule), so the chapter can never again show four days over a
+    // week that counts two. "1 hr each x4 · Mon, Wed, Fri & Sun afternoon";
+    // daily says "daily" once, at the end, as the week does.
+    const s = scheduleOf(m, null);
+    const n = !comesBack(m) ? 1 : s === "daily" ? 7 : Array.isArray(s) ? s.length : anyCountOf(s);
+    const dur = minsText(Math.max(MIN_STEP, minutesOf(m, null)))
+      + (n > 1 ? " each" : "") + (n > 1 && n < 7 ? " x" + n : "");
     const { part } = parseWhen(m);
     // WEEK-SCOPED reads the occurrences, so a per-occurrence move shows in
     // the label; asked plainly (no goalId) it reads the standing schedule and
     // a move can never rewrite it. daysFor stays the one reader of the
     // standing schedule; this layers the week's moves on top of it.
+    // The days come from the same place as the count: the stored schedule
+    // where there is one (the text can lag it, and did), daysFor before one
+    // exists. Seven days say "daily", once, as the week does.
+    const standing = Array.isArray(s) ? s.slice() : s === "daily" ? WHEN_DAYS.slice() : null;
     const days = goalId != null
       ? scheduledDatesFor(m, goalId, weekKeyOf())
           .filter(Boolean)
           .map(iso => TW_DAYS[weekDates(weekKeyOf()).indexOf(iso)])
           .filter(Boolean)
-      : daysFor(null, m);
-    let when = composeWhen(days, part);
+      : (standing || daysFor(null, m));
+    let when = days.length >= 7 ? ["daily", part].filter(Boolean).join(" ") : composeWhen(days, part);
     // G1c: only a REAL day (or daily) counts as a schedule — model-written
     // whens like "this week" are not one, and never masquerade as one.
     if (!when && m.cadence === "daily") when = "daily";
@@ -25556,6 +25622,14 @@
   // is never invented).
   const COUNT_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7 };
   function mechFrequency(m) {
+    // THE SCHEDULE ANSWERS FIRST (2026-09-07): the register counts against
+    // what the week shows. Four named days are four whatever timesPerWeek
+    // still says from the label parse; a count on any day is that count.
+    // Plain "any day" falls through to the older reading, unchanged.
+    const s = m && m.schedule != null ? scheduleOf(m, null) : null;
+    if (s === "daily") return 7;
+    if (Array.isArray(s) && s.length) return Math.min(7, s.length);
+    if (s && typeof s === "object" && Number(s.any) > 1) return anyCountOf(s);
     if (typeof m.timesPerWeek === "number" && m.timesPerWeek >= 1) {
       return Math.min(7, Math.round(m.timesPerWeek));
     }
@@ -25660,9 +25734,33 @@
   function openWhenPicker(anchor, mech, onCommit, opts) {
     const inlineHost = opts && opts.inline;
     document.querySelectorAll(".when-pop").forEach(p => p.remove());
-    const cur = parseWhen(mech);
-    let days = cur.days.slice(), part = cur.part;
-    let hours = Math.max(0.25, Math.round((Number(mech.estWeeklyHours) || 0.5) * 4) / 4);
+    // THE PICKER SHOWS WHAT THE WEEK SHOWS (2026-09-07, owner: four days
+    // ticked in the chapter, "i dont see an option for a x4", and the week
+    // still saying x2). Since the occurrence rebuild (27 Aug) the week reads
+    // the stored `schedule`, and this picker went on reading and writing the
+    // older `when` text, so the two could disagree and did: the chapter's
+    // line said four days, the week still counted two. The picker now opens
+    // on the schedule the week reads, and commits it (see commit below).
+    // Days, count and length are three parts of one answer:
+    //   · DAYS, or "any day". Named days are the count.
+    //   · THE COUNT, on any day only: x1 to x7, written as { any: n }, the
+    //     shape the week already knew how to read and nothing wrote.
+    //   · THE LENGTH, PER SESSION, the way the week says it ("1 hr each"),
+    //     written as durationMin, the canonical field since the minutes
+    //     round. The week's total is read back beneath it, never typed.
+    const repeats = comesBack(mech);
+    const s0 = mech.schedule != null ? scheduleOf(mech, null) : null;
+    let days = Array.isArray(s0) ? s0.slice()
+      : s0 === "daily" ? WHEN_DAYS.slice()
+      : s0 == null ? daysFor(null, mech).slice() : [];
+    let part = parseWhen(mech).part;
+    // The count on any day: what the schedule says, else what the chips or
+    // the label said before a schedule existed (a draft, an unmigrated row).
+    let count = days.length ? days.length
+      : s0 != null ? anyCountOf(s0)
+      : Math.max(1, Math.min(7, Math.round(Number(mech.timesPerWeek) || 1)));
+    let mins = Math.max(MIN_STEP, Math.min(24 * 60, roundStep(minutesOf(mech, null)) || 60));
+    const nOf = () => repeats ? (days.length ? days.length : count) : 1;
     const pop = document.createElement("div");
     pop.className = "when-pop";
     pop.setAttribute("role", "dialog");
@@ -25671,6 +25769,11 @@
         ${WHEN_DAYS.map(d => `<button type="button" class="ci-chip wp-day" data-d="${d}">${d}</button>`).join("")}
         <button type="button" class="ci-chip wp-day" data-d="">any day</button>
       </div>
+      ${repeats ? `<div class="when-pop-row wp-count">
+        ${[1, 2, 3, 4, 5, 6, 7].map(n => `<button type="button" class="ci-chip wp-n" data-n="${n}">x${n}</button>`).join("")}
+        <span class="wp-count-tag">a week</span>
+      </div>
+      <div class="when-pop-row wp-count-read"></div>` : ``}
       <div class="when-pop-row">
         ${WHEN_PARTS.map(p2 => `<button type="button" class="ci-chip wp-part" data-p="${p2}">${p2}</button>`).join("")}
       </div>
@@ -25680,11 +25783,14 @@
         <button type="button" class="ci-chip wp-plus" aria-label="15 minutes more">+</button>
         <button type="button" class="btn-solid wp-done">done</button>
       </div>
-      <!-- The stepper sets the WEEK'S total, not one session's. Load-bearing:
-           the capacity band sums hours per area against the person's stated
-           weekly hours, so a per-session reading would break that arithmetic
-           silently and nothing on screen would show the error. -->
-      <div class="when-pop-row wp-note">hrs a week</div>
+      <!-- THE STEPPER IS ONE SESSION, and the week's total is read back under
+           it. It used to set the week's total (estWeeklyHours), which the
+           week stopped reading at the minutes round: the row said "1 hr each"
+           while this said "1 hr, hrs a week" over four sessions. The capacity
+           arithmetic reads durationMin × occurrences (weeklyHoursOf), so per
+           session IS the load-bearing figure now; estWeeklyHours is kept in
+           step on commit for the readers left. -->
+      <div class="when-pop-row wp-note wp-total"></div>
       <!-- WHEN A CHANGE COUNTS (2026-09-07, owner: "should it start that week
            or the next"): from today. This week's strip reads the standing
            plan as it stands, and a stone already finished stays finished. -->
@@ -25694,8 +25800,21 @@
         const d = b.dataset.d || null;
         b.classList.toggle("on", d ? days.includes(d) : days.length === 0);
       });
+      const n = nOf();
+      // THE COUNT IS CHIPS ON ANY DAY, AND A SENTENCE ON NAMED DAYS: the days
+      // are the count then, so chips would be a second control for one fact.
+      // The sentence is where "x4" is read before it is on the week.
+      const chips = pop.querySelector(".wp-count"), read = pop.querySelector(".wp-count-read");
+      if (chips) chips.style.display = days.length ? "none" : "";
+      if (read) {
+        read.style.display = days.length ? "" : "none";
+        read.textContent = days.length >= 7 ? "daily"
+          : days.length > 1 ? `x${days.length} a week, on those days` : "once a week";
+      }
+      pop.querySelectorAll(".wp-n").forEach(b => b.classList.toggle("on", Number(b.dataset.n) === n));
       pop.querySelectorAll(".wp-part").forEach(b => b.classList.toggle("on", b.dataset.p === part));
-      pop.querySelector(".wp-hours").textContent = durLabel(hours);
+      pop.querySelector(".wp-hours").textContent = minsText(mins) + (n > 1 ? " each" : "");
+      pop.querySelector(".wp-total").textContent = n > 1 ? `${minsText(mins * n)} a week` : repeats ? "once a week" : "";
     };
     // Days toggle independently, no limit. "ANY DAY" IS EXCLUSIVE: picking it
     // clears the days, picking a day clears it, and deselecting the last day
@@ -25710,18 +25829,36 @@
     pop.querySelectorAll(".wp-part").forEach(b => b.addEventListener("click", () => {
       part = part === b.dataset.p ? null : b.dataset.p; sync();
     }));
-    pop.querySelector(".wp-minus").addEventListener("click", () => { hours = Math.max(0.25, hours - 0.25); sync(); });
-    pop.querySelector(".wp-plus").addEventListener("click", () => { hours = Math.min(20, hours + 0.25); sync(); });
+    pop.querySelectorAll(".wp-n").forEach(b => b.addEventListener("click", () => {
+      count = Math.max(1, Math.min(7, Number(b.dataset.n) || 1)); sync();
+    }));
+    pop.querySelector(".wp-minus").addEventListener("click", () => { mins = Math.max(MIN_STEP, roundStep(mins - MIN_STEP)); sync(); });
+    pop.querySelector(".wp-plus").addEventListener("click", () => { mins = Math.min(24 * 60, roundStep(mins + MIN_STEP)); sync(); });
     const cleanup = () => {
       pop.remove();
       document.removeEventListener("pointerdown", onOutside, true);
       document.removeEventListener("keydown", onKey, true);
     };
     const commit = () => {
+      const n = nOf();
       mech.when = composeWhen(days, part);
       mech.whenSource = "user";
-      mech.estWeeklyHours = hours;
+      // THE SCHEDULE IS WHAT THE WEEK READS, so it is what the picker
+      // writes: named days, or the count on any day. A change here is to the
+      // standing plan (the week's own moves and skips are untouched), and a
+      // chosen "any day" is an answer, so it settles.
+      mech.schedule = days.length >= 7 ? "daily" : days.length ? days.slice() : (n > 1 ? { any: n } : "any");
+      mech.placement = "settled";
+      if (repeats) {
+        mech.timesPerWeek = n;
+        if (n >= 7) mech.cadence = "daily";
+        else if (mech.cadence === "daily" || (!mech.cadence && mech.type === "habit")) mech.cadence = "weekly";
+      }
+      mech.durationMin = mins;
       mech.hoursSource = "user";
+      // The weekly total, for the readers that still take it (the draft
+      // review, the lightest-goal pick, regen's carry): per session × count.
+      mech.estWeeklyHours = Math.round((mins / 60) * n * 100) / 100;
       cleanup();
       if (onCommit) onCommit();
     };
@@ -37737,8 +37874,15 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
         || pool.find(nm => !nm._claimed && nm.type === old.type);
       if (cand) {
         cand._claimed = true;
-        if (old.whenSource === "user") { cand.when = old.when; cand.whenSource = "user"; }
-        if (old.hoursSource === "user") { cand.estWeeklyHours = old.estWeeklyHours; cand.hoursSource = "user"; }
+        if (old.whenSource === "user") {
+          cand.when = old.when; cand.whenSource = "user";
+          // the count rides with the days (2026-09-07)
+          if (old.schedule != null) cand.schedule = old.schedule;
+        }
+        if (old.hoursSource === "user") {
+          cand.estWeeklyHours = old.estWeeklyHours; cand.hoursSource = "user";
+          if (old.durationMin != null) cand.durationMin = old.durationMin;
+        }
       } else {
         orphans.push({ when: old.when || "any day", hours: old.estWeeklyHours || null,
           label: old.weekLabel || old.label || "" });
@@ -37938,7 +38082,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     parseCapture, captureNote, minsText, minutesOf, roundStep, MIN_STEP, twDayMarks, twSank,
     isUnplaced, isSettledAny, placeCommitment, settleAnyDay, markPlacement,
     twEditingGet: () => twEditing, twSetEditing(v) { twEditing = v || null; },
-    daysFor, moveThisWeek, openMovePicker, whenLineFor, chaptersDepth: () => chapterGoalId,
+    daysFor, moveThisWeek, openMovePicker, openWhenPicker, whenLineFor, chaptersDepth: () => chapterGoalId,
     twAreaHours, twStripItems, buildWeekStrip, twStoneR, twCairn, TW_STONE_R, TW_STONE_GAP,
     twQuarterPetals, quarterWeeks, quarterWeekPosition, quarterStandingLine,
     renderBoard, renderAll, boardRose, boardPetals,
