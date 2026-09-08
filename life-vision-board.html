@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>life vision</title>
+<title>companion</title>
 <!-- THE APP ON A HOME SCREEN. These make the page installable: the manifest
      names it and hands Android its icons, the apple lines do the same for an
      iPhone's "add to home screen", and theme-color paints the phone's own
@@ -14,7 +14,7 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="life vision" />
+<meta name="apple-mobile-web-app-title" content="companion" />
 <meta name="theme-color" content="#EDE5D1" />
 <style>
   /* ------------------------------------------------------------------
@@ -333,7 +333,7 @@
     color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .help-faq summary::-webkit-details-marker { display: none; }
   .help-faq summary::after { content: "+"; color: var(--ink-muted); font-weight: 400; flex-shrink: 0; }
-  .help-faq details[open] summary::after { content: "–"; }
+  .help-faq details[open] summary::after { content: "−"; } /* a minus, not a dash: it pairs with the closed "+" */
   .help-faq .faq-a { color: var(--ink-soft); font-size: var(--t-label); line-height: 1.65; padding: 0 0 16px; }
   .help-faq .faq-a p { margin: 0 0 8px; }
   .account-dot { width: 7px; height: 7px; border-radius: 50%; background: rgb(var(--accent)); }
@@ -915,13 +915,9 @@
   .mg-fish-eye { fill: var(--ink); opacity: 0.44; }
   .mg-fish { animation: var(--lap, none) var(--fd, 30s) linear infinite;
     animation-delay: var(--dl, 0s); }
-  /* the surface breathes, and a poke sends rings out */
+  /* the surface breathes; the poke's rings are drawn by mgSplash, in the script */
   .mg-live { animation: mgSway 9s ease-in-out infinite; }
   @keyframes mgSway { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.6px); } }
-  .mg-rip { fill: none; stroke: #5F7F86; stroke-width: 1.5; opacity: 0.5;
-    animation: mgRip 1.5s ease-out forwards; }
-  @keyframes mgRip { to { r: 52px; opacity: 0; stroke-width: 0.4; } }
-  .mg-hit { fill: transparent; cursor: pointer; }
   @media (prefers-reduced-motion: reduce) {
     .mg-fall, .mg-glint, .mg-fish, .mg-live { animation: none; }
   }
@@ -6728,7 +6724,9 @@
      drops that rise and fall. Drawn for a second and gone. */
   .mg-splash-ring { fill: none; stroke: #6F8A8C; stroke-width: 1.1; }
   .mg-drop { fill: #6F8A8C; }
-  .lv-headwash svg.mg-gate { cursor: pointer; }
+  /* No cursor on the water: the wash is deaf to the pointer on purpose (the
+     name and the vision painted over it stay clickable), and the poke is
+     heard on the document instead, so a cursor set here could never show. */
   /* v31: "the books, again" — the FAQ sheet's rows, spine colors as dots */
   .bs-title { font-family: var(--voice-hand); font-weight: 400; font-size: var(--t-read);
     margin: 0 0 var(--lead); text-align: left; line-height: var(--lead); }
@@ -6862,11 +6860,48 @@
      sand at the FOOT of the page now — the reservation moves below the
      content, where held ground costs no reading. Same slot, same roam
      (item 169 owns the wandering); only the home seat moved. */
+  /* THE COMPANION MEETS YOU AT THE DOOR (2026-09-07, owner: "the companion
+     starting always at the top of my this weeks page. To encourage me to
+     go on there"). The 5 Sep foot seat put the one greeting of the day,
+     the gesture and the line, below the fold where nobody saw it. The
+     HOME is the head row now: the title and the week line keep the left,
+     the companion stands on the sand to their right, clear of the ✕'s
+     lane. The foot lane STAYS, but as ground rather than as home: it is
+     the open sand the figure strolls down to once it has said hello (item
+     169 walks it there), and held ground at the foot still costs no
+     reading. Wide screens were never at the foot.
+     THE VOICE NEEDS ITS ROOM TOO. At a phone's top-right corner the only
+     clear ground beside the figure is above it: left is the title, right
+     is the ✕, below is the week. So the figure sits thirty pixels down
+     from the row's top, and its column is wider than its box (the figure
+     keeps to the column's right), so the bubble the seating ladder lifts
+     over its head has two lines' width without reaching the title's
+     glyphs or the ✕. Measured at 375: the title's first line ends at 170,
+     the column begins at 173, the ✕ at 317. The row is about seventy
+     pixels taller than the words alone, and no lane sits above them. */
   .tw-stack { position: relative; --rule: 21px; --lead: calc(var(--rule) * 1.5); max-width: var(--bf-w);
     margin: 0 auto; padding-bottom: var(--comp-lane, 124px); }
-  .tw-margin { position: absolute; top: auto; bottom: 0; left: 0; right: 0; z-index: 3;
-    display: flex; justify-content: center; pointer-events: none; }
+  .tw-margin { position: absolute; top: 30px; bottom: auto; left: auto; right: 52px; z-index: 3;
+    width: calc(var(--comp-size, 96px) + 44px); display: block; pointer-events: none; }
   .tw-margin > * { pointer-events: auto; }
+  .tw-margin .companion { margin-left: auto; margin-right: 0; }
+  .tw-margin .companion:not(.k-plant) + .companion-prop { margin-left: auto; margin-right: 19px; }
+  /* The head row leaves the figure its seat: room on the right for the
+     box, and the row no shorter than the seat (its thirty pixels of
+     headroom, the box, the prop at its feet), so the strip below starts
+     under the figure's feet and never under its chin. */
+  .tw-head { padding-right: calc(var(--comp-seat, 140px) + 12px); min-height: calc(var(--comp-seat, 140px) + 36px); }
+  @media (max-width: 640px) {
+    .tw-head { --comp-seat: 96px; }
+    /* At the phone's size the prop tucks under the figure's feet as it
+       does at the desk's: the species' own pull, sixteen pixels more,
+       because the drawing is smaller and its feet sit higher in the box. */
+    .tw-margin .companion.k-cat + .companion-prop { margin-top: -46px; }
+    .tw-margin .companion.k-dog + .companion-prop { margin-top: -38px; }
+    .tw-margin .companion.k-fox + .companion-prop { margin-top: -36px; }
+    .tw-margin .companion.k-sparrow + .companion-prop { margin-top: -32px; }
+    .tw-margin .companion.k-moth + .companion-prop { margin-top: -28px; }
+  }
   @media (min-width: 1280px) {
     /* A12 + A3: the SHEET holds the frame width and stays page-centered;
        the companion rides the left margin beside it, the way the board's
@@ -6878,6 +6913,10 @@
     .tw-stack { padding-bottom: 0; }
     .tw-margin { position: absolute; top: 0; bottom: auto; left: -226px; right: auto; width: 200px;
       display: block; padding-top: 76px; }
+    .tw-margin .companion { margin-left: auto; margin-right: auto; }
+    .tw-margin .companion:not(.k-plant) + .companion-prop { margin-left: auto; margin-right: auto; }
+    /* Beside the sheet, the head row owes the figure no room. */
+    .tw-head { padding-right: 0; min-height: 0; }
     /* Two masonry columns of goal blocks inside the sheet. */
     /* item 138: the sections run one column — time reads top to bottom. */
 
@@ -10279,7 +10318,7 @@
         </div>
         <div class="empty-actions">
           <button class="btn-solid empty-cta" id="emptyTestBtn">find out what you actually want</button>
-          <button class="empty-self-link" id="emptyAddLink">or <u>add a goal yourself</u></button>
+          <button class="empty-self-link" id="emptyAddLink" aria-label="add a goal yourself">or <u>add a goal yourself</u></button>
         </div>
         <!-- The field is drawn in JS so the neighbours can vary — petal counts,
              heights, tints and sway timings all differ. Only the hero blooms. -->
@@ -12064,8 +12103,14 @@
 
   function mgWater(cx, cy, rx, ry, level, seed) {
     const wy = cy + ry * level;
+    // A GATE WITH NO WIDTH DRAWS NO WATER (2026-09-07). The first draw at boot
+    // can run before the host has been laid out, and with rx or ry at zero
+    // every ratio below is 0/0: NaN, which the browser logs as an invalid
+    // path four times per open and paints as nothing. Each ratio is guarded
+    // here rather than at the call site, so no future caller can bring it back.
+    const ellipseK = (d, r) => r > 0 ? Math.max(0, 1 - (d * d) / (r * r)) : 0;
     // where the ellipse is at that height, so the water meets the stroke
-    const halfW = rx * Math.sqrt(Math.max(0, 1 - Math.pow(wy - cy, 2) / (ry * ry)));
+    const halfW = rx * Math.sqrt(ellipseK(wy - cy, ry));
     const top = [], bot = [];
     for (let i = 0; i <= 24; i++) {
       const t = i / 24, x = cx - halfW + t * halfW * 2;
@@ -12074,7 +12119,7 @@
     for (let i = 0; i <= 24; i++) {
       const t = i / 24, a = Math.PI * (1 - t);
       // follow the ellipse's lower arc, a shade inside the stroke
-      const x = cx + Math.cos(a) * halfW, k = Math.max(0, 1 - Math.pow(x - cx, 2) / (rx * rx));
+      const x = cx + Math.cos(a) * halfW, k = ellipseK(x - cx, rx);
       bot.push([x, cy + Math.sqrt(k) * ry * 0.955]);
     }
     const body = "M " + top.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L ")
@@ -12088,7 +12133,7 @@
       }
       for (let i = 0; i <= 20; i++) {
         const t = i / 20, a = Math.PI * (1 - t);
-        const x = cx + Math.cos(a) * halfW * k, kk = Math.max(0, 1 - Math.pow(x - cx, 2) / (rx * rx));
+        const x = cx + Math.cos(a) * halfW * k, kk = ellipseK(x - cx, rx);
         b2.push([x, cy + Math.sqrt(kk) * ry * 0.90]);
       }
       return "M " + t2.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L ")
@@ -13504,7 +13549,7 @@
       <div data-type-area="rc/step" class="rc-sheet-step"><span class="tw-caps">the step</span> ${escHtml(o.label)}${o.when ? ` <span class="tw-caps rc-sheet-when">· ${escHtml(o.when)}</span>` : ``}</div>
       ${o.evidenceDoneAt ? `<div class="rc-sheet-done">The world answered. Done.${g.rcCapture && g.rcCapture.oid === oid && g.rcCapture.text ? `<span class="rc-sheet-said">"${escHtml(wordTrunc(g.rcCapture.text, 90))}"</span>` : ``}</div>`
         : live ? `<div data-type-area="rc/ask" class="rc-sheet-ask"><span class="rc-capture-q">it happened? what came back:</span>
-             <textarea class="rc-capture-in" rows="2" placeholder="a line is plenty, their words or yours"></textarea>
+             <textarea class="rc-capture-in" rows="2" placeholder="a line is plenty, their words or yours" aria-label="what came back"></textarea>
              <button class="ci-chip" id="rcSheetYes">save the answer</button>
              <button class="wk-quiet" id="rcSheetNotYet" type="button">not yet</button></div>`
         : `<div data-type-area="rc/ask" class="rc-sheet-ask">did the world get to respond?
@@ -15128,7 +15173,7 @@
   //   · it must stay clear of the words,
   // which are different constraints. An earlier version knew only the first
   // and solved it by walking the stand DOWNWARD, straight onto the title.
-  let mgRipSeq = 0;
+  let mgRipSeq = 0, mgPokeWired = false;
   function mgSplash(svg, x, y) {
     const live = svg.querySelector(".mg-live");
     if (!live) return null;
@@ -15169,13 +15214,27 @@
     // A POKE IN THE WATER SPLASHES (2026-09-07, owner: "want to be able to
     // poke my water in my name and it splashes a bit"). Rings spread from
     // the finger in the water's own line and two drops rise. Nothing is
-    // written; it is the pond answering a touch. Wired once on the mount;
-    // the water's box is read off the drawing as it stands.
-    if (!el.dataset.splash) {
-      el.dataset.splash = "1";
-      el.addEventListener("pointerdown", e => {
-        const svg = el.querySelector("svg.mg-gate");
+    // written; it is the pond answering a touch. Wired once; the water's
+    // box is read off the drawing as it stands.
+    // HEARD ON THE DOCUMENT, NOT ON THE DRAWING. The wash is deaf to the
+    // pointer on purpose (.lv-headwash is pointer-events: none, so the name
+    // and the vision painted over it stay clickable), and the vision block
+    // stands over the water at z-index 1 besides, so a finger on the water
+    // lands on the block, never on the svg. The first wiring hung the
+    // listener on the wash and no poke ever arrived (owner, 2026-09-07:
+    // "i dont see that functionality"). So the document hears every touch
+    // and asks three things of it: not on a control, landed on the header
+    // or the page's own ground (an open sheet standing over the water is
+    // not the water), and inside the ring below the waterline.
+    if (!mgPokeWired) {
+      mgPokeWired = true;
+      document.addEventListener("pointerdown", e => {
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        const svg = document.querySelector(".lv-headwash svg.mg-gate");
         if (!svg || !svg.dataset.wy) return;
+        if (t.closest("button, a, input, textarea, select, [contenteditable], [role=button], #boardTitle")) return;
+        if (!t.closest(".lv-vision, .lv-headwash") && !t.classList.contains("app") && t !== document.body) return;
         const wy = Number(svg.dataset.wy), gx = Number(svg.dataset.cx), gy = Number(svg.dataset.cy);
         const grx = Number(svg.dataset.rx), gry = Number(svg.dataset.ry);
         const ctm = svg.getScreenCTM && svg.getScreenCTM();
@@ -15368,7 +15427,6 @@
           <g style="transform:translate(${cx}px,${Wt.wy + depth * 0.42}px)">
             ${mgFish(1, "mg-f1", 30, 0)}${mgFish(2, "mg-f2", 38, -12)}</g>
         </g>
-        <g class="mg-rips"></g>
       </g>
       ${mgFlow(lx, standY + 11, rx * 0.16, Wt.wy - standY - 8, 13, 5)}
       ${mgStand(lx, standY, standW, 3)}
@@ -15376,9 +15434,7 @@
       <g class="mg-ring" filter="url(#rough)"><path d="${mgEnso(cx, cy, rx, ry, 2.4, 0.34)}"/></g>
       ${nameArc}
       ${mgRingSprig(cx, cy, rx, ry, -3.0, -1.95, 3, 0.86)}
-      ${mgRingSprig(cx, cy, rx, ry, -1.12, -0.08, 61, 0.79)}
-      <rect class="mg-hit" x="${cx - Wt.halfW}" y="${Wt.wy - 6}" width="${Wt.halfW * 2}"
-        height="${depth}"/></svg>`;
+      ${mgRingSprig(cx, cy, rx, ry, -1.12, -0.08, 61, 0.79)}</svg>`;
     // the fish lanes are written from the water's real width
     const st = el.querySelector(".mg-lanes") || document.createElement("style");
     st.className = "mg-lanes";
@@ -15419,22 +15475,9 @@
         - (parseFloat(when.style.marginTop) || 0);
       when.style.marginTop = Math.max(10, Math.round(gateBottom - whenTop + 22)) + "px";
     }
-    // POKE THE WATER. The one thing on this page that answers a finger.
-    const hit = el.querySelector(".mg-hit"), rips = el.querySelector(".mg-rips");
-    if (hit && rips) hit.addEventListener("click", (e) => {
-      const svg = hit.ownerSVGElement, pt = svg.createSVGPoint();
-      pt.x = e.clientX; pt.y = e.clientY;
-      const q = pt.matrixTransform(svg.getScreenCTM().inverse());
-      for (let k = 0; k < 3; k++) {
-        const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        c.setAttribute("class", "mg-rip"); c.setAttribute("cx", q.x);
-        c.setAttribute("cy", q.y); c.setAttribute("r", 3);
-        c.style.animationDelay = (k * 0.16) + "s";
-        c.style.transform = "scaleY(0.34)";
-        c.style.transformOrigin = `${q.x}px ${q.y}px`;
-        rips.appendChild(c); setTimeout(() => c.remove(), 1800);
-      }
-    });
+    // (The gate's first poke lived here: a click on a transparent rect over
+    // the water, drawing CSS rings. It never fired, for the reason given at
+    // the poke's wiring above, and went with the fix. DECISIONS.md, 2026-09-07.)
   }
   window.addEventListener("resize", () => {
     clearTimeout(headWashPending);
@@ -17946,7 +17989,7 @@
         <div class="ch-foot rm-danger" data-type-area="chapters/danger">
           <button class="rm-pause-link brushed-link" id="rmPause">${g.status === "parked" ? "resume this goal" : "pause this goal"}</button>
           <button class="rm-delete brushed-link" id="rmDelete">delete this goal</button>
-          <span>gone is gone. if it just needs to rest, pause keeps it on the board.</span>
+          <span>it goes to the bin, and the workshop keeps the way back. if it just needs to rest, pause keeps it on the board.</span>
         </div>`;
     // IN THE WORKSHOP the chapter is already on the workshop's sheet, so it
     // is content and nothing more. Standing alone it needs a surface of its
@@ -18267,14 +18310,14 @@
       if (row.querySelector(".rm-work-form")) return;
       const draft = { type: "habit", timesPerWeek: 2, durationMin: 60, estWeeklyHours: 2 };
       row.insertAdjacentHTML("beforeend", `<div class="rm-work-form">
-          <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?">
+          <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?" aria-label="what is it?">
           <div class="ci-review-actions rm-work-kinds">
             <button type="button" class="ci-chip" data-t="setup">do once</button>
             <button type="button" class="ci-chip on" data-t="habit">every week</button>
             <button type="button" class="ci-chip" data-t="capability">builds up</button>
           </div>
           <div class="ci-review-actions rm-work-freq">
-            ${[1,2,3,4,5,6,7].map(n => `<button type="button" class="ci-chip${n === 2 ? " on" : ""}" data-n="${n}">${n}×</button>`).join("")}
+            ${[1,2,3,4,5,6,7].map(n => `<button type="button" class="ci-chip${n === 2 ? " on" : ""}" data-n="${n}" aria-label="${n} times a week">${n}×</button>`).join("")}
             <span class="rm-work-freq-tag">a week</span>
           </div>
           <div class="rm-work-actions">
@@ -18335,8 +18378,8 @@
       const row = addQ.closest(".rm-addq-row");
       if (row.querySelector(".rm-work-form")) return;
       row.insertAdjacentHTML("beforeend", `<div class="rm-work-form">
-          <input class="rm-work-label rm-addq-label" type="text" maxlength="80" placeholder="what's that quarter about?">
-          <input class="rm-work-label rm-addq-note" type="text" maxlength="120" placeholder="one line, if it helps, optional">
+          <input class="rm-work-label rm-addq-label" type="text" maxlength="80" placeholder="what's that quarter about?" aria-label="what's that quarter about?">
+          <input class="rm-work-label rm-addq-note" type="text" maxlength="120" placeholder="one line, if it helps, optional" aria-label="a note, optional">
           <div class="rm-work-actions">
             <button type="button" class="btn-solid rm-addq-add" disabled>add it</button>
             <button type="button" class="rm-quiet-act rm-work-cancel">cancel</button>
@@ -18377,12 +18420,12 @@
     del.addEventListener("click", () => {
       if (!armed) {
         armed = true;
-        del.textContent = "Click again, gone for good";
+        del.textContent = "click again to take it off your board";
         del.classList.add("armed");
         setTimeout(() => {
           if (!del.isConnected) return;
           armed = false;
-          del.textContent = "Delete this goal";
+          del.textContent = "delete this goal";
           del.classList.remove("armed");
         }, 4000);
         return;
@@ -19192,7 +19235,7 @@
     goals.forEach((x, i) => { x.position = i; });
     renderAll();
     saveState();
-    showToast(`"${g.title.slice(0, 40)}" is gone. The room stays open.`);
+    showToast(`"${g.title.slice(0, 40)}" is off your board. the workshop keeps the way back.`);
   }
 
   // v3 (DEFINITIONS.md, "life segment"): the board shows only the segments the
@@ -19486,7 +19529,7 @@
       title.innerHTML = `<span class="et-aside">you’re doing fine.</span>
           <span class="et-line">that’s not the same as doing what you want.</span>`;
       actions.innerHTML = `<button class="btn-solid empty-cta" id="emptyTestBtn">find out what you actually want</button>
-          <button class="empty-self-link" id="emptyAddLink">or <u>add a goal yourself</u></button>`;
+          <button class="empty-self-link" id="emptyAddLink" aria-label="add a goal yourself">or <u>add a goal yourself</u></button>`;
       const cta = actions.querySelector("#emptyTestBtn");
       cta.addEventListener("click", () => openCheckin());
       actions.querySelector("#emptyAddLink").addEventListener("click", openAdd);
@@ -19500,7 +19543,7 @@
       title.innerHTML = `<span class="et-line">your board is empty.</span>`;
       actions.innerHTML = `<button class="btn-solid empty-cta" id="emptyRerunBtn">run the discovery again</button>
           <button class="empty-blank-link" id="emptyBlankBtn">or <u>start over blank</u></button>
-          <button class="empty-self-link" id="emptyAddLink">or <u>add a goal yourself</u></button>`;
+          <button class="empty-self-link" id="emptyAddLink" aria-label="add a goal yourself">or <u>add a goal yourself</u></button>`;
       actions.querySelector("#emptyRerunBtn").addEventListener("click", () => openRetest());
       actions.querySelector("#emptyAddLink").addEventListener("click", openAdd);
       const blank = actions.querySelector("#emptyBlankBtn");
@@ -19788,6 +19831,7 @@
 
   function renderAll() {
     renderEyebrow();
+    syncAppIcon();   // the home-screen icon is the companion, once there is one
     // The empty state offers exactly two actions — the intake test and the
     // self-author link — so the pill row (including Export wallpaper) stays
     // out of sight until the board holds at least one goal.
@@ -20796,7 +20840,7 @@
               ${SpeechRec ? talkButton("wkfeel") : ``}
             </div>
             <textarea class="wk-feel" id="wkFeel" rows="3" data-type-area="weekly/write"
-              placeholder="a line or two, or leave it">${escHtml(wkState.feel)}</textarea>
+              placeholder="a line or two, or leave it" aria-label="how did this week actually feel?">${escHtml(wkState.feel)}</textarea>
             ${(() => {
               // Wave 2: a door, never an insertion — their pages open BESIDE
               // the answer; words move only if their hands move them.
@@ -21552,7 +21596,7 @@
           pick("ev", g.id, "notyet", evid(g).happened === false, "not yet")}</span></div>
       ${evid(g).happened === false ? `<div data-type-area="quarterly/note" class="qr-note">not yet is a real answer. it just means the test is still ahead.</div>` : ``}
       <div data-type-area="quarterly/write" class="qr-write-row"><textarea class="qr-write" data-evnote="${g.id}" rows="1"
-        placeholder="what happened, a line, or leave it">${escHtml(evid(g).note || (g.rcCapture && g.rcCapture.text) || "")}</textarea>
+        placeholder="what happened, a line, or leave it" aria-label="what happened">${escHtml(evid(g).note || (g.rcCapture && g.rcCapture.text) || "")}</textarea>
         ${SpeechRec ? talkButton("qrev" + g.id) : ``}</div>`).join("");
     const dial = g => qrState.dials[g.id] || { energy: 0, cost: 0 };
     const dialsHtml = active.map(g => `
@@ -21582,7 +21626,7 @@
           pick("hz", g.id, "nudge", !!h, "re-estimate")}</span>
         ${h ? `<span class="qr-picks"><input class="qr-yrs-input" data-hzyears="${g.id}" value="${h.to || yrs}" aria-label="years"> years,
           <input class="qr-write qr-write-inline" data-hzwhy="${g.id}"
-            placeholder="the stated reason" value="${escHtml(h.reason || "")}"></span>` : ``}</div>`;
+            placeholder="the stated reason" aria-label="the stated reason" value="${escHtml(h.reason || "")}"></span>` : ``}</div>`;
     };
     const diffRows = (list) => list.map(d => `<div class="wk-diff" data-diff="${escHtml(d.id)}" data-type-area="quarterly/diff">
         <span class="wk-verb">${escHtml(d.verb)}</span>
@@ -23131,21 +23175,32 @@
   function roamNapping() { return roam.state === "nap"; }
   // The world, measured fresh: the sheet is This-week's paper or the union
   // of the board's cards; controls are everything with a job.
+  // THE WORDS ON THIS WEEK, one list (2026-09-07): what the roam keeps off
+  // and what the voice keeps off are the same things. The head's title
+  // and week line, the rows, the headings, the strip, the pile and its
+  // line, the corner. What is not on this list is sand.
+  const TW_WORDS_ON_THE_SAND = "#thisWeekMount .tw-head > *, #thisWeekMount .tw-topline, #thisWeekMount .tw-row, "
+    + "#thisWeekMount .tw-sec-head, #thisWeekMount .tw-sec-label, #thisWeekMount .tw-unplaced, #thisWeekMount .tw-parked-line, "
+    + "#thisWeekMount .tw-catchup, #twStripMount, #twCollectionMount, #twColLine, #twCorner, #twCornerAdd";
   function roamWorld() {
     const vp = { w: innerWidth, h: innerHeight };
     let sheet = null;
     const rects = [];
     const take = el => { if (!el) return; const r = el.getBoundingClientRect(); if (r.width && r.height) rects.push({ x: r.x, y: r.y, w: r.width, h: r.height }); };
     if (roam.scope === "week") {
-      const p = document.querySelector("#thisWeekMount .bark-paper") || document.querySelector("#thisWeekMount .tw-paper");
-      if (p) { const r = p.getBoundingClientRect(); sheet = { x: r.x, y: r.y, w: r.width, h: r.height }; }
+      // THE SHEET IS NOT AN OBSTACLE HERE (2026-09-07). This Week is the one
+      // page not on paper (DECISIONS, the garden beside the desk), and with
+      // the paper-era rect still standing, the whole width of a phone was
+      // forbidden ground: forty tries, forty hits, and the figure never left
+      // home. The WORDS are the obstacles, listed below; the sand between
+      // them is ground.
       ["#thisWeekOverlay .checkin-close", ".notebook-slot", "#twCompanion .tw-sprout"].forEach(s => take(document.querySelector(s)));
       // AND EVERY WORD ON THE PAGE (2026-09-07, owner: "companion should be
       // able to move anywhere except on the words or graphics"): the rows,
       // the strip, the pile and its line, the corner. What is not sand is
       // not ground.
       ["#twStripMount", "#twCollectionMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
-      document.querySelectorAll("#thisWeekMount .tw-row, #thisWeekMount .tw-sec-h, #thisWeekMount .tw-unplaced").forEach(take);
+      document.querySelectorAll(TW_WORDS_ON_THE_SAND).forEach(take);
       // AND THE GROUND ENDS WHERE THE SAND ENDS (2026-09-07): no target
       // below the garden's foot, which would stretch the page past it.
       const ground = document.getElementById("twSandGround");
@@ -23214,7 +23269,10 @@
     const w = home.width || 140, h = home.height || 150, pad = 8;
     const maxX = innerWidth - w - pad, maxY = innerHeight - h - pad;
     const x = Math.max(pad - home.x, Math.min(maxX - home.x, roam.x || 0));
-    const y = Math.max(pad - home.y, Math.min(maxY - home.y, roam.y || 0));
+    // This Week SCROLLS, and the figure rides the page: its home can be
+    // above the screen or its foot below it, and clamping Y to the window
+    // would drag it onto the rows. Only X is clamped there (2026-09-07).
+    const y = roam.scope === "week" ? (roam.y || 0) : Math.max(pad - home.y, Math.min(maxY - home.y, roam.y || 0));
     if (x === roam.x && y === roam.y) return;
     roam.slot.style.transition = "none";
     roamMove(x, y, 0);
@@ -23673,6 +23731,96 @@
     speakBubble(el, line);   // G2y: creatures speak in the drawn bubble
   }
 
+  // ---------- THE ICON IS THE COMPANION (2026-09-07) ----------
+  // Owner: "it also becomes the icon of the app once the user picks their
+  // companion". The strongest reason to open the app sits outside it, on
+  // the home screen, so once a companion is chosen the app's icon is that
+  // creature: the same idle drawing the page mounts, on the shipped icon's
+  // paper, with its prop if it has one, rasterised here and handed to the
+  // head's icon links and to a manifest written on the fly. The shipped
+  // PNGs stay as the icon for a device with no companion yet, and come
+  // back if the companion is switched off. A phone takes the icon when the
+  // app is ADDED to its home screen and never after, so a person who added
+  // it before choosing sees the change only on adding it again.
+  const APP_NAME = "companion";
+  const appIcon = { key: null, href: null, busy: false, orig: null };
+  function companionIconSvg(art, propArt, size) {
+    // The figure's 100-unit box scaled to 78% of the tile and set a little
+    // low, so the ground line the drawings share sits near two thirds; the
+    // prop, when there is one, at its feet on the right.
+    const s = size || 512;
+    const box = Math.round(s * 0.78), x = Math.round((s - box) / 2), y = Math.round(s * 0.12);
+    const nest = (svg, nx, ny, nw) => (svg || "").replace(/<svg\b([^>]*)>/, (m, a) =>
+      `<svg${a.replace(/\s(width|height|x|y)="[^"]*"/g, "")} x="${nx}" y="${ny}" width="${nw}" height="${nw}">`);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}" width="${s}" height="${s}">`
+      + `<rect width="${s}" height="${s}" fill="#F3E6C8"/>`
+      + `<ellipse cx="${s * 0.23}" cy="${s * 0.18}" rx="${s * 0.29}" ry="${s * 0.23}" fill="#D8CCAD" opacity="0.45"/>`
+      + `<ellipse cx="${s * 0.82}" cy="${s * 0.86}" rx="${s * 0.33}" ry="${s * 0.25}" fill="#C9BD9C" opacity="0.40"/>`
+      + `<ellipse cx="${s * 0.86}" cy="${s * 0.16}" rx="${s * 0.23}" ry="${s * 0.2}" fill="#CBC2A6" opacity="0.35"/>`
+      + nest(art, x, y, box)
+      + (propArt ? nest(propArt, Math.round(s * 0.62), Math.round(s * 0.56), Math.round(s * 0.26)) : "")
+      + `</svg>`;
+  }
+  function svgToPng(svg, size) {
+    return new Promise(resolve => {
+      let img;
+      try { img = new Image(); } catch (e) { resolve(null); return; }
+      img.onload = () => {
+        try {
+          const c = document.createElement("canvas");
+          c.width = size; c.height = size;
+          c.getContext("2d").drawImage(img, 0, 0, size, size);
+          resolve(c.toDataURL("image/png"));
+        } catch (e) { resolve(null); }
+      };
+      img.onerror = () => resolve(null);
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    });
+  }
+  const iconLink = rel => document.querySelector(`link[rel="${rel}"]`);
+  function appIconSet(touch, icon, manifestHref) {
+    if (!appIcon.orig) appIcon.orig = { touch: (iconLink("apple-touch-icon") || {}).href || null,
+      icon: (iconLink("icon") || {}).href || null, manifest: (iconLink("manifest") || {}).href || null };
+    const set = (rel, href) => { const l = iconLink(rel); if (l && href) l.setAttribute("href", href); };
+    set("apple-touch-icon", touch); set("icon", icon); set("manifest", manifestHref);
+  }
+  async function syncAppIcon() {
+    const c = profileCompanion;
+    const key = c && c.enabled !== false && c.kind ? c.kind + "/" + (propDrawable(c.detail) || "") : null;
+    if (appIcon.busy || key === appIcon.key) return appIcon.href;
+    if (!key) {   // no companion, or switched off: the shipped icon stands
+      if (appIcon.orig) appIconSet(appIcon.orig.touch, appIcon.orig.icon, appIcon.orig.manifest);
+      appIcon.key = null; appIcon.href = null;
+      return null;
+    }
+    appIcon.busy = true;
+    try {
+      const art = await companionArt(c.kind, companionPoseFile("idle"));
+      if (!art) return null;
+      const drawable = propDrawable(c.detail);
+      const propArt = drawable ? await companionPropArt(drawable) : "";
+      const svg = companionIconSvg(art, propArt, 512);
+      const big = await svgToPng(svg, 512);
+      if (!big) return null;
+      const touch = (await svgToPng(svg, 180)) || big;
+      const tiny = (await svgToPng(svg, 64)) || touch;
+      const manifest = {
+        name: APP_NAME, short_name: APP_NAME,
+        description: "your life on a painted board, and a companion who is glad you came",
+        start_url: new URL(location.pathname, location.href).href,
+        scope: new URL("./", location.href).href,
+        display: "standalone", background_color: "#EDE5D1", theme_color: "#EDE5D1",
+        icons: [{ src: touch, sizes: "180x180", type: "image/png" },
+                { src: big, sizes: "512x512", type: "image/png", purpose: "any" }],
+      };
+      let manifestHref = null;
+      try { manifestHref = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" })); } catch (e) {}
+      appIconSet(touch, tiny, manifestHref);
+      appIcon.key = key; appIcon.href = big;
+      return big;
+    } finally { appIcon.busy = false; }
+  }
+
   // ---- items 40/46/47: the tick gesture, the wander, the voice scrap ----
   // One gesture per species, played IN PLACE (~600ms), a breath bigger on
   // three ticks in a row, nothing on untick, never over text. The old
@@ -23925,7 +24073,42 @@
         const lo = colBox.x - pr.x + 2, hi = colBox.x - pr.x + colBox.width - w - 2;
         const want = er.left + er.width / 2 - pr.x - w / 2;
         bubble.style.left = Math.max(2, Math.max(lo, Math.min(hi, want))) + "px";
-        bubble.style.top = (er.top - pr.y - bubble.offsetHeight - 8) + "px";
+        // And never above the window: a long line at a phone's top seat
+        // would otherwise lose its first words off the top of the page. A
+        // bubble that has to lean on the creature's ears beats one that
+        // is cut (2026-09-07).
+        bubble.style.top = Math.max(2 - pr.y, er.top - pr.y - bubble.offsetHeight - 8) + "px";
+        // AND OFF THE TITLE'S GLYPHS (2026-09-07). At the phone's top seat
+        // the column the box is clamped to begins where the head row's
+        // room for the figure begins, and on a narrow phone (360) the
+        // title's first line runs a few pixels past that. The box steps
+        // right of the last glyph on any line it shares height with, and
+        // stops short of the ✕ when it shares height with that too, giving
+        // up width to do it; only when that would leave it too thin to
+        // read does it stay where the column put it.
+        {
+          const br0 = bubble.getBoundingClientRect();
+          let glyphRight = null;
+          document.querySelectorAll("#thisWeekMount .tw-head > *").forEach(wEl => {
+            const rg = document.createRange(); rg.selectNodeContents(wEl);
+            [...rg.getClientRects()].forEach(g => {
+              if (g.width && g.bottom > br0.top && g.top < br0.bottom && g.left < br0.right
+                  && (glyphRight == null || g.right > glyphRight)) glyphRight = g.right;
+            });
+          });
+          if (glyphRight != null && br0.left < glyphRight + 4) {
+            const xEl = document.querySelector("#thisWeekOverlay .checkin-close");
+            const xr = xEl ? xEl.getBoundingClientRect() : null;
+            const rightStop = (xr && xr.width && xr.bottom > br0.top && xr.top < br0.bottom) ? xr.left - 4 : innerWidth - 4;
+            const room = Math.floor(rightStop - (glyphRight + 4));
+            if (room >= 80) {
+              bubble.style.maxWidth = Math.min(w, room) + "px";
+              skinBubble(bubble, aside);
+              bubble.style.left = Math.round(glyphRight + 4 - pr.x) + "px";
+              bubble.style.top = Math.max(2 - pr.y, er.top - pr.y - bubble.offsetHeight - 8) + "px";
+            }
+          }
+        }
       }
     }
     speechLifetime(bubble);
@@ -23976,7 +24159,12 @@
            && root.parentElement !== document.documentElement) root = root.parentElement;
     const r = node.getBoundingClientRect();
     if (r.left < 2 || r.top < 2 || r.right > innerWidth - 2 || r.bottom > innerHeight - 2) return true;
-    const surfaces = root.querySelectorAll(".bark-item, .torn-paper, .surf-torn, .lv-note, .modal");
+    // NEITHER MAY ITS VOICE (the companion's own law, and 2026-09-07 for
+    // This Week's words): the sheet's title, its week line, its rows and
+    // the rest are content a bubble may not lie across, the same list the
+    // roam keeps its feet off.
+    const surfaces = [...root.querySelectorAll(".bark-item, .torn-paper, .surf-torn, .lv-note, .modal")]
+      .concat([...root.querySelectorAll(TW_WORDS_ON_THE_SAND)]);
     for (const s of surfaces) {
       if (s === node || node.contains(s) || s.contains(node)) continue;
       if (el && (el.contains(s) || s.contains(el))) continue;
@@ -24073,23 +24261,28 @@
     st.said += 1;
     speechSave(st);
   }
-  function arrivalNote(el) {
+  // Returns whether a line was granted, so the mount can send the figure
+  // off down the sand once it has been said. `after` is when the line
+  // lands: 800ms as always, or later when a gesture plays first.
+  function arrivalNote(el, opts) {
     const c = profileCompanion;
-    if (!c || c.enabled === false) return;
+    if (!c || c.enabled === false) return false;
+    const after = (opts && opts.after) || 800;
     const now = appNow();
     const st = speechState(now);
     const d = arrivalDecision(st, now);
     st.lastPaneAt = now;
-    if (!d.speak) { speechSave(st); return; }
+    if (!d.speak) { speechSave(st); return false; }
     stampArrival();
     if (c.kind === "plant") {
       // The plant's greeting is the app's aside beside the pot — same
       // governor, same budget, never a mouth.
       const line = pickArrivalLine(PLANT_ARRIVAL_ASIDES, now);
-      if (line) setTimeout(() => { if (el && el.isConnected) showAsideNear(el, line); }, 800);
-      return;
+      if (line) setTimeout(() => { if (el && el.isConnected) showAsideNear(el, line); }, after);
+      return !!line;
     }
-    setTimeout(() => companionSpeak(d.first ? "return" : "arrive", el, { governed: true }), 800);
+    setTimeout(() => companionSpeak(d.first ? "return" : "arrive", el, { governed: true }), after);
+    return true;
   }
   function spendScrap(kind) {
     const st = scrapState();
@@ -24160,6 +24353,9 @@
     const slot = document.getElementById("twCompanion");
     const sheet = document.querySelector("#thisWeekMount .tw-sheet");
     if (!slot || !sheet) return;
+    // (The phone's home moved to the head row later the same day, see THE
+    // COMPANION MEETS YOU AT THE DOOR; the guard below stands for any seat
+    // that ever sits under the sheet's last line again.)
     // THE FOOT LANE HAS NO MARGIN TO WANDER DOWN (2026-09-07). On a phone
     // the companion's home is the open sand at the FOOT of the page, and a
     // drift "down the margin toward the goal" from there would be a drift
@@ -24187,6 +24383,37 @@
       return;
     }
     slot.style.transform = y ? `translateY(${Math.round(y)}px)` : "";
+  }
+
+  // THE DOOR, THEN THE SAND (2026-09-07). After a greeting the figure
+  // leaves the head row for the open sand at the foot of the page: on a
+  // phone that is the one stretch of ground with no words on it, and on a
+  // wide screen it is the bottom of the margin it already stands in, no
+  // lower than the screen shows so the walk is watched to its end. A
+  // forced target, in the species' own gait (item 169's stroll), and then
+  // the roam's clock as before. Asleep stays asleep, reduced motion never
+  // moves, a figure the roam is not carrying stays put, and a page too
+  // short to have a foot below the seat keeps it home.
+  function companionOffToTheSand(ms) {
+    const slot = document.getElementById("twCompanion");
+    if (!slot || roam.state === "off" || roam.slot !== slot) return false;
+    roamNext(ms, () => {
+      // Whatever stops the walk hands the clock back to the roam, so the
+      // figure never loses its heartbeat over a greeting.
+      const later = () => roamNext(25000 + roam.rng() * 45000, roamTickState);
+      if (roam.state !== "sit" || roam.held || roam.slot !== slot) return later();
+      const stack = document.querySelector("#thisWeekMount .tw-stack");
+      const home = roamHomeRect();
+      if (!stack || !home.width) return later();
+      const fig = { w: home.width, h: home.height || 150 };
+      const foot = stack.getBoundingClientRect().bottom;
+      const wide = !!(window.matchMedia && window.matchMedia("(min-width: 1280px)").matches);
+      const y = (wide ? Math.min(foot, innerHeight - 12) : foot) - fig.h - 6;
+      const x = wide ? home.x : Math.round((innerWidth - fig.w) / 2);
+      if (y <= home.y + 40) return later();
+      roamStroll(later, { x: Math.round(x), y: Math.round(y) });
+    });
+    return true;
   }
 
   // Day N of the sprout's calendar: days since the discovery first completed.
@@ -25334,30 +25561,67 @@
   // does not add one. The count belongs to the schedule, and a move does not
   // touch the schedule.
   //
-  // Occurrence i goes to the i-th day chosen. Extra days are ignored, because
-  // there is no occurrence for them to be; if fewer days are chosen than
-  // there are occurrences, the rest land on the last one.
+  // MOVE BY DIFFERENCE (2026-09-07, owner, on a four-day habit: "it doesnt
+  // show my pebbles for the days i selected ... it just reverts to whatever
+  // it was"). Occurrence i used to go to the i-th day chosen, so one extra
+  // tick on Tuesday walked Wednesday's session to Tuesday, Friday's to
+  // Wednesday, Sunday's to Friday, and Sunday's was gone. The days chosen are
+  // now read against where this week's sessions already sit: a session on a
+  // chosen day stays; the sessions on unchosen days are freed and go, in
+  // order, to the chosen days nobody sits on; a freed session with nowhere
+  // to go floats in the lane (any day this week); a chosen day with no
+  // session free gets nothing, because a move never adds one. A floating
+  // session pins the same way. A skip ("off") is left exactly as it is.
+  // `null` clears every move and the week goes back to the plan; `[]` is
+  // the "any day" chip: every session floats.
   function moveThisWeek(goalId, mechId, days) {
     const wk = weekKeyOf();
     const g = goals.find(x => x.id === goalId);
     const m = g && (g.mechanisms || []).find(x => x.id === mechId);
     if (!m) return null;
     const wd = weekDates(wk);
-    const raw = scheduledDatesFor(m, goalId, wk, { raw: true });
     const week = weeklyTicks[wk] = weeklyTicks[wk] || {};
     const forGoal = week[goalId] = week[goalId] || {};
     const rec = forGoal[mechId] = forGoal[mechId] || {};
-    delete rec.moves;
     delete rec.movedTo;                  // the whole-commitment override retires here
-    const targets = (days || []).map(d => wd[TW_DAYS.indexOf(d)]).filter(Boolean);
-    if (targets.length) {
-      const moves = {};
-      raw.forEach((from, i) => {
-        const to = targets[i] != null ? targets[i] : targets[targets.length - 1];
-        if (from && to && to !== from) moves[from] = to;
-      });
-      if (Object.keys(moves).length) rec.moves = moves;
-    }
+    if (days == null) { delete rec.moves; saveState(); return rec; }
+    const prior = rec.moves || {};
+    const origins = scheduleOriginsFor(m, goalId, wk).map(String);
+    const chosen = [];
+    days.forEach(d => { const iso = wd[TW_DAYS.indexOf(d)]; if (iso && chosen.indexOf(iso) < 0) chosen.push(iso); });
+    chosen.sort();
+    const floating = o => /^f\d+$/.test(o);
+    const inWeek = iso => !!iso && wd.indexOf(iso) >= 0;
+    // where each session sits now: a date, or null for the lane
+    const cur = o => floating(o) ? (inWeek(prior[o]) ? prior[o] : null)
+      : prior[o] === "any" ? null : (inWeek(prior[o]) ? prior[o] : o);
+    const moves = {};
+    const taken = {};
+    // DONE STAYS DONE, AND STAYS PUT: a session already completed on its day
+    // is not free to move (moving its origin would leave the completion as
+    // an extra and open a fifth slot), so it keeps its place and its move.
+    const fixed = o => { const c = cur(o); return !!c && completionsAt(m, c) > 0; };
+    const live = origins.filter(o => {
+      if (prior[o] === "off") { moves[o] = "off"; return false; }
+      if (fixed(o)) { const c = cur(o); taken[c] = true; if (floating(o) || c !== o) moves[o] = c; return false; }
+      return true;
+    });
+    const freed = [];
+    live.forEach(o => {
+      const c = cur(o);
+      if (c && chosen.indexOf(c) >= 0) {
+        taken[c] = true;
+        if (floating(o) || c !== o) moves[o] = c;
+      } else freed.push(o);
+    });
+    const wanted = chosen.filter(iso => !taken[iso]);
+    freed.forEach((o, i) => {
+      const to = wanted[i] || null;
+      if (floating(o)) { if (to) moves[o] = to; }
+      else if (to == null) moves[o] = "any";
+      else if (to !== o) moves[o] = to;
+    });
+    if (Object.keys(moves).length) rec.moves = moves; else delete rec.moves;
     saveState();
     return rec;
   }
@@ -25658,7 +25922,31 @@
   function openMovePicker(anchor, g, mech, onCommit) {
     document.querySelectorAll(".when-pop, .move-pop").forEach(p => p.remove());
     const standing = parseWhen(mech);          // for the part-of-day and the words
-    let days = daysFor(g.id, mech).slice();
+    // THE CHIPS SHOW WHERE THIS WEEK'S SESSIONS ARE (2026-09-07), read off
+    // the occurrences with the week's moves applied, never off the standing
+    // plan: the box used to reopen on the plan's days after a move, so what
+    // had just been done looked undone. A skip is left out (it has its own
+    // word), and a session in the lane lights no chip and is counted in
+    // words beneath the chips.
+    const wk = weekKeyOf();
+    const LANE_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
+    const truth = () => {
+      const wd = weekDates(wk), mv = movesFor(g.id, mech.id, wk);
+      const origins = scheduleOriginsFor(mech, g.id, wk), eff = scheduledDatesFor(mech, g.id, wk);
+      const on = [], done = [];
+      let lane = 0;
+      origins.forEach((o, i) => {
+        if (mv[String(o)] === "off") return;
+        const d = eff[i];
+        if (d == null) { lane += 1; return; }
+        const name = TW_DAYS[wd.indexOf(d)];
+        if (!name) return;
+        if (on.indexOf(name) < 0) on.push(name);
+        if (completionsAt(mech, d) > 0 && done.indexOf(name) < 0) done.push(name);
+      });
+      return { on: on.sort((a, b) => WHEN_DAYS.indexOf(a) - WHEN_DAYS.indexOf(b)), lane, done };
+    };
+    let state = truth(), days = state.on, note = "";
     const pop = document.createElement("div");
     pop.className = "when-pop move-pop";
     pop.setAttribute("role", "dialog");
@@ -25674,6 +25962,8 @@
               days.indexOf(d) >= 0 ? " on" : ""}" data-d="${d}">${d}</button>`).join("")}
             <button type="button" class="ci-chip wp-day${days.length ? "" : " on"}" data-d="">any day</button>
           </div>
+          ${state.lane ? `<span class="mp-b mp-lane">${state.lane === 1 ? "one session floats" : LANE_WORDS[Math.min(7, state.lane)] + " sessions float"} this week, any day</span>` : ``}
+          ${note ? `<span class="mp-b mp-note">${escHtml(note)}</span>` : ``}
         </div>
         <button type="button" class="mp-opt mp-door" id="mpAlways">
           <span class="mp-a">change when and how long it always happens ${DRAWN_ARROW}</span>
@@ -25681,11 +25971,16 @@
         </button>`;
       pop.querySelectorAll(".wp-day").forEach(b => b.addEventListener("click", () => {
         const d = b.dataset.d;
-        if (!d) days = [];
-        else if (days.indexOf(d) >= 0) days = days.filter(x => x !== d);
-        else days = days.concat([d]).sort((a, b2) => WHEN_DAYS.indexOf(a) - WHEN_DAYS.indexOf(b2));
+        // A DONE SESSION IS NOT A CHIP TO UNTICK: it happened, on that day.
+        if (d && state.done.indexOf(d) >= 0) { note = "that session is done, and done stays done."; paint(); return; }
+        const want = !d ? [] : days.indexOf(d) >= 0 ? days.filter(x => x !== d) : days.concat([d]);
         // THIS WEEK ONLY. m.when is not touched here and a test asserts it.
-        moveThisWeek(g.id, mech.id, days.length ? days : null);
+        moveThisWeek(g.id, mech.id, want);
+        // What the chips show is what happened, not what was tapped: a tick
+        // with no session free to move is refused, and says so once.
+        state = truth(); days = state.on;
+        note = (d && want.indexOf(d) >= 0 && days.indexOf(d) < 0)
+          ? "a move moves a session, it doesn't add one. untick the day it leaves first." : "";
         paint();
         if (onCommit) onCommit();
       }));
@@ -27223,7 +27518,7 @@
                 : `<button class="tw-marker-ask" data-marker-goal="${g.id}" data-marker-oid="${escHtml(m.oid)}">the reality check hasn't happened yet, want a smaller one?</button>`}</span>`;
             }).filter(Boolean).join("");
             return `<div class="tw-marker">Halfway through the quarter.${lines}
-              <button class="tw-marker-x" data-marker-dismiss="1" title="dismiss for this quarter">×</button></div>`;
+              <button class="tw-marker-x" data-marker-dismiss="1" title="dismiss for this quarter" aria-label="dismiss for this quarter">×</button></div>`;
           })()}
           ${(() => {
             // ---- item 138: TODAY · THIS WEEK · LATER ----
@@ -27918,13 +28213,28 @@
         // The greeting: one gesture as the page lands, on the first open of
         // a day (per-device, like the landing record). The day-one line
         // comes from the same scrap pool (item 47).
+        // THE GREETING IS A GESTURE, THEN A LINE, THEN OFF DOWN THE SAND
+        // (2026-09-07, owner: "it greets them with a gesture and a spoken
+        // line ... meets the user ... and then scrolls down the sand"). The
+        // gesture plays first; the line lands as it ends rather than on top
+        // of it; and once the line has faded the figure strolls down to the
+        // open sand at the foot and goes about its day. The stroll is only
+        // ever after a greeting: a plain re-render puts it home and leaves
+        // it there for the roam's own clock. idle2 greets too: it is a
+        // coin-toss drawing of the same pose, and it skipped the note for
+        // no reason anyone wrote down.
         let lastGreet = null;
         try { lastGreet = localStorage.getItem("lifevision.lastgreet.v1"); } catch (e) {}
-        if (lastGreet !== todayKey()) {
+        const firstOfDay = lastGreet !== todayKey();
+        if (firstOfDay) {
           try { localStorage.setItem("lifevision.lastgreet.v1", todayKey()); } catch (e) {}
           setTimeout(() => playTickGesture(false), 700);
         }
-        if (pose === "idle") arrivalNote(el);   // entrances/returns greet themselves
+        if (pose === "idle" || pose === "idle2") {   // entrances/returns greet themselves
+          const after = firstOfDay ? 1700 : 800;
+          const spoke = arrivalNote(el, { after });
+          if (spoke || firstOfDay) companionOffToTheSand(after + 5400);
+        }
       };
       if (pose === "arriving" && !profileCompanion.arrived) {
         // First open after saving: a half-second pause, then the entrance.
@@ -27937,6 +28247,7 @@
           saveState();
           stampArrival();
           setTimeout(() => companionSpeak("arrive", el, { governed: true }), 900);
+          companionOffToTheSand(900 + 5400);   // said hello, then off down the sand
         }, 500);
       } else {
         mountCompanion(slot, profileCompanion, opts).then(el => {
@@ -30012,9 +30323,9 @@
     const editing = releaseEditIdx != null ? releaseWishes[releaseEditIdx] : null;
     mount.innerHTML = `
       <div class="field" data-type-area="release/field"><label>what's the habit?</label>
-        <textarea id="relHabit" rows="2" placeholder="the doomscroll, the third coffee, the sunday dread…">${editing ? escHtml(editing.habit) : ""}</textarea></div>
+        <textarea id="relHabit" rows="2" placeholder="the doomscroll, the third coffee, the sunday dread…" aria-label="what's the habit?">${editing ? escHtml(editing.habit) : ""}</textarea></div>
       <div class="field" data-type-area="release/field"><label>what's under it? (optional)</label>
-        <textarea id="relUnder" rows="2" placeholder="a guess is plenty, or leave it">${editing ? escHtml(editing.under || "") : ""}</textarea></div>
+        <textarea id="relUnder" rows="2" placeholder="a guess is plenty, or leave it" aria-label="what's under it, optional">${editing ? escHtml(editing.under || "") : ""}</textarea></div>
       <div class="modal-actions" data-type-area="release/actions">
         <button class="btn-solid" id="relSave">${editing ? "save the change" : "keep it for me"}</button>
       </div>
@@ -30357,7 +30668,7 @@
       hi(escHtml(t.label), t.key === chosenKey),
       t.from ? `from ${escHtml(t.from)}` : (t.own ? `written here before` : ``))).join("");
     const ownRow = `<div data-type-area="tomorrow/own" class="tm-own"><input type="text" class="tm-own-input" id="tmOwn"
-      placeholder="what do I keep not doing?" value="${escHtml(st.own || "")}"
+      placeholder="what do I keep not doing?" aria-label="what do I keep not doing?" value="${escHtml(st.own || "")}"
       aria-label="what I keep not doing, in my words"></div>`;
     const ownRows = things.filter(t => t.own && t.key === chosenKey).map(t => row(`data-tm="thing" data-key="${escHtml(t.key)}"`,
       hi(escHtml(t.label), true), t.from ? `` : ``)).join("");
@@ -30392,7 +30703,7 @@
         moveBlock = ch("one small move", `
           <p data-type-area="tomorrow/reading" class="tm-read">${escHtml(tomorrowFill(mv.line, st.thing.label))}</p>
           <div data-type-area="tomorrow/write" class="tm-write">
-            <div class="qv-if" id="tmWrite" contenteditable="plaintext-only">${escHtml(st.draft != null ? st.draft : prompt)}</div>
+            <div class="qv-if" id="tmWrite" contenteditable="plaintext-only" role="textbox" aria-label="what happens when it is time, in your words">${escHtml(st.draft != null ? st.draft : prompt)}</div>
             <div class="qv-if-hint">${escHtml(st.hint || (mv.kind === "ifthen" ? TM_HINT_IFTHEN : TM_HINT_LINE))}</div>
           </div>
           ${keep}`);
@@ -30681,7 +30992,7 @@
     addPhase2.innerHTML = `<div class="add-review">
       <div class="add-mirror-kind">quick check, so the timescale is yours, not a template's</div>
       ${qs.map((q, i) => `<div class="field"><label>${escHtml(q)}</label>
-        <input class="add-q" data-i="${i}" type="text" placeholder="A few words is plenty" /></div>`).join("")}
+        <input class="add-q" data-i="${i}" type="text" placeholder="A few words is plenty" aria-label="${escHtml(q)}" /></div>`).join("")}
       <div class="modal-actions">
         <button class="btn-cancel" id="addQSkip">skip</button>
         <button class="btn-solid" id="addQGo">continue</button>
@@ -30753,7 +31064,7 @@
              class carries --cat and .lv-cat-dot already reads it; the
              override was all that stood in the way. -->
         <div class="lv-cat ${(CATS[draft.category] || CATS.Other).cls}" id="addCatBadge" style="margin-bottom:8px;"><span class="lv-cat-dot"></span><span id="addCatLabel">${(CATS[draft.category] || CATS.Other).label}</span></div>
-        <div class="add-title" id="addTitle" contenteditable="true">${escHtml(title)}</div>
+        <div class="add-title" id="addTitle" contenteditable="true" role="textbox" aria-label="your goal, in your words">${escHtml(title)}</div>
         ${addOut && addOut.goal.description ? `<p class="add-desc">${escHtml(addOut.goal.description)}</p>` : ``}
         ${horizonLabel ? `<p class="add-meta">≈ ${horizonLabel}${addOut.goal.horizon.basis ? `, ${escHtml(addOut.goal.horizon.basis)}` : ``}${addOut.estWeeklyHours ? ` · wants ~${addOut.estWeeklyHours} hrs/week` : ``}</p>` : ``}
         ${near.length ? `<div class="add-firstq"><div class="lv-note-label">first quarter</div>
@@ -31082,9 +31393,9 @@
       depth_meaning: "Better means the films exist. That someone I've never met watched something I wrote and it did something to them.",
       next_meaning: "Finish the current draft and call it finished \u2014 set a date and stop touching it.",
       depth_relationships: "Better means I know people who make things. Right now I don't know a single other writer, and I go whole weeks only talking to coworkers. I want people I'd send pages to.",
-      dq_finance_incomeBand: "3,500\u20135,000",
-      dq_finance_outgoingsBand: "2,000\u20133,000",
-      dq_finance_savedBand: "1\u20133 months",
+      dq_finance_incomeBand: "3,500 to 5,000",
+      dq_finance_outgoingsBand: "2,000 to 3,000",
+      dq_finance_savedBand: "1 to 3 months",
       dq_finance_nextStep: "Work out the real runway number \u2014 what I'd need saved to take three months off.",
       dq_career_transfers: "Six years of structuring information and hitting deadlines, and I can diagnose why a story isn't working faster than anyone I know.",
       dq_career_evidence: "Nobody has paid me. Friends send me their scripts and my old roommate calls me when his story stalls, so people ask \u2014 just not with money attached.",
@@ -31435,35 +31746,35 @@
   const DEPTH_QUESTIONS = {
     finance: [
       { key: "incomeBand", type: "select", q: "roughly what comes in each month, after tax?",
-        note: "Ranges only \u2014 no exact figures, and \u201crather not say\u201d is fine.",
-        options: ["rather not say", "under 2,000", "2,000\u20133,500", "3,500\u20135,000", "5,000\u20138,000", "over 8,000"] },
+        note: "Ranges only, no exact figures, and \u201crather not say\u201d is fine.",
+        options: ["rather not say", "under 2,000", "2,000 to 3,500", "3,500 to 5,000", "5,000 to 8,000", "over 8,000"] },
       { key: "outgoingsBand", type: "select", q: "and roughly what goes out on the essentials?",
         note: "rent or mortgage, bills, food, transport, debt payments.",
-        options: ["rather not say", "under 1,000", "1,000\u20132,000", "2,000\u20133,000", "3,000\u20134,500", "over 4,500"] },
+        options: ["rather not say", "under 1,000", "1,000 to 2,000", "2,000 to 3,000", "3,000 to 4,500", "over 4,500"] },
       { key: "savedBand", type: "select", q: "how long could you cover your essentials from what's already saved?",
         note: "this is the number that decides whether a goal here is one year away or five.",
-        options: ["rather not say", "less than a month", "1\u20133 months", "3\u20136 months", "6\u201312 months", "over a year"] },
+        options: ["rather not say", "less than a month", "1 to 3 months", "3 to 6 months", "6 to 12 months", "over a year"] },
     ],
     health: [
       { key: "baseline", q: "what does a typical week look like for your body right now?",
-        ph: "Sleep, movement, energy \u2014 honestly, not the good weeks\u2026" },
+        ph: "Sleep, movement, energy. Honestly, not the good weeks\u2026" },
       { key: "limits", q: "anything that limits what you can realistically do?",
-        ph: "An injury, a condition, shift work, no gym nearby \u2014 or nothing much." },
+        ph: "An injury, a condition, shift work, no gym nearby, or nothing much." },
     ],
     career: [
       { key: "transfers", q: "what can you already do that would carry over into the work you want?",
         ph: "Skills, experience, things you're the one people ask about\u2026" },
-      { key: "evidence", q: "Has anyone paid you, hired you, or asked you for that \u2014 and when?",
+      { key: "evidence", q: "Has anyone paid you, hired you, or asked you for that, and when?",
         ph: "Even once, even unpaid but sought out. Or: not yet." },
     ],
     relationships: [
       { key: "whoIsAround", q: "who's actually in your life right now, and how often do you really see them?",
-        ph: "Not who you could call \u2014 who you actually spend time with\u2026" },
+        ph: "Not who you could call, who you actually spend time with\u2026" },
       { key: "alreadyTried", q: "what have you already tried here, and what happened?",
         ph: "Apps, clubs, reaching out, moving cities\u2026 or nothing yet, which is also an answer." },
     ],
     growth: [
-      { key: "startedDropped", q: "What have you started and not finished \u2014 and what was going on when it stopped?",
+      { key: "startedDropped", q: "What have you started and not finished, and what was going on when it stopped?",
         ph: "The circumstances matter more than the thing itself\u2026" },
       { key: "goodWeek", q: "what does a week look like when you ARE keeping something up?",
         ph: "What's different about those weeks\u2026" },
@@ -31480,7 +31791,7 @@
                         ph: "The next thing would be\u2026", note: "whatever you write here becomes your first objective, in your words." };
 
   const depthQuestions = area => (DEPTH_QUESTIONS[area] || [
-    { key: "better", q: "What would \u201cbetter\u201d actually look like here \u2014 specifically?", ph: "Better would mean\u2026" },
+    { key: "better", q: "What would \u201cbetter\u201d actually look like here, specifically?", ph: "Better would mean\u2026" },
   ]).concat([NEXT_STEP_Q]);
 
   const depthKey = (area, field) => `dq_${area}_${field}`;
@@ -31494,7 +31805,7 @@
       + "System Settings \u203a Privacy & Security \u203a Microphone lets your browser in.",
     "service-not-allowed": "your browser blocked speech recognition. check its microphone permissions for this site.",
     "audio-capture": "No microphone found. Check it's connected and selected in System Settings \u203a Sound.",
-    "network": "Speech recognition needs an internet connection \u2014 it isn't processed on your machine.",
+    "network": "Speech recognition needs an internet connection. It isn't processed on your machine.",
     "no-speech": "didn't catch anything. try again, a bit closer to the mic.",
     "language-not-supported": "that language isn't supported for dictation.",
   };
@@ -31659,7 +31970,7 @@
   function journalPage(p) {
     return `
       <div class="ci-journal-page${p.cls ? " " + p.cls : ""}">
-        <textarea class="ci-journal-input" data-key="${p.key}" placeholder="${escHtml(p.ph)}"></textarea>
+        <textarea class="ci-journal-input" data-key="${p.key}" placeholder="${escHtml(p.ph)}" aria-label="${escHtml(p.q || p.ph || "")}"></textarea>
       </div>`;
   }
 
@@ -31728,7 +32039,7 @@
             "Scoping this quarter to the hours you actually have\u2026",
             "Sketching the later quarters\u2026"],
     mechanisms: ["Working out the weekly rhythm that gets you there\u2026",
-            "Sizing it against the week you actually have \u2014 nearly done\u2026"],
+            "Sizing it against the week you actually have, nearly done\u2026"],
     priorities: ["Working out which areas to ask about\u2026"],
   };
 
@@ -32405,7 +32716,10 @@
   }
 
   function applyName() {
-    const owned = userName ? `${possessive(userName)} life vision` : "life vision";
+    // THE APP IS CALLED COMPANION (2026-09-07, owner: "change the name of
+    // the app ... Companion"): the tab and the corner pill say so; the
+    // gate keeps the person's name alone, as ruled on 28 Aug.
+    const owned = userName ? `${possessive(userName)} companion` : "companion";
     const h = document.getElementById("boardTitle");
     const b = document.getElementById("brandTab");
     if (h) {
@@ -32424,7 +32738,7 @@
       } else {
         h.classList.remove("named");
         h.title = "Add your name";
-        h.textContent = "life vision";
+        h.textContent = "companion";
       }
     }
     if (b) b.textContent = "\u25ce " + owned;
@@ -32663,6 +32977,7 @@
     discoveryStartedAt = state.profile.discovery_started_at || null;
     nextStepDismissed = state.profile.next_step_dismissed || null;
     profileCompanion = state.profile.companion || null;
+    syncAppIcon();   // the home-screen icon follows the companion the board carries
     profileShelf = (state.profile.shelf && typeof state.profile.shelf === "object") ? state.profile.shelf : {};
     lastCompanionLogged = JSON.stringify(profileCompanion || null);   // dev log baseline
     // Seen-flags union with this device's own, so neither side replays a
@@ -32908,7 +33223,7 @@
       if (r.reason === "not_signed_in") showSignedOutWarning();
       else if (r.reason === "stale") { /* the copy is marked; the next ask carries it up, merged */ }
       else if (r.reason === "fixture_guard")
-        showToast("a test run is using this browser \u2014 saving is paused so your board can't be written over.");
+        showToast("a test run is using this browser. saving is paused so your board can't be written over.");
       else if (r.reason !== "local_only")
         showToast("couldn't save, the account said: " + (r.reason || "no reason given")
           + ". your changes are still here on this device.");
@@ -33076,14 +33391,14 @@
           } catch (e) {}
           if (applyState(JSON.parse(snap.state))) {
             renderAll();
-            showToast("this browser's copy was empty \u2014 restored from the local server's snapshot.");
+            showToast("this browser's copy was empty, so it was restored from the local server's snapshot.");
             return true;
           }
         }
       }
     } catch (err) {
       console.warn("restore failed:", err.message);
-      showToast("couldn't load your saved goals. nothing was lost \u2014 try refreshing.");
+      showToast("couldn't load your saved goals. nothing was lost, try refreshing.");
     }
     return false;
   }
@@ -33653,7 +33968,7 @@
            of your board yet. connect once and it will keep one for next time.
            your goals are safe in your account.</p>`
       : `<p>The server didn't answer properly, so there is nothing safe to show.
-           your goals are still there \u2014 opening an empty board now would risk
+           your goals are still there, and opening an empty board now would risk
            saving over them, so this screen stays up instead.</p>`;
     el.innerHTML = `<div class="persist-card">
         <h2>${offline ? "you're offline" : "couldn't load your board"}</h2>
@@ -33712,7 +34027,7 @@
     if (signedOutAcknowledged) return;
     const el = persistOverlay("signedOutOverlay");
     el.innerHTML = `<div class="persist-card">
-        <h2>you're not signed in \u2014 nothing is being saved</h2>
+        <h2>you're not signed in, nothing is being saved</h2>
         <p>the board you're looking at lives only in this tab. sign in to keep
            it, or keep going knowing a refresh loses it.</p>
         <div class="persist-actions">
@@ -33886,7 +34201,7 @@
       body: "the model call didn’t go through, so there is nothing to show. everything you have "
           + "written is saved on this device, so this is safe to retry.",
       retry: true,
-      detail: "Reason: " + escHtml(reason) + (err && err.detail ? " \u2014 " + escHtml(err.detail) : ""),
+      detail: "Reason: " + escHtml(reason) + (err && err.detail ? ", " + escHtml(err.detail) : ""),
     };
   }
 
@@ -33940,7 +34255,7 @@
     health: "you didn't mention it, but nothing suggests it's a problem",
     career: "\u201cengineering as the identity\u2026 I don't want the next seven to look like the last seven\u201d",
     finance: "\u201cI want financial independence, a house that's mine\u201d",
-    relationships: "\u201ca creative social circle\u201d \u2014 named as a want you don't have yet",
+    relationships: "\u201ca creative social circle\u201d, named as a want you don't have yet",
     growth: "\u201cI keep building systems to track all of it\u201d",
     meaning: "\u201cwrite screenplays full-time\u2026 actually make films\u201d",
   };
@@ -34501,10 +34816,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           value="${escHtml(String(chosen || realistic))}" aria-label="years, your own number" /> years</label>
         <button type="button" class="ci-chip rv-h-ownset">Set</button>
       </div>
-      ${wantsFaster ? `<div class="rv-h-cost"><b>\u26a1 ${yearsLabel(chosen)} is possible \u2014 here's what it takes.</b> ${escHtml(acc.cost)}</div>` : ``}
+      ${wantsFaster ? `<div class="rv-h-cost"><b>\u26a1 ${yearsLabel(chosen)} is possible, here's what it takes.</b> ${escHtml(acc.cost)}</div>` : ``}
       ${wantsImpossible ? `<div class="rv-h-cost rv-h-warn"><b>${yearsLabel(chosen)} is faster than I think this can honestly go.</b>
          ${escHtml(asSentence(h.blockedReason || (acc ? "the quickest version I'd stand behind is " + yearsLabel(acc.years) + ", and that already means " + acc.cost.charAt(0).toLowerCase() + acc.cost.slice(1) : "nothing available would move it much sooner")))}
-         It's your call \u2014 keep it and the plan will aim at it, but it won't pretend the odds are good.</div>` : ``}
+         It's your call: keep it and the plan will aim at it, but it won't pretend the odds are good.</div>` : ``}
     </div>`;
   }
 
@@ -34914,7 +35229,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 <div class="ci-raw-q ci-raw-note">
                   <div class="ci-q-row ci-q-row-left"><p class="ci-raw-ask">anything else the plan should respect?<span class="ci-q-skip"> optional</span></p>${talkButton("situation")}</div>
                   <textarea class="ci-journal-input ci-raw-textarea" data-key="situation"
-                    placeholder="The apartment, the town, the shift schedule, the ankle that clicks…"></textarea>
+                    placeholder="The apartment, the town, the shift schedule, the ankle that clicks…" aria-label="your situation"></textarea>
                 </div>
               </div></div></div>`
             + navRow("Dig in →");
@@ -35099,7 +35414,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           if (!ciDraft) {
             const tok = ciRenderSeq;
             b.innerHTML = stepHeader("Reading everything you wrote.",
-                "Drafting your life goals \u2014 under a minute.")
+                "Drafting your life goals, under a minute.")
               + thinkingBlock("goals");
             narrate("s-goals-open");
             // The single highest-value line in the script gets a follow-up if
@@ -35171,7 +35486,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           // The vision passage IS the subtitle now \u2014 no second line of
           // instruction competing with it for the same space.
           b.innerHTML = stepHeader("Your life goals organized, yours to change")
-            + `<div class="rv-vision rv-vision-edit" id="rvVision" contenteditable="plaintext-only">${escHtml(ciDraft.vision || "")}</div>
+            + `<div class="rv-vision rv-vision-edit" id="rvVision" contenteditable="plaintext-only" role="textbox" aria-label="your vision, in your words">${escHtml(ciDraft.vision || "")}</div>
                <div class="rv-vision-hint">your vision, tap to put it in your own words</div>
                <div class="rv-caps-line" id="rvCapsLine"></div>`
             + `<div id="rvCrossTension"></div>
@@ -35180,7 +35495,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                <div id="rvCoverage"></div>
                <div id="rvFocus"></div>
                <div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">\u2190 Back</button>
-                 <button class="btn-solid" onclick="window.__ciNext()">next \u2014 draft the quarters \u2192</button></div>`;
+                 <button class="btn-solid" onclick="window.__ciNext()">next, draft the quarters \u2192</button></div>`;
           // Which torn-sheet overlay (the ledger / the silences) is open —
           // step-local view state, never written to the draft (items 25/27).
           let covView = null;
@@ -35191,10 +35506,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           let composeAdd = null;
           let pendingAdd = null;
           const visionEl = b.querySelector("#rvVision");
-          visionEl.addEventListener("input", () => { ciDraft.vision = visionEl.textContent.trim(); });
+          visionEl.addEventListener("input", () => { ciDraft.vision = visionEl.textContent.trim(); ciDraft.visionSource = "user"; });
           ciGate = () => {
             if (ciDraft.goals.some(g => !g.dropped)) return true;
-            showToast("keep at least one goal \u2014 or add your own below.");
+            showToast("keep at least one goal, or add your own below.");
             return false;
           };
           const list = b.querySelector("#rvList");
@@ -35219,12 +35534,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               const gapNames = (ciDraft.gaps || []).map(k => (CATS[k] ? CATS[k].label : k));
               list.innerHTML = `
                 <div class="rv-empty">
-                  <div class="rv-empty-title">nothing to suggest yet \u2014 and that's deliberate</div>
+                  <div class="rv-empty-title">nothing to suggest yet, and that's deliberate</div>
                   <p>I only propose goals for parts of your life you actually wrote about. you skipped
                      the questions, so there's genuinely nothing here to go on, and inventing something
                      would just be me guessing at your life.</p>
                   <p>${gapNames.length ? `Still open: ${gapNames.join(", ")}.` : ""}
-                     Go back and answer a few \u2014 even one honest paragraph is enough \u2014 or add a
+                     Go back and answer a few, even one honest paragraph is enough, or add a
                      goal of your own below.</p>
                   <button class="btn-solid" onclick="window.__ciBack()">\u2190 Back to the questions</button>
                 </div>`;
@@ -35276,7 +35591,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 </div>
                 ${g.categoryUnplaced && !g.dropped ? `<div class="ci-review-actions rv-cat-fix">${["health","career","finance","relationships","growth","meaning"].map(k =>
                   `<button type="button" class="ci-chip" data-k="${k}">${CATS[k].label}</button>`).join("")}</div>` : ``}
-                <div class="rv-title${g.dropped ? "" : " edit-signal"}" contenteditable="${g.dropped ? "false" : "true"}">${escHtml(stripDot(g.title))}</div>
+                <div class="rv-title${g.dropped ? "" : " edit-signal"}" contenteditable="${g.dropped ? "false" : "true"}"${g.dropped ? "" : ` role="textbox" aria-label="the goal's title, in your words"`}>${escHtml(stripDot(g.title))}</div>
                 ${(g.orphanedWhens || []).length ? `<div class="rv-orphan-when">${g.orphanedWhens.map(o =>
                   `Your ${escHtml(o.when)} slot had nothing to attach to, set it again on the new week if you want it.`).join("<br>")}</div>` : ``}
                 ${g.dropped
@@ -35312,7 +35627,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                       <button class="ci-chip rv-why-should${g.whyCheck && g.whyCheck.verdict === "should" ? " on" : ""}">more of a “should”</button>
                     </div>
                     ${g.whyCheck && g.whyCheck.verdict === "should" ? `
-                      <input class="rv-why-note" placeholder="Whose voice is that? One line, or leave it."
+                      <input class="rv-why-note" placeholder="Whose voice is that? One line, or leave it." aria-label="whose voice is that?"
                              value="${escHtml(g.whyCheck.note || "")}" />
                       <div class="rv-why-line">a “should” can stay on the board, now it stays chosen, not defaulted.</div>` : ``}
                   </div>
@@ -35332,13 +35647,13 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                           <div class="rv-q">
                             <div class="rv-q-text">${escHtml(q.ask)}</div>
                             <div class="rv-q-why">${escHtml(q.why || "")}</div>
-                            <input class="rv-readiness-in" data-qi="${qi}" value="${escHtml((g.readinessAnswers || {})[qi] || "")}" />
+                            <input class="rv-readiness-in" data-qi="${qi}" aria-label="${escHtml(q.ask || "your answer")}" value="${escHtml((g.readinessAnswers || {})[qi] || "")}" />
                           </div>`).join("")}` : ``}
                       <div class="rv-ask-title">a quick reality check</div>
                       ${GROUNDING_QUESTIONS.map(rc => `
                         <div class="rv-q">
                           <div class="rv-q-text">${rc.q}</div>
-                          <input class="rv-reality-in" data-k="${rc.key}" placeholder="${rc.ph}"
+                          <input class="rv-reality-in" data-k="${rc.key}" placeholder="${rc.ph}" aria-label="${escHtml(rc.q || rc.ph || "")}"
                                  value="${escHtml((g.realityCheck || {})[rc.key] || "")}" />
                         </div>`).join("")}
                     </div>
@@ -35745,7 +36060,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             if (live.length < 2) { mount.innerHTML = ""; if (live.length === 1) ciFocusKey = live[0].draftId; return; }
             mount.innerHTML = `
               <div class="rv-focus">
-                <div class="rv-focus-q">if the week collapses to one thing \u2014 which thing?</div>
+                <div class="rv-focus-q">if the week collapses to one thing, which thing?</div>
                 <p class="rv-focus-sub">just a pointer for your best hours, not a status: everything active
                    stays active and still gets its check-in. you can change this any week.</p>
                 <div class="rv-focus-opts">
@@ -35898,8 +36213,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                       <div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
                         <span class="qr-when">${escHtml(whenLabel(o.when))}</span>
                         ${g._ownEditing
-                          ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…">`
-                          : `<span class="qr-label" contenteditable="plaintext-only" data-gid="${g.draftId}">${escHtml(appVoice(o.label, wroteIt(o)))}</span>`}
+                          ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…" aria-label="your step, in your words">`
+                          : `<span class="qr-label" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="this quarter's step, in your words">${escHtml(appVoice(o.label, wroteIt(o)))}</span>`}
                         ${o.evidence ? `<span class="qr-tag qr-tag-rc">reality check</span>` : o.source === "user" ? `<span class="qr-tag qr-tag-rc">your step</span>` : ``}</div>
                       ${laterFulls.map(x => `<div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
                         <span class="qr-when">${escHtml(whenLabel(x.when))}</span>
@@ -35917,7 +36232,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                       ${evidenceOf(g) ? `` : `<div class="rv-rc-missing">no reality check in this plan yet, add one: a step where the world gets to respond.</div>`}
                       <div class="qv-block">
                         <div class="qv-block-label">if it goes wrong</div>
-                        <div class="qv-if" contenteditable="plaintext-only" data-gid="${g.draftId}">${escHtml(ifThenText(o))}</div>
+                        <div class="qv-if" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="if it goes wrong, then what">${escHtml(ifThenText(o))}</div>
                         <div class="qv-if-hint">naming this now roughly doubles the odds you follow through.</div>
                       </div>
                       ${o.source === "user" || g._ownEditing ? `` : `<div class="qv-block">
@@ -35930,7 +36245,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                       </div>` : ``}
                     </div>` : `<div class="rv-objs"><em>no objective landed for this quarter, write your own below.</em></div>
                       ${g._ownEditing
-                        ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…">`
+                        ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…" aria-label="your step, in your words">`
                         : `<button class="qv-own qv-own-new" data-gid="${g.draftId}">✎ write this quarter's step</button>`}`}
                   </div>`; }).join("") + `</div>`
               + (pausedCount ? `<div class="qv-paused-line">${pausedCount} goal${pausedCount === 1 ? "" : "s"} paused, they hold their place and get a quarter the day they wake.</div>` : ``)
@@ -36258,7 +36573,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 if (!g) return;
                 const rowEl = btn.closest(".hv-addown-row");
                 rowEl.innerHTML = `<div data-type-area="roadmap/add-quarter" class="rm-addq-row hv-own-compose">
-                    <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?">
+                    <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?" aria-label="what is it?">
                     <button class="ci-chip" type="button" data-own-add>add it</button>
                     <button class="wk-quiet" type="button" data-own-cancel>never mind</button>
                   </div>`;
@@ -36376,7 +36691,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                  "everyone else's", "nobody else wants to"],
       statedMarkers: ["i've been saying", "since i was", "used to want", "never did",
                       "actually have people hear", "i need to have", "i'd regret"],
-      question: "You've named the thing you keep meaning to do, and the reason it keeps not happening is that other people need you \u2014 and you're very good at being needed. Is that a trade you're choosing, or one that's just happening?",
+      question: "You've named the thing you keep meaning to do, and the reason it keeps not happening is that other people need you, and you're very good at being needed. Is that a trade you're choosing, or one that's just happening?",
     },
     {
       kind: "protection",
@@ -37896,8 +38211,43 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // Pure: what a retest keeps. Hand-added and hand-edited goals
   // (provenance "user") ride through untouched — plan, status, parked
   // flag and all — renumbered after the fresh set, focus remapped.
+  // THE RE-RUN KEEPS THE PERSON'S WORD (2026-09-07, DEFINITIONS: re-running
+  // the discovery). Three kinds of goal are the person's, not the coach's,
+  // and a fresh generation may not replace them: one they wrote, one they
+  // renamed (a renamed proposal is a proposal no longer; renameGoal marks
+  // the title, not the provenance, so the title's mark is read here), and
+  // one they paused (a paused goal holds its place, by definition). Until
+  // tonight only the first survived, so a goal renamed on the board came
+  // back under the coach's old name, or not at all.
+  function retestKeeps(g) {
+    return !!g && (g.provenance === "user" || g.titleSource === "user" || g.status === "parked");
+  }
+  function retestKeepList(list) {
+    const all = (list || goals || []).filter(Boolean);
+    return { kept: all.filter(retestKeeps), replaced: all.filter(g => !retestKeeps(g)) };
+  }
+  // Said on the Facts page before the run, in the page's own words, so what
+  // will be replaced is never a surprise.
+  function retestNote() {
+    if (!goals.length) return "";
+    const { kept, replaced } = retestKeepList(goals);
+    const names = list => list.map(g => "\u201c" + escHtml(wordTrunc(g.title, 42)) + "\u201d").join(", ");
+    const keeps = kept.length ? `keeps ${names(kept)}, since they are yours: written, renamed or paused.`
+      : `keeps nothing yet: nothing here was written, renamed or paused by you.`;
+    const swaps = replaced.length ? `replaces ${names(replaced)}.` : `replaces nothing: every goal here is yours.`;
+    return ` ${keeps} ${swaps}`;
+  }
+  // The vision is the person's words, and a re-run does not rewrite them:
+  // the first discovery sets it, and after that only the person does, in the
+  // review step (the coach's fresh draft of it is shown there, and taken only
+  // if the person touches it) or on the board.
+  function retestVision(current, out, isRetest) {
+    const fresh = (out && out.vision) || "";
+    if (!isRetest || !(current || "").trim()) return fresh;
+    return out && out.visionSource === "user" && fresh.trim() ? fresh : current;
+  }
   function retestMerge(existingGoals, aiGoals, focusId) {
-    const kept = (existingGoals || []).filter(g => g && g.provenance === "user");
+    const kept = (existingGoals || []).filter(retestKeeps);
     const merged = aiGoals.slice();
     let focus = null;
     kept.forEach(g => {
@@ -37928,7 +38278,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       goals = merged.goals;
       if (merged.focusGoalId != null) focusGoalId = merged.focusGoalId;
       nextId = goals.length + 1;
-      visionQuote = out.vision;
+      visionQuote = retestVision(visionQuote, out, ciRetest);
       generatedGaps = out.gaps || [];
       // The weekly focus pointer moves from the draft's id to the saved goal's.
       const focused = goals.find(g => g.draftId && g.draftId === ciFocusKey);
@@ -38186,7 +38536,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     journalBookGet: () => journalBook, journalDirtyGet: () => journalDirty,
     journalOpen: () => journalOpenNow,
     // 169 seams: the pure math and a debug handle the harness drives.
+    // The gate's water, so a test can hand it a gate with no width (test 207).
+    mgWater,
     roamRng, roamTarget, roamActPlan, companionRecallHome, companionRoamStart, companionRoamStop, companionWanderTo,
+    companionOffToTheSand, arrivalNote, syncAppIcon, companionIconSvg, appIconState: () => appIcon,
     roamDebug: {
       state: () => roam.state, napping: roamNapping, napTwitch: roamNapTwitch,
       warmSpot: () => roam.warmSpot, held: () => roam.held,
@@ -38236,7 +38589,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     quarterReviewOpen, quarterEndDate, nextQuarterLabel, openQuarterReview, quarterSeq,
     applyQuarterStepDiff, quarterMidpointDate, markerWindow, markerLineFor,
     applyModelFlags, tensionId, setObjectiveLabel, goalKey, allocateMechanisms,
-    retestMerge,
+    retestMerge, retestKeeps, retestKeepList, retestVision, retestNote,
     commitDraft, bumpRenderSeq: () => ++ciRenderSeq, draftGet: () => ciDraft,
     closeQuarter, beginNextQuarter, qrStateGet: () => qrState,
     quartersGet: () => quarters, applyContact,
@@ -38259,14 +38612,14 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // worry sitting in the corner of an empty board. It comes back on its own
     // the moment a Supabase project exists, where it becomes a real action.
     accountLabel = (!sb && !session) ? null
-      : session ? session.user.email : "Sign in to sync";
+      : session ? session.user.email : "sign in to sync";
     const pill = document.getElementById("accountPill");
     if (!pill) return;
     if (!accountLabel) { pill.style.display = "none"; return; }
     pill.style.display = "";
     pill.innerHTML = session
       ? `<span class="account-dot"></span>${session.user.email}`
-      : `<span class="account-dot off"></span>Sign in to sync`;
+      : `<span class="account-dot off"></span>sign in to sync`;
   }
 
   // required: the front-door form. No close, no Esc (the keydown map skips a
@@ -38289,12 +38642,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     if (closeBtn) closeBtn.style.display = walled ? "none" : "";
     authOverlay.dataset.required = walled ? "1" : "";
     if (!sb) {
-      status.textContent = "Your goals aren't being saved \u2014 they'll be gone on refresh. "
+      status.textContent = "your goals aren't being saved. they'll be gone on refresh. "
         + "Saving across your phone and laptop needs a Supabase project; add its URL and anon key to "
         + "BACKEND at the top of the script. The analysis itself works without it, via ./run-local.py.";
       emailField.style.display = "none"; sendBtn.style.display = "none"; outBtn.style.display = "none";
     } else if (session) {
-      status.textContent = `Signed in as ${session.user.email}. Your goals sync across your devices.`;
+      status.textContent = `signed in as ${session.user.email}. your goals sync across your devices.`;
       emailField.style.display = "none"; sendBtn.style.display = "none"; outBtn.style.display = "";
     } else {
       status.textContent = walled
@@ -38423,7 +38776,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
         ${store !== localStore && typeof store.snapshots === "function" ? ch("your board, day by day", `
           <div id="fqDays"><span class="fq-sub">looking for the days your account kept…</span></div>`) : ``}
         ${ch("begin again", `
-          ${canRetest ? row("retest", "run the discovery again", "your answers come back prefilled, change any, get fresh goals.") : ``}
+          ${canRetest ? row("retest", "run the discovery again", "your answers come back prefilled, change any, get fresh goals." + retestNote()) : ``}
           ${row("fresh", "start over blank", "the full discovery from an empty page.")}`, "fq-quiet")}
         <!-- THE FINE PRINT — reserved for the 207 round: privacy · export · delete · support -->
         <div class="fq-plate" id="fqPlate" tabindex="0" role="button"
@@ -38697,7 +39050,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       <div class="comp-set-six" id="compSetSix"></div>
       <div class="comp-set-row"><label for="compSetName">give it a name, or don't</label>
         <input class="comp-set-name" id="compSetName" type="text" maxlength="24"
-          placeholder="write a name" value="${escHtml(c.name || "")}"></div>
+          placeholder="write a name" aria-label="your companion's name" value="${escHtml(c.name || "")}"></div>
       <div class="comp-set-row"><label>voice</label>
         <div class="ci-review-actions" id="compSetVoice">
           ${VOICE_LABELS.map(([v, l]) => `<button class="ci-chip${c.voice === v ? " on" : ""}" data-v="${v}">${l}</button>`).join("")}
@@ -39170,7 +39523,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // reload mid-onboarding costs nothing.
     if (restoreDraft()) {
       const n = Object.values(ciJournal).filter(v => v && v.trim()).length;
-      if (n) showToast(`Picked up where you left off \u2014 ${n} answer${n === 1 ? "" : "s"} restored.`);
+      if (n) showToast(`picked up where you left off, ${n} answer${n === 1 ? "" : "s"} restored.`);
     }
     maybeWelcome();
     if (JUMP === "dig") openRetest("dig");

@@ -1,7 +1,7 @@
 {
-  "name": "life vision",
-  "short_name": "life vision",
-  "description": "a life of creativity, laid out as a painted board",
+  "name": "companion",
+  "short_name": "companion",
+  "description": "your life on a painted board, and a companion who is glad you came",
   "start_url": "../life-vision-board.html",
   "scope": "../",
   "display": "standalone",
