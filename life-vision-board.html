@@ -36232,12 +36232,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           const roadLine = `<div class="qr-line" aria-hidden="true"><svg viewBox="0 0 10 100" preserveAspectRatio="none">
             <path filter="url(#bleed)" d="M5 1 C 4.3 20, 5.7 38, 4.8 55 S 5.4 88, 5 99"
               stroke="#b9ae8c" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></div>`;
-          const endMark = g => {
-            if (g.kind === "floor") return "keeping the door open";
-            if (g.hardDate) return `→ ${fmtDate(g.hardDate)}`;
-            const yrs = g.horizon && g.horizon.realisticYears;
-            return yrs ? `→ ${yrs} year${yrs === 1 ? "" : "s"}` : ``;
-          };
+          // Hoisted to roadEndMark: it reads the years the person chose, the
+          // estimate only when they chose nothing, the same as the card.
+          const endMark = roadEndMark;
           function paintB() {
             const shown = kept.filter(g => g.status !== "parked");
             const pausedCount = kept.length - shown.length;
@@ -37443,18 +37440,49 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   };
   const isoDateInWeeks = w => new Date(Date.now() + w * 7 * 86400000).toISOString().slice(0, 10);
 
-  // How deep the plan sketches, from the goal's own horizon: a weeks-scale
+  // How deep the plan sketches, from the years the goal HAS: a weeks-scale
   // goal is planned across every quarter its deadline spans; a year or less
-  // gets two quarters; longer gets three.
+  // gets two quarters; longer gets three. The years are horizonYearsOf's one
+  // reading, the person's target when they set one and the estimate when
+  // not. This used to read the estimate alone, so a two-year choice against
+  // a four-year estimate planned, and paced, as four (owner, 2026-09-08:
+  // "it still drafts my goals in 4 years instead of the accelerated 2").
   function quartersToPlanFor(goal) {
     const h = (goal && goal.horizon) || {};
     if (typeof h.weeks === "number" && h.weeks > 0) {
       return Math.max(1, Math.ceil(h.weeks / QUARTER_WEEKS));
     }
-    if (typeof h.realisticYears === "number" && h.realisticYears > 0) {
-      return h.realisticYears <= 1 ? 2 : 3;
-    }
+    const yrs = horizonYearsOf(goal);
+    if (yrs) return yrs <= 1 ? 2 : 3;
     return 2;
+  }
+
+  // What the planner is told about the goal's length, as one labelled
+  // section (HORIZON) beside the GOAL block: the years to land it, whose
+  // number that is, and the estimate for contrast. The GOAL block already
+  // carried both `target` and `horizon.realisticYears`, and with nothing
+  // saying which decides, the model paced the quarters to the estimate.
+  // DEFINITIONS, TIMELINE: the estimate informs, the target decides. Null
+  // when the goal has no length at all.
+  function planHorizonOf(goal) {
+    const yrs = horizonYearsOf(goal);
+    if (!yrs) return null;
+    const h = (goal && goal.horizon) || {};
+    const est = typeof h.realisticYears === "number" && h.realisticYears > 0 ? h.realisticYears : null;
+    const chosen = goal.target != null && goal.target !== "" && Number(goal.target) > 0;
+    return { years: yrs, chosenByThem: chosen, estimateYears: est };
+  }
+
+  // The road's last line under a goal: the door held open, the dated wall,
+  // or the years it has, in the same words as the card above it. It read
+  // the estimate alone, so a card saying "full arc ≈ 2 years" sat over a
+  // road ending "→ 4 years" (owner's screenshots, 2026-09-08). Hoisted so
+  // the harness can read it (17d).
+  function roadEndMark(g) {
+    if (g.kind === "floor") return "keeping the door open";
+    if (g.hardDate) return `→ ${fmtDate(g.hardDate)}`;
+    const yrs = horizonYearsOf(g);
+    return yrs ? `→ ${yearsLabel(yrs)}` : ``;
   }
 
   // A weeks-scale goal IS a deadline: the date every week counts toward.
@@ -37604,6 +37632,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // riding only inside intake never reaches the model there.
     const base = { intake, goal, quartersToPlan: qn, capacity: intake.capacity || captureCapacity() };
     const shortQ = (base.capacity.weeksLeftInQuarter || 99) < SHORT_QUARTER_WEEKS;
+    // The years it has, and whose number that is, as its own section: the
+    // planner paces to HORIZON.years (the target when set), never the
+    // estimate. See planHorizonOf.
+    const pace = planHorizonOf(goal);
+    if (pace) base.horizon = pace;
     if (deadline) base.deadline = deadline;
     if (goal.hardDate && !deadline) base.hardDate = goal.hardDate;
     if (ctx && ctx.vision) base.vision = ctx.vision;
@@ -38568,7 +38601,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // Wave 3 seams: the atlas — the pure selector, the stored handle, the page.
     quartersAcrossGoals, goalHandle, openAtlas, closeAtlas, renderAtlas,
     buildAtlasWater, horizonOutLabel,
-    horizonYearsOf, quarterSeqAround, atlasFilterGet: () => atlasFilter,
+    horizonYearsOf, quartersToPlanFor, planHorizonOf, roadEndMark, quarterSeqAround, atlasFilterGet: () => atlasFilter,
     openChapters, closeChapters, renderChapters,
     // Wave 4 seams: the shelf and the wish list.
     mountShelf, shelfZones, shelfLayout, openBooksSheet, replayShelfTour, openFaqPage, addReleaseWish,
