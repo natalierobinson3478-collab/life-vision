@@ -32434,6 +32434,10 @@
     if (err && err.name === "AbortError")
       return Object.assign(new Error("timed_out"), { retryable: false,
         detail: `no answer after ${Math.round(BACKEND.timeoutMs / 60000)} minutes` + (tale ? ", " + tale : "") });
+    // cut_off already carries the whole timeline as its own detail
+    // (streamDropVerdict built it from this same story); appending the
+    // story again here repeated it verbatim on the card.
+    if (err && err.message === "cut_off") return err;
     if (err && typeof err === "object" && tale) err.detail = err.detail ? `${err.detail}, ${tale}` : tale;
     return err;
   }
