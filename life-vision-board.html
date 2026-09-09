@@ -441,14 +441,21 @@
      window isn't focused; the first keystroke hides the ghost and hands the
      line to the native caret, back in green. The ghost rides the ghost text,
      so the caret needs no knowledge of the text's width or alignment. */
-  .pm-ghost { position: absolute; left: 0; right: 0; top: auto; bottom: calc(var(--rule) * -0.06);
-    pointer-events: none; font-family: var(--voice-hand);
-    font-size: max(var(--t-label), calc(var(--rule) * 0.56)); line-height: 1;
-    color: rgba(var(--accent), 0.5); white-space: nowrap; }
+  .pm-ghost { position: absolute; left: 0; right: 0; top: 0; bottom: auto;
+    pointer-events: none; font-family: var(--voice-hand); font-weight: 500;
+    font-size: max(var(--t-label), calc(var(--rule) * 1.0)); line-height: var(--lead);
+    color: rgba(var(--accent), 0.55); white-space: nowrap; }
   /* Item 9: ghost and typed name share the same alignment AND the same
      baseline — the hint sits ON the dashed line exactly where the ink will
-     land, so the first keystroke swaps text without a jump. */
-  .wf-one .pm-ghost { text-align: left; bottom: calc(var(--rule) * -0.3); }
+     land, so the first keystroke swaps text without a jump.
+     BY CONSTRUCTION, NOT BY OFFSET (2026-09-08, owner's phone: the hint sat
+     struck through by its own line). The ghost used to be a smaller face
+     hung from the line's foot by a tuned fraction of --rule, and the
+     phone's --t-label floor broke the fraction: a 14px hint under a 20px
+     name, two baselines. It now wears the name's own size, lead and drop,
+     laid over the input from its top edge, so wherever the ink lands the
+     hint was already sitting. */
+  .wf-one .pm-ghost { text-align: left; transform: translateY(calc(var(--rule) * 0.395)); }
   /* The skip sits under the line now, centred with it (item 9). */
   .wf-one .pm-skip { left: 50%; transform: translateX(-50%); bottom: auto;
     top: calc(100% + var(--rule) * 0.24); }
@@ -476,7 +483,7 @@
     margin: calc(var(--lead) * 2.3) auto 0;
     border-bottom: 1px dashed rgba(63,79,49,0.4); }
   #nameOverlay .pm-write { text-align: center; transform: translateY(calc(var(--rule) * 0.395)); }
-  #nameOverlay .pm-ghost { text-align: center; bottom: calc(var(--rule) * -0.3); }
+  #nameOverlay .pm-ghost { text-align: center; transform: translateY(calc(var(--rule) * 0.395)); }
   #nameOverlay .pm-actions { justify-content: center; margin-top: var(--lead); }
   /* Top to bottom, the way a form is filled: the question on its line, the
      answer line directly under it, the flower under the answer, rooted in the
@@ -2193,7 +2200,12 @@
   @keyframes ciDemoDrag { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(0, -30px); } }
   @keyframes ciDemoFade { 0%, 82% { opacity: 1; } 100% { opacity: 0; } }
   .ci-wheel-hint { font-family: var(--voice-hand); font-style: italic;
-    font-size: var(--t-label); color: var(--ink-muted); margin: 2px auto 10px; max-width: 480px; }
+    font-size: var(--t-label); color: var(--ink-muted); margin: 2px auto 10px; max-width: 480px;
+    transition: opacity 0.4s ease, visibility 0.4s; }
+  /* Read once, the line fades but KEEPS ITS SPACE (2026-09-08): removed at
+     the first press, it shortened the page by a line under the finger that
+     had just landed on a dot, and the wheel slid half a line beneath it. */
+  .ci-wheel-hint.read { visibility: hidden; opacity: 0; }
   #ciShape { fill: rgba(var(--accent), 0.16); stroke: rgb(var(--accent)); stroke-width: 1.5; stroke-linejoin: round; }
   .ci-vertex-dot { stroke: var(--paper); stroke-width: 1.6; pointer-events: none; }
   /* The three areas the person's own picks landed in, marked on the shape. */
@@ -2233,7 +2245,16 @@
     font-size: var(--t-read); font-weight: 600; min-width: 2ch; text-align: right; }
   /* The quote is the person's own words: quote size, with a line of air above. */
   .ci-dial .ci-why { text-align: left; font-size: var(--t-label); margin-top: var(--lead); }
-  .ci-dial .ci-driver { margin: 12px auto 0 0; max-width: none; }
+  /* THE FOLLOW-UP KEEPS ITS BOX (2026-09-08, owner: "when i drag the page
+     jumps up and down"). Shown with display, the question and its chips put
+     a hundred pixels into the scrap each time the dot crossed 5 and took them
+     out again on the way back. A centred page re-centres on every change of
+     height, so the radar slid under the held pointer, the pointer then read
+     as a new value, and on the lower axes the two chased each other. The
+     space is the scrap's now at every value; only the words fade in and out. */
+  .ci-dial .ci-driver { margin: 12px auto 0 0; max-width: none; display: block; animation: none;
+    visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s; }
+  .ci-dial .ci-driver.asked { visibility: visible; opacity: 1; }
   /* ---- raw materials: one sheet, written down the page ----
      The four questions are lines on the paper with their chips beneath, and
      the location is a ruled handwriting line borrowed from the welcome (hence
@@ -2253,7 +2274,7 @@
      lines and its text sits on them: line-height is the sheet's lead and the
      first baseline lands on the first rule. Three lines to start (item 20),
      growing with the writing like every sheet. */
-  .ci-raw-note .ci-raw-textarea, .ci-raw-textarea { min-height: calc(var(--lead) * 3);
+  .ci-raw-note .ci-raw-textarea, .ci-raw-textarea { --rule: inherit; min-height: calc(var(--lead) * 3);
     padding: 0 30px 0 0; background-image: none; line-height: var(--lead); font-size: var(--t-read); }
   /* Keep the note's opening question on the rhythm so the textarea below it
      starts on a rule: the ask row spans exactly one lead. */
@@ -2265,7 +2286,10 @@
   .ci-cap-line { font-family: var(--voice-hand); font-size: var(--t-read);
     color: var(--ink); margin: 8px 0 0; line-height: var(--lead); }
   .ci-cap-hours { width: 3ch; border: none; background: none; font: inherit; color: inherit;
-    border-bottom: 1px dashed rgba(74,52,35,0.5); text-align: center; padding: 0; }
+    border-bottom: 1px dashed rgba(74,52,35,0.5); text-align: center; padding: 0;
+    /* The sentence's lead made the box a line and a half tall, so the dashed
+       line sat a finger's width under the number. The number's own line. */
+    line-height: 1.15; }
   .ci-cap-hours:focus { outline: none; border-bottom-color: rgb(var(--accent)); }
   .ci-cap-hours::-webkit-outer-spin-button, .ci-cap-hours::-webkit-inner-spin-button {
     -webkit-appearance: none; margin: 0; }
@@ -2289,7 +2313,7 @@
   .ci-obs-take:hover { color: var(--ink); }
   .ci-obs-take:focus-visible { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
   .ci-cap-observed:empty { display: none; }
-  @media (max-width: 640px) { .ci-raw-sheet { padding: calc(var(--lead) * 1.4) 20px calc(var(--lead) * 1.2) 28px;
+  @media (max-width: 640px) { .ci-raw-sheet { padding: calc(var(--lead) * 1.4) 20px calc(var(--lead) * 1.2) calc(var(--rule) * 1.714 + 12px);
     --rule-top: calc(var(--lead) * 1.4); } }
   /* The summary reads as another page from the same notebook, not a panel
      bolted under the radar. Same width as the open-area scrap. */
@@ -3776,7 +3800,15 @@
      tone the bark cards taught. */
   .ci-bubble.surf-torn, .ci-bubble.surf-torn:hover, .ci-bubble.surf-torn.on, .ci-bubble.surf-torn.on:hover {
     background: none; border: none; box-shadow: none; border-radius: 0; padding: 0; }
-  .ci-bubble.surf-torn .surf-sheet { padding: 20px 20px 16px; display: flex; flex-direction: column; gap: 4px; }
+  /* ON THE LINES, RIGHT OF THE MARGIN (2026-09-08, owner's phone). The
+     card's rows ran at three leadings of their own over a ruled sheet, and
+     the writing began ON the margin line, so first letters were crossed.
+     Every row takes the sheet's lead and the text starts inside the margin
+     the way a notebook is written in. */
+  .ci-bubble.surf-torn .surf-sheet { padding: 24px 20px 18px calc(var(--rule) * 1.714 + 12px);
+    display: flex; flex-direction: column; gap: 0; }
+  .ci-bubble.surf-torn .surf-sheet > * { line-height: var(--lead); margin: 0; }
+  .ci-bubble.surf-torn .ci-bubble-quote-toggle { padding: 0; margin-top: auto; }
   .ci-bubble.surf-torn.on .surf-sheet { box-shadow: inset 0 0 0 1.5px rgba(42,38,25,1); }
   .ci-bubble.surf-torn.on .surf-sheet.torn-sheet::before { background-color: rgba(233,212,170,0.88); }
   .ci-bubbles .ci-bubble.surf-torn:not(.on) { opacity: 0.92; }
@@ -3978,6 +4010,15 @@
   .ci-journal-input {
     position: relative; width: 100%; min-height: 224px; border: none; resize: none;
     max-height: none; overflow: hidden; background-color: transparent;
+    /* THE RULING IS THE LEAD (2026-09-08, owner's phone: the second line of
+       the entry sat struck through). The lines were drawn at a fixed 26px,
+       then 32px on the entry page, while the text took line-height
+       var(--lead), and nothing on this page had ever set --lead, so the
+       writing ran at the browser's own leading, about 22px, and crossed a
+       rule every third line. One --rule per sheet, the lead derived from it
+       the way every ruled sheet in the app does it, and the ruling reads
+       that same lead: the two cannot drift again. */
+    --rule: 18px; --lead: calc(var(--rule) * 1.5);
     font-family: var(--voice-hand); font-size: var(--t-read); color: var(--ink);
     line-height: var(--lead); padding: 6px 20px 6px 24px;
     /* NO MARGIN RULE. It was rgba(var(--margin-ink),0.49) — hue 4 degrees,
@@ -3986,9 +4027,11 @@
        the journal's round. The 56px left padding went with it: with no line
        to clear, it was a margin to nothing. */
     background-image:
-      repeating-linear-gradient(to bottom, transparent, transparent 25px, rgba(var(--rule-ink),0.30) 25px, rgba(var(--rule-ink),0.30) 26px);
-    background-size: 100% 26px;
-    background-position: 0 2px;
+      repeating-linear-gradient(to bottom, transparent, transparent calc(var(--lead) - 1px), rgba(var(--rule-ink),0.30) calc(var(--lead) - 1px), rgba(var(--rule-ink),0.30) var(--lead));
+    background-size: 100% var(--lead);
+    /* Slid down by the top padding, so the first line box bottoms out on
+       the first rule and every line after it sits on the next. */
+    background-position: 0 6px;
     background-repeat: repeat-y;
   }
   .ci-journal-input:focus { outline: none; }
@@ -4023,7 +4066,7 @@
   .ci-dig-skip:hover { color: var(--ink); }
   .ci-dig-skip:focus-visible { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
   /* Three ruled lines to start, then it grows with the answer. */
-  .ci-dig-page .ci-journal-input { min-height: 90px; }
+  .ci-dig-page .ci-journal-input { min-height: calc(var(--lead) * 3 + 12px); }
   /* The opening entry is the page, not a note card: a full sheet that takes
      the fold, capped at a readable line length. */
   /* The quiet checklist under the page: four territories, each dot filling
@@ -4116,14 +4159,14 @@
     /* Starts as a ~10-line page and grows with the writing (wireJournalPages
        sets the height from scrollHeight on input); the ruled background
        extends with it. min-height keeps it reading as a page when empty. */
-    min-height: 336px; height: auto; overflow-y: hidden;
+    /* Page one runs a step airier: a 20px rule, so the lead is 30px, and
+       the ruling follows it from the base rule above. Ten lines to start. */
+    --rule: 20px;
+    min-height: calc(var(--lead) * 10 + 16px); height: auto; overflow-y: hidden;
     font-size: var(--t-read); line-height: var(--lead); padding: 8px 26px 8px 28px;
     /* No margin rule here either — the entry page's instance of the same
        red line. See the note on .ci-journal-input above. */
-    background-image:
-      repeating-linear-gradient(to bottom, transparent, transparent 31px, rgba(var(--rule-ink),0.30) 31px, rgba(var(--rule-ink),0.30) 32px);
-    background-size: 100% 32px;
-    /* Offset the rules so each 32px line box bottoms out exactly on a rule —
+    /* Offset the rules so each line box bottoms out exactly on a rule —
        the writing sits on the lines instead of floating between them. */
     background-position: 0 8px;
   }
@@ -4878,6 +4921,12 @@
      whole screen, so a short week floated its words to the middle of it.
      The words begin where the page begins, at every length. */
   #thisWeekOverlay > #thisWeekMount { margin-top: 0; }
+  /* THE WHEEL STARTS AT THE TOP TOO (2026-09-08). The step that sets
+     ci-anchor-top changes height under the hand by design: a row unfolds
+     beneath the radar on a tap or a release, and the follow-up comes and
+     goes. Centred, each change moved the radar itself. Anchored, the change
+     runs downward and the radar stays where the eye left it. */
+  #checkinOverlay.ci-anchor-top > #checkinMount { margin-top: 0; }
   /* The board's own chrome would otherwise sit under the overlay's Close
      button — worst on a phone, where they overlap outright. */
   /* A PAGE, not a sheet over the board (item 45): while This-week is open
@@ -6613,6 +6662,14 @@
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.05em;
     color: var(--ink-muted); line-height: var(--lead); }
   .ch-work-name-off { font-style: italic; }
+  /* WHAT HOLDS IT (2026-09-08, owner: the app proposed check-ins with a
+     trainer, "and it actually got me to go to the gym"). A mechanism may
+     name the thing outside the person that keeps it happening; the roadmap
+     says so in one quiet line under the row, in the note voice. A row with
+     no holder draws nothing: the absence is silent, and nothing here flags
+     one (Law 1). */
+  .ch-work-held { margin: 0 0 0 33px; font-family: var(--voice-body); font-size: var(--t-label);
+    letter-spacing: 0.05em; color: var(--ink-muted); line-height: var(--lead); }
   .ch-work-back { background: none; border: none; padding: 0 0 0 2px; cursor: pointer;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.06em;
     color: var(--ink); }
@@ -8440,8 +8497,18 @@
     .ci-dial-sheet { padding: 16px 16px 18px 22px; --rule-top: 16px; }
     /* The primary action rides the bottom of the scroll, always reachable. */
     .ci-nav { position: sticky; bottom: 0; z-index: 10; margin-top: 26px;
-      padding: 12px 2px calc(10px + env(safe-area-inset-bottom));
-      background: linear-gradient(to top, var(--bg) 72%, rgba(237,229,209,0)); }
+      padding: 12px 2px calc(10px + env(safe-area-inset-bottom)); background: none; }
+    /* AND IT IS NOT A BAND (owner's phone, 2026-09-08: the cream box under
+       Continue read as a bar, the one thing the board's chrome has banned
+       since 21 August, and it cut the entry's checklist in half). The words
+       sit on the page. What keeps them legible over the text scrolling
+       under them is a soft cloud of the page's own paper, the width of the
+       screen so it has no side edges, fading to nothing before its top, the
+       way a wet wash sits on a page: never a box with a fade on top. */
+    .ci-nav::before { content: ""; position: absolute; top: -30px; bottom: -10px; left: 50%;
+      width: 100vw; transform: translateX(-50%); z-index: -1; pointer-events: none;
+      background: radial-gradient(ellipse 62% 68% at 50% 72%, var(--bg) 0%, var(--bg) 42%,
+        rgba(237,229,209,0.8) 64%, rgba(237,229,209,0.32) 84%, rgba(237,229,209,0) 100%); }
     /* The torn page fills the phone, small margin; the writing keeps its
        size — only the side padding narrows. */
     .ci-entry-page .ci-journal-input { padding-left: 18px; padding-right: 14px; }
@@ -8455,7 +8522,25 @@
   }
   /* The welcome sheet fills a phone with a small margin — one knob, so the
      note, the ruling, the name line and the flower all scale together. */
-  @media (max-width: 640px) { .pm-stack { --rule: clamp(19px, 5.5vw, 42px); } }
+  @media (max-width: 640px) {
+    .pm-stack { --rule: clamp(19px, 5.5vw, 42px); }
+    /* THE THOUGHT SITS ABOVE THE SHEET ON A PHONE (2026-09-08, owner's
+       phone: the bubble hung off the left edge of the screen and its trail
+       landed on "what should I call you?"). The FAQ's phone rule for
+       .fq-line carries margin-left: -40%, which these bubbles inherited
+       across the app, and that is what pushed them off the screen. Here the
+       thought joins the FLOW above the sheet (the stack reverses; the markup
+       keeps the sheet first for everything that reads it), so the pair
+       centres as one object and a short phone still shows both. It is drawn
+       a little right of centre with a line of air beneath it, so the
+       bubble's art, which overshoots its box by a quarter each side, stays
+       on the screen and the pips fall into the sheet's top margin, never
+       onto the words. */
+    #welcomeOverlay .pm-stack, #nameOverlay .pm-stack { display: flex; flex-direction: column-reverse; }
+    #welcomeOverlay .pm-quote.fq-line, #nameOverlay .pm-quote.fq-line { position: relative;
+      left: auto; right: auto; top: auto; bottom: auto; width: min(70%, 250px);
+      margin: calc(var(--rule) * 1.6) auto calc(var(--rule) * 2.2) 15%; }
+  }
   /* Board, roadmap, and modals on a phone: tighter gutters, same layout —
      the board grid and roadmap column were already single-file by here. */
   @media (max-width: 640px) {
@@ -10238,6 +10323,19 @@
         is quiet ink, not a bordered capsule. */
   .btn-cancel { border: none; border-radius: 0; padding: 10px 6px; color: var(--ink-muted); }
   .btn-cancel:hover { color: var(--ink); }
+
+  /* 9. NO WOOD (owner, 2026-09-08: "no wood anymore"). The discovery's
+        goal, quarter and habit cards were the last full-bark tier standing;
+        they wear the torn ruled scrap the board's cards wear, at the large
+        card's own measure: a 17px rule, the writing on the lines, and the
+        text starting inside the margin. paperify() dresses them. */
+  .rv-item.surf-torn, .rv-item.surf-torn:hover, .rv-focus.surf-torn {
+    background: none; border: none; box-shadow: none; padding: 0; border-radius: 0; }
+  .surf-lg .surf-sheet { --rule: 17px; --lead: calc(var(--rule) * 1.5); --rule-top: 26px;
+    padding: 26px calc(3.3% + 14px) 22px calc(var(--rule) * 1.714 + 3.3% + 10px);
+    line-height: var(--lead); text-align: left; }
+  .surf-lg .surf-sheet :is(.rv-title, .rv-objs, .rv-desc, .rv-bottom-line,
+    .qr-label, .hw-label, .rv-reason) { line-height: var(--lead); }
 </style>
 </head>
 <body>
@@ -12996,6 +13094,15 @@
   }
   function barkify(root, sel, size) {
     if (root) root.querySelectorAll(sel).forEach(el => wrapSurface(el, "bark", size));
+  }
+  // NO WOOD (owner, 2026-09-08: "no wood anymore"). The discovery's goal,
+  // quarter and habit cards were the last full-bark tier standing after the
+  // board took its wood off on 27 August; they are the torn paper the
+  // board's cards became. surf-lg carries the metrics the bark label had,
+  // so the writing keeps its lines. See DECISIONS, 2026-09-08.
+  function paperify(root, sel) {
+    if (!root) return;
+    root.querySelectorAll(sel).forEach(el => { wrapSurface(el, "torn"); el.classList.add("surf-lg"); });
   }
   // Phase 3 (bark grammar): the bark SLIVER — the goal's signature
   // wherever it's referenced on a paper surface. One drawn shape
@@ -17892,6 +17999,17 @@
           data-abs-wk="${escHtml(a.wk)}" data-abs-offs="${escHtml((a.offs || []).join("|"))}"
           aria-label="bring this back">bring back</button>
       </div>`).join("");
+    // WHAT HOLDS IT (2026-09-08, owner: the app proposed check-ins with a
+    // trainer, "and it actually got me to go to the gym"). A mechanism may
+    // carry `holder`, the thing outside the person that keeps it happening,
+    // named in the plan's own voice: "my trainer", "the auto-transfer",
+    // "Emily". The roadmap says so under the row, quietly, as a note and
+    // never a control. A row with no holder gets nothing at all, the
+    // person's own rows above all: absence is silent (Law 1).
+    const heldLine = m => {
+      const h = String(m.holder == null ? "" : m.holder).trim().replace(/\s+—\s+/g, ", ");
+      return h ? `<div class="ch-work-held" data-held-mech="${escHtml(m.id)}" data-type-area="chapters/work">held by ${escHtml(h)}</div>` : "";
+    };
     const workRows = o => {
       const ms = workFor(o), off = offFor(o);
       const rows = ms.map(m => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
@@ -17905,7 +18023,7 @@
           <button type="button" class="ch-work-drop" data-drop-mech="${escHtml(m.id)}"
             aria-label="stop doing this">remove</button>
         </span>
-      </div>${absLine(m)}`).join("");
+      </div>${heldLine(m)}${absLine(m)}`).join("");
       // OFF YOUR WEEK, AND THE WAY BACK (2026-09-07, owner: a series swiped
       // off by accident, and the undo gone by the time she looked). A
       // removed thing is only marked, never deleted (its ticks stay
@@ -20571,6 +20689,9 @@
     if (!prior) return next;
     const keep = {};
     if (next.weekLabel == null && prior.weekLabel != null) keep.weekLabel = prior.weekLabel;
+    // THE HOLDER STAYS UNLESS A NEW ONE IS NAMED (2026-09-08): a lighter or
+    // heavier version of the same work is still held by the same trainer.
+    if (next.holder == null && prior.holder != null) keep.holder = prior.holder;
     if (prior.whenSource === "user") {
       keep.when = prior.when; keep.whenSource = "user";
       // THE SCHEDULE TRAVELS WITH THE WHEN (2026-09-07): since the picker
@@ -21572,7 +21693,7 @@
     qrState = rec ? JSON.parse(JSON.stringify(rec)) : {
       label, step: "evidence",
       evidence: {}, dials: {}, capacity: { asked: false, hours: null },
-      horizons: {}, paused: {}, objDiffs: null, mechDiffs: null,
+      horizons: {}, paused: {}, objDiffs: null, mechDiffs: null, held: "",
       notes: {}, pre: { objectives: {}, mechanisms: {} },
       firmed: [], begun: false, closedAt: null,
     };
@@ -21648,6 +21769,18 @@
         <input type="range" class="qr-dial ci-hslider" min="-1" max="1" step="0.01" value="${dial(g).cost}"
           data-dial="cost" data-goal="${g.id}" aria-label="cost">
         <span class="qr-dial-end r">lighter</span></div>`).join("");
+    // ONE QUESTION, IN THEIR OWN WORDS (2026-09-08, owner: the app proposed
+    // check-ins with a trainer, and the trainer is what got the owner to the
+    // gym). Which of the quarter's work had something outside them holding
+    // it. Free text, and nothing is counted from it: no list to tick, no
+    // tally. The answer rides to the refit as `held`, and whatever they
+    // describe as pure willpower may be offered a holder for the quarter
+    // ahead, a proposal like every other line.
+    const heldHtml = `
+      <div data-type-area="quarterly/ask" class="qr-ask qr-ask-wide">which of this quarter's weekly work had something outside you holding it?</div>
+      <div data-type-area="quarterly/write" class="qr-write-row"><textarea class="qr-write" id="qrHeld" rows="1"
+        placeholder="a trainer, a friend, a standing transfer, in your own words, or leave it" aria-label="what held it">${escHtml(qrState.held || "")}</textarea>
+        ${SpeechRec ? talkButton("qrheld") : ``}</div>`;
     const curHours = (ciCapacity.statedHours != null ? ciCapacity.statedHours
       : (buildIntake().capacity || {}).statedHours) || 15;
     const pausedHtml = parked.map(g => `
@@ -21719,6 +21852,7 @@
             ${evidenceHtml}`)}
           ${stepAt >= 1 ? `
             ${ch("energy and cost", dialsHtml)}
+            ${ch("what held it", heldHtml)}
             ${ch("capacity", `<div data-type-area="quarterly/ask" class="qr-ask qr-ask-wide">still about
               <input class="qr-cap-input" id="qrHours" value="${qrState.capacity.hours != null ? qrState.capacity.hours : curHours}" aria-label="hours a week"> hours a week,
               or has life changed?</div>`)}
@@ -21824,6 +21958,14 @@
       const talk = mount.querySelector(`.ci-talk[data-talk-for="qrev${t.dataset.evnote}"]`);
       if (talk) attachDictation(talk, t);
     });
+    // The held line: saved as typed, like the evidence notes.
+    const heldBox = mount.querySelector("#qrHeld");
+    if (heldBox) {
+      heldBox.addEventListener("input", () => { qrState.held = heldBox.value; });
+      heldBox.addEventListener("change", qrSaveDraft);
+      const talk = mount.querySelector('.ci-talk[data-talk-for="qrheld"]');
+      if (talk) attachDictation(talk, heldBox);
+    }
     mount.querySelectorAll("[data-dial]").forEach(r => r.addEventListener("change", () => {
       const gid = Number(r.dataset.goal);
       qrState.dials[gid] = qrState.dials[gid] || { energy: 0, cost: 0 };
@@ -21944,6 +22086,8 @@
             evidence: qrState.evidence[g.id] || null,
             dials: qrState.dials[g.id] || null,
             capacityHours: qrState.capacity.hours,
+            // Their own answer to "what held it", verbatim, or nothing.
+            held: (qrState.held || "").trim() || null,
           }, intakeNow);
           (t.proposals || []).forEach(pp => mechDiffs.push(pp));
         } catch (err) {
@@ -21999,7 +22143,7 @@
       intake, goal: { category: goal.category, title: goal.title, description: goal.description },
       objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source })),
       mechanisms: goal.mechanisms,
-      quarter: quarterCtx,   // { quarter, nextStep, pace, evidence, dials, capacityHours }
+      quarter: quarterCtx,   // { quarter, nextStep, pace, evidence, dials, capacityHours, held }
       portrait: portraitFor(),
       budget,
     });
@@ -31565,7 +31709,7 @@
   const ciCapacity = {
     statedHours: null,     // the person's claim, hours/week; null until stated
     statedBy: null,        // "chip" | "user" | "observed" — who set the number
-    observed: null,        // { currentSplit: [{label, hours}]|null, note, weeks?: [...] } — the mirror's read
+    observed: null,        // { currentSplit: [{label, hours, kind}]|null, note, weeks?: [...] } — the mirror's read; kind is "own" or "obligation"
     proposedSplit: null,   // { [goalTitle]: share 0..1 } — generate's proposal
     say: "",               // generate's one plain sentence: claim, current use, proposal
   };
@@ -31609,11 +31753,22 @@
   // weeks that remain and the next quarter plans in full.
   const SHORT_QUARTER_WEEKS = 6;
 
-  // The observed side's single number: the sum of where the entry says the
-  // hours actually go. Null when the mirror saw no usable split.
+  // The observed side's single number: the sum of the hours the entry says
+  // already go to the person's OWN things. The job is not capacity (their
+  // ruling, 2026-09-08): an entry about a forty-hour week at work read as
+  // "about 49 hours" against a question asking what they can give to this,
+  // and one tap made 49 the claim. Only items the mirror tagged "own" count;
+  // an obligation (the job, the commute, care) never does, and an untagged
+  // item (an older prompt, a cached read) is unknown, so it counts for
+  // nothing rather than for the wrong thing. Null when nothing counts.
+  function ownSplitOf(observed) {
+    if (!observed || !Array.isArray(observed.currentSplit)) return [];
+    return observed.currentSplit.filter(x => x && x.kind === "own" && Number(x.hours) > 0);
+  }
   function observedHoursOf(observed) {
-    if (!observed || !Array.isArray(observed.currentSplit) || !observed.currentSplit.length) return null;
-    const sum = observed.currentSplit.reduce((a, x) => a + (Number(x.hours) || 0), 0);
+    const own = ownSplitOf(observed);
+    if (!own.length) return null;
+    const sum = own.reduce((a, x) => a + (Number(x.hours) || 0), 0);
     return sum > 0 ? Math.round(sum * 10) / 10 : null;
   }
 
@@ -32200,15 +32355,19 @@
   // frames become thrown errors marked noFallback: they are the model
   // answering, not the wire breaking. A close with no result frame throws
   // plain, which the caller treats as a dropped stream.
-  async function readStreamFrames(res, hooks) {
+  async function readStreamFrames(res, hooks, note) {
+    // note(what): the reader's own timeline, for the Reason line when the
+    // stream goes wrong (2026-09-08). Optional; the harness passes a collector.
+    const say = typeof note === "function" ? note : () => {};
     const reader = res.body.getReader();
     const dec = new TextDecoder();
-    let buf = "", result = null, idleTimer = null;
+    let buf = "", result = null, idleTimer = null, frames = 0;
     try {
       await new Promise((resolve, reject) => {
         const armIdle = () => {
           clearTimeout(idleTimer);
           idleTimer = setTimeout(() => {
+            say(`silent for 30s after ${frames} frames`);
             try { reader.cancel(); } catch (e) {}
             reject(new Error("stream_idle"));
           }, 30000);
@@ -32226,22 +32385,55 @@
                 const line = buf.slice(0, i); buf = buf.slice(i + 2);
                 if (!line.startsWith("data:")) continue;
                 let f; try { f = JSON.parse(line.slice(5)); } catch (e) { continue; }
+                if (++frames === 1) say("first frame");
                 if (f.t === "delta") { if (hooks && hooks.onText) hooks.onText(f.text || ""); }
                 else if (f.t === "result") result = f;
                 else if (f.t === "error") {
+                  say(`the model side said ${f.error || "stream_error"} after ${frames} frames`);
                   reject(Object.assign(new Error(f.error || "stream_error"),
                     { retryable: !!f.retryable, detail: f.detail, noFallback: true }));
                   return;
                 }
               }
             }
+            say(`the stream closed after ${frames} frames` + (result ? "" : ", no result"));
             resolve();
-          } catch (e) { reject(e); }
+          } catch (e) {
+            say(`the stream broke after ${frames} frames, ` + (e && e.name === "AbortError" ? "time up" : ((e && e.message) || String(e))));
+            reject(e);
+          }
         })();
       });
     } finally { clearTimeout(idleTimer); }
     if (!result) throw new Error("stream_truncated");
     return result.data;
+  }
+  // A DROPPED STREAM IS NAMED, NEVER RE-RUN IN SILENCE (2026-09-08). A stream
+  // that fails inside this window is the wire (a refused connection, a gateway
+  // that answered at once) and is retried plain, as before. One that ran past
+  // it and then closed with no result is the cloud stopping the call at its
+  // own limit, and a second, plain run of the same call walks into the same
+  // wall and takes as long again: the owner watched five minutes pass and was
+  // told "signal is aborted without reason". Past the window the failure is
+  // cut_off, final, with the timeline on the Reason line.
+  const EARLY_DROP_MS = 20000;
+  function streamDropVerdict(err, elapsedMs, story) {
+    if (elapsedMs < EARLY_DROP_MS) return null;
+    return Object.assign(new Error("cut_off"), { retryable: false, noFallback: true,
+      detail: story && story.length ? story.join(", ")
+            : `the stream ended after ${Math.round(elapsedMs / 1000)}s` });
+  }
+  // The timer's abort is the one AbortError this transport can meet, and the
+  // browser's own words for it name nothing. It is timed_out, and the Reason
+  // line says how long and what happened on the way. Every other failure
+  // keeps its name and gains the timeline.
+  function nameTransportFailure(err, story) {
+    const tale = story && story.length ? story.join(", ") : "";
+    if (err && err.name === "AbortError")
+      return Object.assign(new Error("timed_out"), { retryable: false,
+        detail: `no answer after ${Math.round(BACKEND.timeoutMs / 60000)} minutes` + (tale ? ", " + tale : "") });
+    if (err && typeof err === "object" && tale) err.detail = err.detail ? `${err.detail}, ${tale}` : tale;
+    return err;
   }
   // Swapped out by the fixture harness so the model path can be tested without a
   // network. Returns the stage's data, or throws.
@@ -32254,6 +32446,11 @@
       headers["apikey"] = BACKEND.anonKey;
       headers["Authorization"] = "Bearer " + session.access_token;
     }
+    const t0 = Date.now();
+    const since = () => ((Date.now() - t0) / 1000).toFixed(1) + "s";
+    // The timeline, for the Reason line when it goes wrong.
+    const story = [];
+    const note = (what) => story.push(`${what} at ${since()}`);
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), BACKEND.timeoutMs);
     const post = (stream) => fetch(BACKEND.url, {
@@ -32263,10 +32460,12 @@
         payload, stream ? { stream: true } : {})),
       signal: ctrl.signal,
     });
+    // The server answered: whatever it said is final for this call, never a
+    // reason to run the same call again plain. tryModel owns the one retry.
     const settle = async (res) => {
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw Object.assign(new Error(out.error || ("http_" + res.status)),
-        { retryable: !!out.retryable, detail: out.detail });
+        { retryable: !!out.retryable, detail: out.detail, noFallback: true });
       return out.data;
     };
     try {
@@ -32276,22 +32475,33 @@
           const res = await post(true);
           const ctype = res.headers.get("content-type") || "";
           if (res.ok && ctype.includes("text/event-stream") && res.body) {
+            note(`the stream opened ${res.status}`);
             // Every attempt is a fresh stream — a shape-retry must not pour
             // its text into the last attempt's half-built parse.
             if (hooks && hooks.onStart) hooks.onStart();
-            return await readStreamFrames(res, hooks);
+            return await readStreamFrames(res, hooks, note);
           }
+          note(`the stream request answered ${res.status} plain`);
           return await settle(res);   // a server without streaming answered buffered
         } catch (err) {
           if (err && (err.noFallback || err.name === "AbortError")) throw err;
-          // The wire broke mid-stream: reset the partial paint and degrade
-          // to today's buffered behavior, once, transparently.
+          const cut = streamDropVerdict(err, Date.now() - t0, story);
+          if (cut) throw cut;
+          // The wire broke early: reset the partial paint and degrade to the
+          // buffered call, once, transparently.
           if (hooks && hooks.onReset) hooks.onReset();
           console.warn(`[${stage}] stream dropped (${err.message}), retrying buffered`);
-          return await settle(await post(false));
+          note(`${(err && err.message) || err}, retried plain`);
+          const res = await post(false);
+          note(`the plain request answered ${res.status}`);
+          return await settle(res);
         }
       }
-      return await settle(await post(false));
+      const res = await post(false);
+      note(`answered ${res.status}`);
+      return await settle(res);
+    } catch (err) {
+      throw nameTransportFailure(err, story);
     } finally {
       clearTimeout(timer);
     }
@@ -32807,10 +33017,12 @@
   // carries display_name as null). Either exit is remembered, so the page
   // doesn't nag on every reload.
   const WELCOMED_KEY = "lifevision.welcomed.v1";
-  function maybeWelcome() {
+  // `force` is the dev door (?jump=welcome): the sheet on demand over the
+  // sample board, so it can be looked at without a fresh device.
+  function maybeWelcome(force) {
     let welcomed = false;
     try { welcomed = !!localStorage.getItem(WELCOMED_KEY); } catch (e) {}
-    if (userName || hasOnboarded || DEMO || welcomed) return;
+    if (!force && (userName || hasOnboarded || DEMO || welcomed)) return;
     const overlay = document.getElementById("welcomeOverlay");
     const input = document.getElementById("welcomeName");
     // Start over walks this road again in one session; the listeners are
@@ -34246,6 +34458,17 @@
           + "Nothing you have written is lost, it is saved on this device.",
       retry: true, signIn: true,
     };
+    // A cut stream and the timer's abort (2026-09-08): both used to read as
+    // "couldn't reach the analysis" with the browser's own words after
+    // Reason:. The line below carries the transport's timeline instead.
+    if (reason === "cut_off" || reason === "timed_out") return {
+      title: reason === "cut_off" ? "the read was cut short" : "the read took too long",
+      body: "the model was partway through reading when the connection to it ended, so there is "
+          + "nothing to show. everything you have written is saved on this device, so this is safe "
+          + "to retry. if it stops again, the line below says where it stopped.",
+      retry: true,
+      detail: "Reason: " + escHtml(reason) + (err && err.detail ? ", " + escHtml(err.detail) : ""),
+    };
     return {
       title: "couldn’t reach the analysis",
       body: "the model call didn’t go through, so there is nothing to show. everything you have "
@@ -34413,6 +34636,9 @@
     ciGate = null;
     const step = ciSteps[ciStepIdx];
     checkinOverlay.classList.toggle("ci-journal-mode", !!step.journalMode);
+    // A step whose page changes height under the hand asks to start at the
+    // top, so the change runs downward and nothing above it moves.
+    checkinOverlay.classList.toggle("ci-anchor-top", !!step.anchorTop);
     checkinMount.innerHTML = `
       <div class="ci-progress">${drawnProgress(ciStepIdx / (ciSteps.length - 1))}</div>
       <div class="ci-wrap" id="ciStepBody"></div>`;
@@ -34659,7 +34885,9 @@
       rowRefs.num.textContent = v;
       if (rowRefs.driverBox) {
         const low = v <= 5;
-        rowRefs.driverBox.style.display = low ? "block" : "none";
+        // A class, never display: the box is always in the scrap (see the
+        // .ci-dial .ci-driver rule), so crossing 5 changes nothing's height.
+        rowRefs.driverBox.classList.toggle("asked", low);
         rowRefs.driverBox.querySelectorAll(".ci-driver-chip").forEach(x =>
           x.classList.toggle("on", ciDrivers[rowRefs.key] === x.dataset.d));
       }
@@ -34787,7 +35015,10 @@
             P.g.addEventListener("click", swallow, { capture: true, once: true });
             // G2e (122): landing at ≤5 says "worth asking about" — the
             // area's follow-up row opens itself on release. Tap unchanged.
-            if ((ciValues[c.key] ?? 5) <= 5) openRow(c, false);
+            // ...and an area whose row is ALREADY open keeps it: openRow
+            // toggles, so a drag of the open area's own dot that landed at 4
+            // used to shut the scrap the person was reading (2026-09-08).
+            if ((ciValues[c.key] ?? 5) <= 5 && openKey !== c.key) openRow(c, false);
           }
         };
         P.hit.addEventListener("pointerup", end);
@@ -35191,7 +35422,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       // The balance: the wheel arrives pre-set from the entry, the person
       // corrects it, and the note names what the picks and dials disagree on —
       // the priorities they may not know they have. No call here.
-      { render: b => {
+      // anchorTop: the row unfolds and the follow-up appears BELOW the wheel;
+      // centred, the page re-centred on each and carried the wheel with it.
+      // The garden set the same rule for itself on 8 September.
+      { anchorTop: true, render: b => {
           const themeCats = [...new Set(ciMirror.themes
             .filter(t => ciSelectedThemes.includes(t.label)).map(t => t.category))];
           // Item 102: the read-back prose is gone — the shape says it. The
@@ -35220,7 +35454,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             if (wheelSvg) {
               wheelSvg.addEventListener("pointerdown", () => {
                 const h = b.querySelector("#ciWheelHint");
-                if (h) h.remove();
+                if (h) h.classList.add("read");   // fades, and keeps its line
               }, { once: true });
               if (!reducedMotion()) {
                 // The first area's axis points straight up; mirror rad()'s
@@ -35319,20 +35553,33 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             const row = b.querySelector('.ci-review-actions[data-ck="hoursPerWeek"]');
             row.querySelectorAll(".ci-chip").forEach(x =>
               x.classList.toggle("on", x.dataset.v === String(nearest)));
-            const split = (ciCapacity.observed.currentSplit || []).slice()
+            // Only the hours already going to their own things are named
+            // here; the job and the like stay in the split for the dig to
+            // read and never enter this sentence (the job is not capacity).
+            const own = ownSplitOf(ciCapacity.observed).slice()
               .sort((a, x) => (x.hours || 0) - (a.hours || 0));
-            const mostly = split[0] ? `, mostly going to ${escHtml(split[0].label)}` : ``;
+            const goesTo = own.length > 1
+              ? ` already go to things of your own, mostly ${escHtml(own[0].label)}`
+              : ` already go to ${escHtml(own[0].label)}`;
             const ob = b.querySelector("#ciCapObserved");
             // Item 20: the observed number is a LINK — one tap takes it as
-            // the claim (statedBy "user") and the line answers itself.
+            // the claim (statedBy "user") and the line answers itself. The
+            // answer keeps the question's box (the wheel's rule, 2026-09-08):
+            // a two-line sentence collapsing to "Using 9." moved the paper
+            // under the finger that had just tapped it.
             if (ob) {
               ob.innerHTML = `From your entry it sounds like <button type="button"
-                class="ci-obs-take">about ${obsHours} hours</button>${mostly}, is that right?`;
+                class="ci-obs-take">about ${obsHours} hours</button>${goesTo}, is that right?`;
               ob.querySelector(".ci-obs-take").addEventListener("click", () => {
                 ciCapacity.statedHours = obsHours;
                 ciCapacity.statedBy = "user";
+                // The layout height, not the bounding rect: the torn sheet is
+                // tilted a fraction of a degree, so the rect is taller than
+                // the box by the width's share of the tilt, and locking the
+                // rect's number grew the box by that share (1.4px at 390).
+                ob.style.minHeight = getComputedStyle(ob).height;
                 paintCapLine();
-                ob.innerHTML = `Using ${obsHours}.`;
+                ob.textContent = `Using ${obsHours}.`;
                 saveDraft();
               });
             }
@@ -35500,7 +35747,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 prog.mount.insertAdjacentHTML("beforeend",
                   `<div class="rv-item rv-item-stream"><div class="rv-cat"></div><div class="rv-title"></div><div class="rv-desc"></div><div class="rv-reason"></div></div>`);
                 card = prog.cards[p[1]] = prog.mount.lastElementChild;
-                barkify(prog.mount, ".rv-item-stream:not(.bark-item)", "lg");
+                paperify(prog.mount, ".rv-item-stream:not(.surf-torn)");
               }
               if (field === "category") {
                 const c = CATS[val];
@@ -35930,7 +36177,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               });
               list.appendChild(c);
             }
-            barkify(list, ".rv-item", "lg");
+            paperify(list, ".rv-item");
             list.querySelectorAll(".rv-drop-link").forEach((btn, bi) => inkUnderline(btn, bi, "currentColor"));
             saveDraft();   // the draft (goals included, 16b) survives a reload
             const composeIn = list.querySelector(".rv-compose-in");
@@ -36123,7 +36370,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 </div>
                 <button class="btn-ghost-link rv-focus-skip">I'd rather not choose yet</button>
               </div>`;
-            barkify(mount, ".rv-focus", true);
+            paperify(mount, ".rv-focus");
             mount.querySelectorAll(".rv-focus-opt").forEach(btn => {
               btn.addEventListener("click", () => {
                 ciFocusKey = ciFocusKey === btn.dataset.key ? null : btn.dataset.key;
@@ -36174,7 +36421,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                     <div class="rv-objs rv-objs-pending"></div>
                   </div>`; }).join("") + `</div>`
               + thinkingBlock("plans");
-            barkify(b, ".rv-item", "lg");
+            paperify(b, ".rv-item");
             narrate("s-quarters-open");
             const stopWait = startWait("plans");
             try {
@@ -36299,7 +36546,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               + `<div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">← Back, change the goals</button>
                    <button class="btn-solid" onclick="window.__ciNext()">Next, build the habits ${DRAWN_ARROW}</button></div>`;
 
-            barkify(b, ".rv-item", "lg");
+            paperify(b, ".rv-item");
             b.querySelectorAll(".qr-tune").forEach(btn => {
               btn.addEventListener("click", () => {
                 const g = keptById(btn.dataset.gid);
@@ -36399,7 +36646,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                     <div class="rv-title">${escHtml(g.title)}</div>
                   </div>`; }).join("") + `</div>`
               + thinkingBlock("mechanisms");
-            barkify(b, ".rv-item", "lg");
+            paperify(b, ".rv-item");
             narrate("s-habits-open");
             const stopWait = startWait("mechanisms");
             try {
@@ -36514,7 +36761,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                    ticking things off as they happen.</p>`
               + `<div class="ci-nav"><button class="btn-ghost-link" onclick="window.__ciBack()">← Back, change the quarters</button>
                    <button class="btn-solid" onclick="window.__ciFinish()">Save, go to This week ${DRAWN_ARROW}</button></div>`;
-            barkify(b, ".rv-item", "lg");
+            paperify(b, ".rv-item");
             // The companion scrap: arriving pose with its prop; taps do the
             // chain but say nothing — the voice starts on This-week. The
             // picker swaps the kind before saving.
@@ -37269,6 +37516,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       if (!p) return m;
       const keep = {};
       if (m.weekLabel == null && p.weekLabel != null) keep.weekLabel = p.weekLabel;
+      if (m.holder == null && p.holder != null) keep.holder = p.holder;
       if (p.whenSource === "user") { keep.when = p.when; keep.whenSource = "user"; }
       if (p.hoursSource === "user") { keep.estWeeklyHours = p.estWeeklyHours; keep.hoursSource = "user"; }
       return Object.keys(keep).length ? Object.assign({}, m, keep) : m;
@@ -37894,8 +38142,13 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                          receipt: h.receipt || "", mentioned: !!h.mentioned }];
       })),
       thinAreas: (Array.isArray(data.thinAreas) ? data.thinAreas : []).filter(a => CATS[a]),
+      // Each item carries its kind, "own" or "obligation"; anything else (an
+      // older prompt's untagged read) is kept for the dig to read but never
+      // counted as capacity, see observedHoursOf.
       capacityObserved: cap && Array.isArray(cap.currentSplit) && cap.currentSplit.length
-        ? { currentSplit: cap.currentSplit.filter(x => x && x.label && typeof x.hours === "number"),
+        ? { currentSplit: cap.currentSplit.filter(x => x && x.label && typeof x.hours === "number")
+              .map(x => ({ label: x.label, hours: x.hours,
+                           kind: x.kind === "own" || x.kind === "obligation" ? x.kind : null })),
             note: cap.note || "" }
         : (cap && cap.note ? { currentSplit: null, note: cap.note } : null),
     };
@@ -37987,6 +38240,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       m.label = scrubObjectiveIds(m.label, objectives);
       if (m.weekLabel) m.weekLabel = scrubObjectiveIds(m.weekLabel, objectives);
       if (m.why) m.why = scrubObjectiveIds(m.why, objectives);
+      if (m.holder) m.holder = scrubObjectiveIds(m.holder, objectives);
     });
     (deferred || []).forEach(d => {
       d.label = scrubObjectiveIds(d.label, objectives);
@@ -38579,7 +38833,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     setGoalShare, normalizeShares, scrubObjectiveIds, goalBarName, labelClauseOk,
     setCapacity(patch) { Object.assign(ciCapacity, patch || {}); },
     setConstraints(patch) { Object.assign(ciConstraints, patch || {}); },
-    effectiveCapacityHours, captureCapacity, observedHoursOf,
+    effectiveCapacityHours, captureCapacity, observedHoursOf, ownSplitOf,
     quarterClock, setClock(iso) { ciClockNow = iso ? new Date(iso + "T12:00:00") : null; },
     // Companion seams: the chooser, the line table and its rules, the pure
     // save rule, the quiet-gate, and setters the harness drives DOM-free.
@@ -38597,7 +38851,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // captured quote, and the scrub.
     rcToneRead, rcCaptureInWeek, scrubAiTells,
     // Wave 1 seams: the field parser (pure), the hook channel, the reader.
-    streamFieldParser, withStreamHooks, readStreamFrames,
+    streamFieldParser, withStreamHooks, readStreamFrames, streamDropVerdict, nameTransportFailure, analysisErrorCopy,
     // Wave 3 seams: the atlas — the pure selector, the stored handle, the page.
     quartersAcrossGoals, goalHandle, openAtlas, closeAtlas, renderAtlas,
     buildAtlasWater, horizonOutLabel,
@@ -39618,6 +39872,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       if (n) showToast(`picked up where you left off, ${n} answer${n === 1 ? "" : "s"} restored.`);
     }
     maybeWelcome();
+    if (JUMP === "welcome") maybeWelcome(true);
     if (JUMP === "dig") openRetest("dig");
     // The landing rule (item 3): with a board in place, This-week is home.
     // Dev jumps and a welcome-in-progress keep their own doors; the record
