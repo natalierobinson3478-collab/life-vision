@@ -35571,7 +35571,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                     </div>
                     ${c.key === "hoursPerWeek" ? `<p class="ci-cap-line" id="ciCapLine"
                       title="most people with a full-time job sustain 5 to 15 hours a week on something like this. More than that usually doesn't last."></p>
-                    <p class="ci-cap-observed" id="ciCapObserved"></p>` : ``}
+                    <p class="ci-cap-observed" id="ciCapObserved"></p>
+                    <p class="ci-cap-observed ci-cap-over" id="ciCapOver"></p>` : ``}
                   </div>`).join("")}
                 <div class="ci-raw-q">
                   <p class="ci-raw-ask">where are you based?</p>
@@ -35601,13 +35602,41 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               + `<input class="ci-cap-hours" id="ciCapHours" type="number" min="1" max="60" step="1"`
               + ` value="${stated}" aria-label="hours a week"> hours a week`;
             const inp = line.querySelector("#ciCapHours");
-            inp.addEventListener("change", () => {
-              const v = Math.max(1, Math.min(60, Math.round(Number(inp.value) || 0)));
-              inp.value = v;
+            // THE NUMBER IS THEIRS AS THEY TYPE IT (2026-09-09, owner: "if i
+            // set my capacity at 20 it should be 20"). The claim used to be
+            // taken on `change` alone, which a tap straight from the field
+            // to "Dig in" can outrun; every keystroke that leaves a number
+            // in range is the claim now, and `change` only tidies the box.
+            const take = () => {
+              const v = Math.round(Number(inp.value));
+              if (!(v >= 1 && v <= 60)) return false;
               ciCapacity.statedHours = v;
               ciCapacity.statedBy = "user";
               saveDraft();
+              paintCapOver();
+              return true;
+            };
+            inp.addEventListener("input", take);
+            inp.addEventListener("change", () => {
+              const v = Math.max(1, Math.min(60, Math.round(Number(inp.value) || 0)));
+              inp.value = v;
+              take();
             });
+            paintCapOver();
+          };
+          // AND THE PAGE SAYS SO WHEN IT IS MORE THAN MOST PEOPLE SUSTAIN
+          // (2026-09-09, owner: "unless that is unrealistic then maybe the
+          // AI can let me know"). The over-ceiling flag already rode to the
+          // reads; the person saw it only as a tooltip, which a phone never
+          // shows. The flag's own sentence sits under the line while the
+          // number is above the ceiling and goes when it is not. It names a
+          // pattern and plans with the number all the same: the dream is
+          // never judged, and the first check-in is the one that answers.
+          const paintCapOver = () => {
+            const el = b.querySelector("#ciCapOver");
+            if (!el) return;
+            const f = (captureCapacity().flags || []).find(x => x.kind === "over_ceiling");
+            el.textContent = f ? f.say : "";
           };
           // The mirror already read how the hours are being spent: pre-select
           // the matching chip, say what it saw, and let them correct it.
@@ -35718,7 +35747,13 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           const tok = ciRenderSeq;
           b.innerHTML = stepHeader("Choosing what to ask you.", "Just a few seconds.")
             + thinkingBlock("priorities");
-          const digSig = JSON.stringify([ciSelectedThemes, ciValues, ciConstraints]);
+          // THE CLAIM IS PART OF WHAT THE FOLLOW-UPS WERE WRITTEN AGAINST
+          // (2026-09-09). The dig's capacity question compares the claim with
+          // the entry, and the money question reads the dial the claim sits
+          // beside; a number retyped on the capacity page, on a first run or
+          // a re-run, reads the follow-ups again rather than showing last
+          // time's, written against last time's number.
+          const digSig = JSON.stringify([ciSelectedThemes, ciValues, ciConstraints, ciCapacity.statedHours]);
           if (!ciDig || ciDigFrom !== digSig) {
             let d;
             try {
