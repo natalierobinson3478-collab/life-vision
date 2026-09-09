@@ -31739,6 +31739,11 @@
   // buildIntake — the model has no other honest way to know the date — and
   // overridable for the harness (setClock), like the transport.
   let ciClockNow = null;
+  // THE WEEKDAY RIDES WITH THE DATE (2026-09-08, owner: the week was not
+  // drafted against the calendar). A stage told "2026-09-08" alone has to
+  // work out that it is a Tuesday, and none did: the drafted week began on
+  // Monday, and the days of it already gone were planned like the rest.
+  const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   function quarterClock(now) {
     const d = now || ciClockNow || (typeof appNow === "function" ? appNow() : new Date());
     const q = currentQuarter(d);
@@ -31746,6 +31751,7 @@
     const msLeft = end - new Date(d.getFullYear(), d.getMonth(), d.getDate());
     return {
       today: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+      weekday: WEEKDAY_NAMES[d.getDay()],
       quarter: quarterName(q),
       weeksLeftInQuarter: Math.max(1, Math.ceil(msLeft / (7 * 86400000))),
     };
@@ -31800,6 +31806,7 @@
       proposedSplit: ciCapacity.proposedSplit,
       // The quarter clock rides capacity so every stage's payload carries it.
       today: clock.today,
+      weekday: clock.weekday,
       quarter: clock.quarter,
       weeksLeftInQuarter: clock.weeksLeftInQuarter,
     };
@@ -34355,9 +34362,10 @@
       });
     });
     const clock = quarterClock();
-    out.push(`=== TODAY ===\nToday is ${clock.today}. The current quarter is ${clock.quarter} and has `
+    out.push(`=== TODAY ===\nToday is ${clock.weekday}, ${clock.today}. The current quarter is ${clock.quarter} and has `
       + `${clock.weeksLeftInQuarter} week${clock.weeksLeftInQuarter === 1 ? "" : "s"} left. Near-term objectives `
-      + `belong in this quarter or the next. Never schedule anything into a quarter that has already passed.`);
+      + `belong in this quarter or the next. Never schedule anything into a quarter that has already passed. `
+      + `The week runs Monday to Sunday, and the days of this week before today have already happened.`);
 
     out.push("=== WHAT THEY WROTE (the only text you may quote as evidence) ===\n\n"
       + (written.length ? written.join("\n\n") : "(they haven't written anything yet)"));
@@ -34372,10 +34380,30 @@
           }).join("\n"));
     }
     const c = intake.constraints || {};
+    // THE CLAIM REACHES EVERY READ (2026-09-08, owner: "I put 20 hours ...
+    // it capped at 15"). Both servers send this transcript INSTEAD of the
+    // intake JSON, and the transcript never carried intake.capacity, so the
+    // goals read, the one that proposes the split, only ever saw the chip's
+    // number in the constraints line: 20 typed under "serious time" reached
+    // it as 15. The hours line reads the claim, and the claim gets a block
+    // of its own, with who stated it and the flags the client raised.
+    const capHours = (intake.capacity && intake.capacity.statedHours) || c.hoursPerWeek;
     if (Object.keys(c).length) {
       out.push("=== PRACTICAL CONSTRAINTS (context only \u2014 never quote as their words) ===\n"
-        + `About ${c.hoursPerWeek} hours a week available. Money flexibility: ${c.moneyFlex}. `
+        + `About ${capHours} hours a week available. Money flexibility: ${c.moneyFlex}. `
         + `Based in ${c.location || "unspecified"}. People depending on them: ${c.dependents}.`);
+    }
+    const cap = intake.capacity || null;
+    if (cap && cap.statedHours) {
+      const obs = observedHoursOf(cap.observed);
+      const by = cap.statedBy === "user" ? "typed by them as a number"
+        : cap.statedBy === "observed" ? "read from the entry and left unchanged"
+        : cap.statedBy === "workshop" ? "set by them on the board" : "the chip they tapped";
+      out.push("=== THEIR HOURS (the claim every stage plans against; context only, never quote as their words) ===\n"
+        + `${cap.statedHours} hours a week for their own things, ${by}. This is the whole of it: a share is a fraction of ${cap.statedHours}, `
+        + `and no plan is sized against a smaller number.`
+        + (obs != null ? ` The entry says about ${obs} of those hours already go to their own things.` : "")
+        + ((cap.flags || []).length ? "\n" + cap.flags.map(f => "- " + f.say).join("\n") : ""));
     }
     const sel = (intake.themes && intake.themes.selected) || [];
     if (sel.length) out.push("=== THEMES THEY CONFIRMED AS CORE ===\n" + sel.map(t => "- " + t).join("\n"));
@@ -35161,7 +35189,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // the question may have answered itself. Extracted so the harness can
   // drive the dial without walking the whole discovery.
   function digDialHtml(q) {
-    const area = /^gap:/.test(q.theme || "") ? q.theme.slice(4) : null;
+    const area = /^gap:/.test(q.theme || "") ? q.theme.slice(4) : q.theme === "money" ? "finance" : null;
     const cat = area && CI_CATS.find(c => c.key === area);
     if (!cat) return "";
     const v = ciValues[cat.key] || 5;
@@ -35630,10 +35658,21 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               row.querySelectorAll(".ci-chip").forEach(x => x.classList.remove("on"));
               chip.classList.add("on");
               const def = CH.find(c => c.key === row.dataset.ck);
+              const before = ciConstraints[row.dataset.ck];
               ciConstraints[row.dataset.ck] = def.cast ? def.cast(chip.dataset.v) : chip.dataset.v;
               // A chip press re-derives the claim unless the person already
-              // typed their own number — their edit outranks the table.
-              if (row.dataset.ck === "hoursPerWeek" || row.dataset.ck === "dependents") {
+              // typed their own number, their edit outranks the table.
+              // THE TYPED NUMBER SURVIVES THE NEXT CHIP (2026-09-08, owner:
+              // "I put 20 hours ... it capped at 15"). The line above was the
+              // rule and the code was not: every chip on this sheet re-ran
+              // the table, so "serious time", 20 typed under it, then "me and
+              // a partner" wrote 15 back without a word. An hours chip that
+              // CHANGES is the same question answered again and re-derives;
+              // the dependents chips, and the hours chip already lit, never
+              // touch a number the person typed.
+              const typed = ciCapacity.statedBy === "user";
+              const hoursChanged = row.dataset.ck === "hoursPerWeek" && String(before) !== chip.dataset.v;
+              if ((row.dataset.ck === "hoursPerWeek" || row.dataset.ck === "dependents") && (!typed || hoursChanged)) {
                 ciCapacity.statedHours = effectiveCapacityHours(ciConstraints.hoursPerWeek, ciConstraints.dependents);
                 ciCapacity.statedBy = "chip";
                 paintCapLine();
@@ -38256,12 +38295,20 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // it is never the one that falls; on the page it reads after the picks'
     // questions, where an aside belongs.
     const isAside = q => /^aside:/.test(q.theme || "");
+    // THE MONEY QUESTION KEEPS ITS SEAT TOO (2026-09-08, owner: the read
+    // passed over the money trouble the entry named). The finance facts
+    // had a page of their own once, the bands; the page went and the
+    // questions went with it, so the plan for money was sized from a dial.
+    // The dig asks for them in one question, theme "money", when the dial
+    // is low or a money stressor was offered; for the cut it stands with
+    // the aside, ahead of the picks, and on the page it reads after them.
+    const isMoney = q => q.theme === "money";
     const rank = q => q.theme === "capacity" ? -2
-      : isAside(q) ? -1
+      : isAside(q) || isMoney(q) ? -1
       : picked.has(q.theme) ? 0
       : /^gap:/.test(q.theme || "") ? 1
       : q.theme === "conditions" ? 3 : 2;
-    const shown = q => isAside(q) ? 0.5 : rank(q);
+    const shown = q => isAside(q) ? 0.5 : isMoney(q) ? 0.6 : rank(q);
     const kept = data.questions.filter(q => q && q.key && q.q)
       .map((q, i) => ({ q, i }))
       .sort((a, b) => (rank(a.q) - rank(b.q)) || (a.i - b.i))   // stable within a rank
