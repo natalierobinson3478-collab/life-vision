@@ -3641,7 +3641,7 @@
      torn paper as every other aside, ruled and aligned. */
   .hb-scrap-slot { max-width: 620px; margin: 4px auto 22px; }
   .hb-scrap { --rule: 18px; --lead: calc(var(--rule) * 1.5); transform: rotate(-0.25deg); }
-  .hb-scrap-sheet { padding: calc(var(--lead) * 1.5) 26px calc(var(--lead) * 1.2) 32px;
+  .hb-scrap-sheet { padding: calc(var(--lead) * 1.5) 26px calc(var(--lead) * 1.2) calc(var(--rule) * 1.714 + 12px);
     --rule-top: calc(var(--lead) * 1.5); text-align: left;
     font-size: var(--t-read); line-height: var(--lead); color: var(--ink); }
   .hb-scrap-sheet .hb-bars { margin: calc(var(--lead) * 0.5) 0 0; max-width: none; }
@@ -10472,7 +10472,7 @@
       <div class="wf-one">
         <span class="pm-line"><input id="welcomeName" class="pm-write" type="text" placeholder=" "
                aria-label="what should I call you?" autocomplete="off" name="nb-field-1"
-               autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" /><span class="pm-ghost" aria-hidden="true"><i class="pm-caret"></i>type your first name</span><button
+               autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" /><span class="pm-ghost" aria-hidden="true"><i class="pm-caret"></i>write your name</span><button
                class="pm-skip" id="welcomeSkip" type="button"><span class="pm-skip-or">or </span><u>skip for now</u></button></span>
         <div class="empty-seed" id="wfSeed" aria-hidden="true"></div>
       </div>
@@ -31664,6 +31664,7 @@
   let ciSelectedThemes = [];
   let ciPrevValues = null;       // last quarter's wheel, for comparison
   let ciDraft = null;            // proposed goals, before the user accepts them
+  let ciDraftFrom = null;        // draftSig() of the answers that draft was read from
   const ciReceipts = {};         // the quote that produced each rating
   const ciDrivers = {};          // WHY a low area is low — see DRIVERS below
   const ciUserEdited = {};       // areas the user moved by hand — these are TRUTH
@@ -31841,6 +31842,7 @@
     ciTopicRead = null;
     ciMirror = null; ciMirrorFrom = null;
     ciDig = null; ciDigFrom = null; ciDigAt = 0;
+    ciDraftFrom = null;
     ciSelectedThemes = [];
     ciFocusKey = null;
     ciCompanion = null; ciCompanionTouched = false; ciCompanionPropAsked = false;
@@ -32855,6 +32857,9 @@
       // mid-flow reload silently dropped hand-added cards, title edits and
       // parked flips — everything on the draft. Now the whole draft rides.
       draft: ciDraft,
+      // The answers that draft was read from, so a reload knows whether the
+      // draft still stands or the goals step owes a re-read.
+      draftFrom: ciDraftFrom,
       savedAt: Date.now(),
     };
   }
@@ -32920,6 +32925,7 @@
       // non-null ciDraft and paints it instead of re-generating over the
       // person's additions and edits. clearDraft() still ends its life.
       ciDraft = d.draft || null;
+      ciDraftFrom = d.draftFrom || null;
       return true;
     } catch (e) { return false; }
   }
@@ -34613,6 +34619,24 @@
   // checks it after each await — a result that arrives after the person
   // navigated away must never paint or advance anything.
   let ciRenderSeq = 0;
+  // WHAT THE DRAFT WAS READ FROM (owner, 2026-09-08: "i re-answered some of
+  // the questions and it still gave me the same goals when i went forward...
+  // shouldnt it re-calculate?"). The mirror and the dig each keep the
+  // signature of the answers they were computed from and re-run when it
+  // moves; the goals step kept only `if (!ciDraft)`, so a draft, once made,
+  // outlived every answer changed behind it. This is the person's side of
+  // the intake and nothing else: the entry, the picks and their whys, the
+  // dials, the depth and follow-up answers, the hours, the constraints. Not
+  // the split or the clock, which the draft itself writes back, and not the
+  // sheet's own readings (mentioned, thin), which move only when the mirror
+  // re-runs over a changed entry anyway.
+  function draftSig() {
+    const it = buildIntake();
+    const ex = collectMirrorExtras();
+    return JSON.stringify([it.journals, it.themes.selected, it.ladder, it.ratings.values,
+      it.ratings.userEdited, it.ratings.drivers, it.depth, it.constraints,
+      it.capacity.statedHours, it.capacity.observed, ex.followups]);
+  }
   // The only writer of ciDraft from an async run: stale tokens are refused.
   // E1 (walkthrough-2): a wholesale replacement may NEVER discard the
   // person's hand-added goals (draftId …u/c/g) — whatever regenerated the
@@ -34620,9 +34644,22 @@
   function commitDraft(tok, d) {
     if (tok !== ciRenderSeq) return false;
     if (ciDraft && d && Array.isArray(ciDraft.goals) && Array.isArray(d.goals)) {
-      ciDraft.goals.filter(g => /[ucg]$/.test(g.draftId || "")).forEach(g => {
-        if (!d.goals.some(x => x.draftId === g.draftId)) d.goals.push(g);
+      // THE RE-READ KEEPS THE PERSON'S WORD (2026-09-08, the draft-side twin
+      // of retestKeeps): a goal they wrote, one they renamed (the title edit
+      // at this step flips provenance to the person), and one they paused
+      // ride into the fresh draft. Only an untouched proposal is replaced.
+      // A goal read before the quarters step has no draftId yet, so the
+      // dedupe runs only where there is one to compare.
+      ciDraft.goals.filter(g => /[ucg]$/.test(g.draftId || "") || g.provenance === "user"
+          || g.titleSource === "user" || g.status === "parked").forEach(g => {
+        if (g.draftId && d.goals.some(x => x.draftId === g.draftId)) return;
+        d.goals.push(g);
       });
+      // And the vision, once it is in their own words (DEFINITIONS: a re-run
+      // never overwrites the vision; only the person does).
+      if (ciDraft.visionSource === "user" && (ciDraft.vision || "").trim()) {
+        d.vision = ciDraft.vision; d.visionSource = "user";
+      }
     }
     ciDraft = d;
     return true;
@@ -35707,11 +35744,20 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       // focus pointer are all decided HERE, before anything gets planned, so
       // the quarters get drafted for the goals the person actually chose.
       // Zero API cost to linger; every edit is free.
-      { render: async b => {
-          if (!ciDraft) {
+      { id: "goals", render: async b => {
+          // THE DRAFT FOLLOWS THE ANSWERS (owner, 2026-09-08). A draft is
+          // reused only while the answers it was read from stand; change one
+          // behind it and Next reads them again, the way the themes and the
+          // follow-ups already do. Back then Next with nothing changed still
+          // costs nothing. The wait state says which of the two it is.
+          const sigNow = draftSig();
+          if (!ciDraft || ciDraftFrom !== sigNow) {
             const tok = ciRenderSeq;
-            b.innerHTML = stepHeader("Reading everything you wrote.",
-                "Drafting your life goals, under a minute.")
+            b.innerHTML = (ciDraft
+                ? stepHeader("You changed some answers. Reading them again.",
+                    "Drafting your life goals again. The ones you wrote, renamed or paused stay.")
+                : stepHeader("Reading everything you wrote.",
+                    "Drafting your life goals, under a minute."))
               + thinkingBlock("goals");
             narrate("s-goals-open");
             // The single highest-value line in the script gets a follow-up if
@@ -35779,6 +35825,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             // run the person is actually looking at owns ciDraft, and the
             // row handlers can never mutate a draft they never saw.
             if (!commitDraft(tok, drafted)) return;
+            ciDraftFrom = sigNow;
+            saveDraft();
           }
           // The vision passage IS the subtitle now \u2014 no second line of
           // instruction competing with it for the same space.
@@ -38314,11 +38362,19 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // the most expensive call in the app for nothing. A joiner, not a lock: the
   // second caller gets the first run's promise.
   let draftInFlight = null;
+  let draftInFlightKey = null;
   async function draftLifeGoals(intake, extras, ui) {
-    if (draftInFlight) return draftInFlight;
-    draftInFlight = draftLifeGoalsInner(intake, extras, ui)
-      .finally(() => { draftInFlight = null; });
-    return draftInFlight;
+    // Joined only over the SAME answers (2026-09-08): Back, a changed answer,
+    // Next used to join the run over the old answers and stamp its result as
+    // this one's. A run over other answers starts fresh; the old one finishes
+    // and its render token refuses it.
+    const key = JSON.stringify([intake.journals, intake.ladder, intake.depth,
+      intake.ratings && intake.ratings.values, extras && extras.followups]);
+    if (draftInFlight && draftInFlightKey === key) return draftInFlight;
+    const run = draftLifeGoalsInner(intake, extras, ui)
+      .finally(() => { if (draftInFlight === run) { draftInFlight = null; draftInFlightKey = null; } });
+    draftInFlight = run; draftInFlightKey = key;
+    return run;
   }
   async function draftLifeGoalsInner(intake, extras, ui) {
     if (!Object.keys(intake.journals || {}).length && !Object.keys(intake.depth || {}).length) {
@@ -38802,6 +38858,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // Block 2 seams: the draft round-trip (16b), the floor rule (26) and the
     // review add path (29), all drivable DOM-free.
     setDraft(d) { ciDraft = d || null; },
+    // The draft's stamp and its signature, and the steps themselves, so a
+    // test can render the goals step against a stamped draft (test 41b).
+    draftFrom: () => ciDraftFrom, setDraftFrom(s) { ciDraftFrom = s || null; }, draftSig, buildOnboardingSteps,
     draftPayload, restoreDraft, floorCheck, recomputeDraftSplit, addGoalToDraft, perGoalHours,
     mechFrequency, parseWhen,
     resetDiscovery, constraints: () => ciConstraints,
@@ -39941,7 +40000,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // fall through to the weekly check-in, which is the wrong flow entirely.
     const hasEntry = (ciJournal.entry || "").trim();
     ciRetest = true;
-    ciDraft = null;     // a retest exists to see a fresh generation
+    ciDraft = null; ciDraftFrom = null;     // a retest exists to see a fresh generation
     ciSteps = buildOnboardingSteps();
     ciStepIdx = atStep === "dig" && hasEntry ? ciSteps.length - 4 : 0;   // the dig sits before the three goal steps
     openBookPage(checkinOverlay);
