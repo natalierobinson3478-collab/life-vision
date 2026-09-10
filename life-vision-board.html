@@ -31860,6 +31860,26 @@
     // run's location prefilled a "fresh" one. Same rule now.
     Object.keys(ciConstraints).forEach(k => { delete ciConstraints[k]; });
     Object.assign(ciConstraints, CI_CONSTRAINT_DEFAULTS);
+    // THE WHEEL FORGETS TOO (2026-09-09, owner, on the "where are things
+    // right now" page of a run she had started over: "even when i start
+    // over these items come prefilled"). The numbers, the hand marks, the
+    // receipts and the cause chips all outlived a start over, and the hand
+    // marks were the one that showed: the mirror's read of the new entry
+    // skips any dial marked moved by hand, so a dial moved last run kept
+    // last run's number, its receipt and its lit chip on a page that said
+    // it read the new words. A start over is the first run again: every
+    // dial neutral, and the read of the new entry seeds all six. A re-run
+    // brings these back on purpose, from the last run's slot, and never
+    // comes through here.
+    CI_CATS.forEach(c => { ciValues[c.key] = 5; });
+    [ciUserEdited, ciReceipts, ciDrivers].forEach(o => Object.keys(o).forEach(k => { delete o[k]; }));
+    // The last run's goals draft, by the same rule. A null ciDraftFrom
+    // already made the goals step read again, but commitDraft carries a
+    // standing draft's hand-made goals and edited vision into the new one,
+    // which is a re-run's promise and never a blank start's; and the
+    // patterns are read from the intake this run builds, never the last.
+    ciDraft = null;
+    ciPatterns = {};
   }
 
   function buildIntake() {
