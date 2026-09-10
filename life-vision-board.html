@@ -2021,6 +2021,15 @@
        that still says --t-body cannot land off the scale, and the three
        canonical values stay in ONE place to change. ---- */
     --t-title: 30px;   /* the page's own name */
+    /* 20, THE FOURTH VALUE (2026-09-10, owner: "The category headings are
+       small relative to the text. I feel like those should be the bigger
+       text"). Three sizes could not say "larger than the prose but not the
+       page's own name", so the area name over a goal had to lead on weight
+       alone and did not. Picked off three candidates rendered on the real
+       page. It is a VALUE, not an alias, which is the whole of 165b's rule,
+       and it is not an invitation: the per-page budgets are what stop a
+       fourth size becoming a fifth. */
+    --t-step: 20px;    /* a name over the thing it names */
     --t-read: 17px;    /* everything read as prose */
     /* 14, NOT 13 (2026-08-28, owner: "the subtitles everywhere are too
        small, i think we need to up this throughout the app"). The caption
@@ -2354,6 +2363,21 @@
   .rv-toggle { background: none; border: 1px solid var(--line); color: var(--ink-muted); font-size: var(--t-label);
     padding: 5px 13px; border-radius: 999px; cursor: pointer; font-family: inherit; }
   .rv-toggle:hover { border-color: rgb(var(--accent)); color: rgb(var(--accent)); }
+  /* THE GOAL NOBODY ASKED FOR says so, above its own title, before the
+     person reads it: the line is the whole point of the card, and a goal
+     drawn from a probe reads as a mistake without it.
+     IN THIS STEP'S OWN NOTE VOICE, which is muted ink and upright (2026-09-10,
+     corrected the day it landed). It went in italic and in the accent, which
+     is neither what its neighbours do (.rv-reason, .rv-q-why and .rv-optional
+     are all muted and upright) nor what the page can afford: the goals-review
+     step's ratchet holds italics at zero and inks at three, both at their
+     ceiling, and designAudit measures the resting state, so an accent set
+     here at rest is a fourth ink. Matching the neighbours costs the line
+     nothing it needed, since it is the app talking and not a control, and it
+     asks for no exemption: the accent-only rule is not widened to make a page
+     pass. */
+  .rv-unrequested { font-family: var(--voice-hand); font-size: var(--t-label);
+    color: var(--ink-muted); line-height: var(--lead); }
   .rv-title { font-family: var(--voice-hand); font-size: var(--t-read); line-height: 1.4; margin-bottom: 8px; }
   .rv-title:focus { outline: none; background: var(--paper-tint); border-radius: 8px; box-shadow: 0 0 0 2px rgba(var(--accent),0.3); }
   /* ---- the review card's default face and its fold (2026-08-22) ----
@@ -2383,9 +2407,10 @@
   /* Free entry behind "my own →". */
   .rv-h-ownrow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
   .rv-h-ownrow label { font-size: var(--t-read); color: var(--ink-soft); }
-  .rv-h-ownin { width: 72px; background: var(--paper-tint); border: 1px solid var(--line);
-    border-radius: 8px; padding: 5px 8px; font-family: inherit; font-size: var(--t-read);
-    color: var(--ink); margin: 0 4px; }
+  .rv-h-ownin { width: 56px; background: none; border: none;
+    border-bottom: 1.5px dashed rgba(var(--accent),0.45); border-radius: 0; padding: 2px 4px;
+    font-family: inherit; font-size: var(--t-read); color: var(--ink); margin: 0 4px; text-align: center; }
+  .rv-h-ownin:focus { outline: none; border-bottom-color: rgb(var(--accent)); }
   .rv-h-own { font-weight: 600; }
   /* Cross-goal tensions belong to the SET, so they say their piece once. */
   .rv-cross { max-width: 620px; margin: 0 auto 22px; }
@@ -2394,17 +2419,31 @@
     --rule-top: calc(var(--lead) * 1.4); line-height: var(--lead); }
   .rv-cross-q { font-size: var(--t-read); line-height: var(--lead); color: var(--ink); margin: 0; }
   .rv-cross-why { font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0; }
-  .rv-detail { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
-  .rv-more { background: none; border: none; font-family: inherit; font-size: var(--t-label); cursor: pointer;
-    color: rgb(var(--accent)); padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+  /* ONE RULE IN THE FOLD, THE FOLD'S OWN (2026-09-10). The horizon, the why
+     check and this block each ruled themselves off, so a tuned card carried
+     four horizontal lines and read as a stack of forms. Air separates them
+     now, at the sheet's own lead so the writing stays on the ruling. */
+  .rv-detail { margin-top: 18px; }
   .rv-ask-title { font-size: var(--t-label); font-weight: 600;
     color: var(--ink-muted); margin-bottom: 8px; }
-  .rv-q { margin-bottom: 12px; }
-  .rv-q-text { font-size: var(--t-read); line-height: 1.5; margin-bottom: 5px; }
-  .rv-q-why { font-size: var(--t-read); color: var(--ink-muted); margin-bottom: 5px; }
+  /* EVERY ANSWER LINE ON THIS CARD IS A PLACE TO WRITE (owner, 2026-09-10:
+     "Confusing where im supposed to type"). Rule 6 of the drawn chrome takes
+     the box off these fields, and nothing put anything back: the brush there
+     is scoped to `.field`, which `.rv-q` is not. So the card's four answer
+     fields drew no line at rest AND no ring on focus, while the one field
+     that kept a border, the why note, was the only visible one. One dialect
+     now: the question, its aside, and a drawn line under the writing. The
+     wrapper carries it, so `.rv-q input` stays exactly the selector the
+     drawn-chrome reset and the harness already name. */
+  .rv-q { margin-bottom: 12px; position: relative; }
+  .rv-q-text { font-size: var(--t-read); line-height: 1.5; margin-bottom: 3px; }
+  /* The aside is subordinate to the question it explains — at the question's
+     own size it doubled the wall of text the owner was reading through. */
+  .rv-q-why { font-size: var(--t-label); color: var(--ink-muted); line-height: 1.5; margin-bottom: 2px; }
   .rv-q input { width: 100%; background: var(--paper-tint); border: 1px solid var(--line);
     color: var(--ink); font-size: var(--t-read); padding: 8px 11px; border-radius: 9px; font-family: inherit; }
   .rv-q input:focus { outline: none; border-color: rgb(var(--accent)); }
+  .rv-q input::placeholder { color: var(--ink-muted); opacity: 0.6; }
   .rv-optional { font-size: var(--t-label); color: var(--ink-muted); margin-bottom: 10px; }
   .rv-focus { max-width: 600px; margin: 22px auto 0; background: var(--paper);
     border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; text-align: left; }
@@ -2422,22 +2461,22 @@
   .rv-focus-opt.on .rv-focus-cat { color: rgb(var(--accent)); }
   .rv-focus-title { font-family: var(--voice-hand); font-size: var(--t-read); line-height: 1.35; }
   .rv-focus-skip { margin-top: 12px; }
-  .rv-horizon { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; text-align: left; }
+  .rv-horizon { margin-top: 18px; text-align: left; }
   .rv-h-line { font-size: var(--t-read); line-height: 1.55; color: var(--ink-muted); margin-bottom: 10px; }
   .rv-h-line b { color: var(--ink); font-weight: 600; }
   .rv-h-q { font-size: var(--t-read); color: var(--ink-muted); margin-bottom: 7px; }
   .rv-h-opts { display: flex; flex-wrap: wrap; gap: 6px; }
-  .rv-h-opt { font-family: inherit; font-size: var(--t-label); cursor: pointer; background: var(--paper-tint);
-    border: 1px solid var(--line); color: var(--ink); border-radius: 999px; padding: 6px 12px;
-    display: flex; align-items: baseline; gap: 6px; }
-  .rv-h-opt:hover { border-color: var(--ink-muted); }
-  .rv-h-opt.on { background: rgba(var(--accent),0.14); border-color: rgb(var(--accent)); font-weight: 600; }
-  .rv-h-opt.on::before { content: ""; display: inline-block; width: 12px; height: 11px; margin-right: 5px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14'%3E%3Cpath d='M2 8 C3.5 9.5 4.8 11 6 12.4 C8.5 8.5 11.5 4.5 14.5 1.8' fill='none' stroke='rgb(92,108,73)' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat; }
-  .rv-h-tag { font-size: var(--t-label); letter-spacing: 0.07em; opacity: 0.6; }
-  .rv-h-cost { margin-top: 11px; font-size: var(--t-read); line-height: 1.55; background: rgba(var(--accent),0.10);
-    border-left: 2px solid rgb(var(--accent)); border-radius: 0 8px 8px 0; padding: 9px 12px; }
-  .rv-h-cost.rv-h-warn { background: rgba(196,148,108,0.14); border-left-color: #a8704e; }
+  /* ONE CHIP DIALECT ON THIS CARD (2026-09-10). The years chips were a
+     filled capsule with a private tick of their own, sitting beside the
+     app's dashed hand-cut chip on the same card. They wear `.ci-chip` now
+     and this rule carries nothing but the tag's spacing; the selected tint
+     and the drawn tick come from the one treatment every chip already
+     wears. The class name stays: the swash instrument names it. */
+  .rv-h-opt { }
+  .rv-h-tag { font-size: var(--t-label); letter-spacing: 0.07em; opacity: 0.6; margin-left: 6px; }
+  .rv-h-cost { margin-top: 11px; font-size: var(--t-read); line-height: 1.55; background: none;
+    border-left: 2px solid rgba(var(--accent),0.45); border-radius: 0; padding: 2px 0 2px 14px; }
+  .rv-h-cost.rv-h-warn { background: none; border-left-color: rgba(168,112,78,0.6); }
   .rv-empty { max-width: 560px; margin: 0 auto 18px; border: 1.5px dashed var(--line); border-radius: 18px;
     padding: 26px 24px; text-align: left; background: rgba(255,253,252,0.5); }
   .rv-empty-title { font-family: var(--voice-hand); font-size: var(--t-read); margin-bottom: 8px; }
@@ -2448,8 +2487,24 @@
     margin-bottom: 10px; font-size: var(--t-read); line-height: 1.55; }
   .rv-reframe p { margin: 4px 0 0; }
   .rv-reframe-asp { font-style: italic; color: var(--ink-soft); }
+  /* THE TITLE IS THE REFRAME NOW, SO THEIR WORDING HAS TO BE ON THE PAGE
+     (2026-09-10). Picking it back cannot be a memory test. */
+  .rv-reframe-mine-line { color: var(--ink-muted); }
   .rv-reframe-btns { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
-  .rv-tension { margin: 0 0 10px; }
+  /* THE SECOND LOOK IS A NOTE ON THE PAPER (2026-09-10). It inherited the
+     overlay's boxed callout: cream fill, accent bar, rounded corner. On a
+     torn ruled sheet that reads as a panel dropped onto the page. Same
+     shape as the reframe beside it now, a rule in the margin and the words
+     on the sheet. */
+  .ci-tension-note.rv-tension { margin: 0 0 12px; background: none; border-left: 2px solid var(--line);
+    border-radius: 0; padding: 2px 0 2px 14px; max-width: none; }
+  /* What it changes, and the way out of it. */
+  .rv-tension-does { display: block; font-size: var(--t-label); color: var(--ink-muted);
+    line-height: 1.55; margin-top: 8px; }
+  .rv-tension-set { position: relative; display: inline-block; background: none; border: none;
+    padding: 2px 0; margin-top: 6px; cursor: pointer;
+    font-family: inherit; font-size: var(--t-label); color: var(--ink-soft); }
+  .rv-tension-set:hover { color: var(--ink); }
   .rv-desc { font-size: var(--t-read); color: var(--ink); opacity: 0.82; line-height: 1.6; margin-bottom: 10px; }
   .rv-reason { font-size: var(--t-read); color: var(--ink-muted); line-height: 1.5; margin-bottom: 8px;
     border-left: 2px solid var(--line); padding-left: 10px; }
@@ -3486,13 +3541,14 @@
   .rv-vision-edit:focus { outline: none; background: var(--paper-tint); border-radius: 8px; }
   .rv-vision-hint { text-align: center; font-size: var(--t-label);
     color: var(--ink-muted); margin: 4px 0 18px; }
-  .rv-why { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .rv-why { margin-top: 18px; }
   .rv-why-btns { display: flex; gap: 8px; margin-top: 7px; }
   .rv-why-note { width: 100%; margin-top: 8px; background: var(--paper-tint); border: 1px solid var(--line);
     border-radius: 9px; padding: 7px 10px; font: inherit; font-size: var(--t-read); color: var(--ink); }
   .rv-why-note:focus { outline: none; border-color: rgb(var(--accent)); }
+  .rv-why-q { font-size: var(--t-read); line-height: 1.5; }
   .rv-why-line { margin-top: 6px; font-size: var(--t-label); color: var(--ink-muted); font-style: italic; }
-  .rv-status { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .rv-status { margin-top: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .rv-status-label { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.07em;
     color: var(--ink-muted); }
   .rv-item-paused { opacity: 0.75; }
@@ -3507,51 +3563,70 @@
   .qv-label[contenteditable] { cursor: text; }
   .qv-label[contenteditable]:focus { outline: none; background: var(--paper-tint); border-radius: 6px;
     box-shadow: 0 0 0 2px rgba(var(--accent),0.25); }
-  .qv-own { background: none; border: 1px dashed var(--line); color: var(--ink-muted); font-size: var(--t-label);
-    border-radius: 999px; padding: 4px 11px; margin: 8px 0 0 66px; cursor: pointer; display: block; }
-  .qv-block .qv-own { margin: 2px 0 0; }
-  .qv-own:hover { border-color: rgb(var(--accent)); color: rgb(var(--accent)); }
-  .qv-own-new { margin-left: 0; }
+  /* .qv-own and .qv-own-input are GONE (2026-09-10, owner: "im not sure we
+     need a want a different step area since i can just edit the quarter
+     myself"). The quarter's own line is editable and already flips the step
+     to theirs, so the button was a second door to a room she was standing
+     in, and it carried a typed "✎" into a page whose marks are drawn. What
+     DEFINITIONS held answer 2 actually guarantees is the capability, not the
+     button, so the one case the inline line could not cover, a goal whose
+     plan came back with no objective at all, keeps an editable line of its
+     own instead. Their names survive in two shared drawn-chrome selector
+     lists another session is editing; they are harmless there and are left
+     for that session to sweep. */
   /* ---- the quarters road (2026-08-22): category, title, and a vertical
      brushed track — one drawn dot per planned quarter, filled for Q1, open
      for sketches; the end mark names the horizon. Everything else waits
      behind "tune →", the goals-review fold pattern. ---- */
-  .qr-track { position: relative; margin-top: 12px; text-align: left; }
-  .qr-line { position: absolute; left: 6px; top: 10px; bottom: 12px; width: 9px; }
+  /* THE ROAD RIDES THE RULING (2026-09-10, owner: "i would like the text to
+     follow the ruled lines. It makes it easier to read"). The law is already
+     written for this-week: vertical space on a ruled sheet is 0 or a multiple
+     of --lead, and the near-nothings are what walk every line below them off
+     the lines. This page carried 5px of row padding, 12px on the track, 2px
+     under the end mark and 1px on the phone, so by the third quarter the
+     words sat between two rules instead of on one. Every gap here is now a
+     lead or none, and the track's own ends are measured off the dots rather
+     than guessed: half a lead down to the first dot's centre, and a lead and
+     a half up from the foot, which is the end mark's own line plus that same
+     half. */
+  .qr-track { position: relative; margin-top: var(--lead, 26px); text-align: left; }
+  .qr-line { position: absolute; left: 6px; width: 9px;
+    top: calc(var(--lead, 26px) * 0.5); bottom: calc(var(--lead, 26px) * 0.5); }
+  .qr-track:has(.qr-end) .qr-line { bottom: calc(var(--lead, 26px) * 1.5); }
   .qr-line svg { width: 100%; height: 100%; display: block; }
-  .qr-q { position: relative; display: flex; gap: 10px; align-items: baseline; padding: 5px 0 5px 30px; }
-  .qr-dot { position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
-    width: 17px; height: 17px; color: var(--ink); }
+  /* NOT `baseline`, MEASURED. Baseline alignment across two font sizes makes
+     the flex line as tall as the tallest ascent PLUS the deepest descent, so
+     a row of 14px small caps beside a 17px clause came out 26.5px against a
+     25.5px lead: one more near-nothing, arriving through alignment instead of
+     through a margin. Every child already carries the lead, so starting them
+     together puts them on the same rule and keeps the row exactly one. */
+  .qr-q { position: relative; display: flex; gap: 10px; align-items: flex-start;
+    min-height: var(--lead, 26px); padding: 0 0 0 30px; }
+  /* The dot sits on the row's FIRST line, not in the middle of it: a wrapped
+     clause is two rules tall, and a centred dot then points at the gap
+     between them. */
+  .qr-dot { position: absolute; left: 2px; top: calc(var(--lead, 26px) * 0.5);
+    transform: translateY(-50%); width: 17px; height: 17px; color: var(--ink); }
   .qr-dot svg { width: 100%; height: 100%; display: block; }
   .qr-when { flex-shrink: 0; font-size: var(--t-label); font-weight: 600; letter-spacing: 0.06em;
     color: var(--ink-muted); }
-  .qr-label { font-size: var(--t-read); line-height: 1.45; color: var(--ink); min-width: 0; }
+  .qr-label { font-size: var(--t-read); line-height: var(--lead, 26px); color: var(--ink); min-width: 0; }
   .qr-label[contenteditable] { cursor: text; }
-  .qr-label[contenteditable]:focus { outline: none; background: var(--paper-tint); border-radius: 6px;
-    box-shadow: 0 0 0 2px rgba(var(--accent),0.25); }
   /* A sketch is quieter INK, never lower legibility (items 68/74): full
-     opacity, soft ink, labelled "sketch". */
+     opacity, soft ink. The word "sketch" rides the quarter label now, not a
+     tag at the right edge — see the Atlas ruling, a row is a paragraph. */
   .qr-sk .qr-label { font-size: var(--t-label); font-style: italic; color: var(--ink-soft); }
   .qr-sk { opacity: 1; }
-  .qr-sk .qr-when, .qr-sk .qr-tag { color: var(--ink-soft); }
-  .qr-tag { margin-left: auto; flex-shrink: 0; font-size: var(--t-label); font-weight: 600;
-    letter-spacing: 0.06em; }
-  /* Two tags of the same species: bare text, same size, same weight, sitting
-     in the same slot. One was on the ink scale and one on the accent, which
-     made the accent do ink duty — the accent marks what you can act on, and
-     a tag is not a control. Both are inks now; they stay apart by step, and
-     by the words they carry. */
-  .qr-tag-rc { color: var(--ink); }
-  .qr-tag-prob { color: var(--ink-muted); }
-  .qr-end { padding-left: 30px; margin-top: 2px; font-size: var(--t-label);
-    color: var(--ink-muted); }
-  /* Phone: the quarter line (label small-caps left, tag right) sits above,
-     and the objective clause takes the full width beneath — a rigid three-
-     column row squeezed the clause into a word-per-line ribbon. */
+  .qr-sk .qr-when { color: var(--ink-soft); }
+  .qr-end { padding-left: 30px; margin-top: 0; min-height: var(--lead, 26px);
+    font-size: var(--t-label); color: var(--ink-muted); }
+  /* Phone: the quarter line sits above and the objective clause takes the
+     full width beneath — a rigid two-column row squeezed the clause into a
+     word-per-line ribbon. The clause keeps the lead, so a wrapped row is
+     still whole rules. */
   @media (max-width: 640px) { .qr-line { left: 2px; } .qr-q { padding-left: 26px; flex-wrap: wrap; }
     .qr-dot { left: -2px; } .qr-end { padding-left: 26px; }
-    .qr-tag { margin-left: auto; }
-    .qr-q .qr-label { order: 3; flex: 1 1 100%; min-width: 0; padding-top: 1px; } }
+    .qr-q .qr-label { order: 3; flex: 1 1 100%; min-width: 0; padding-top: 0; } }
   /* The obstacle is ONE editable sentence — "If <obstacle>, then <plan>." —
      full width, wrapping freely; the data stays obstacle/obstaclePlan and is
      re-split on the "then" as the person types. */
@@ -3559,19 +3634,28 @@
      the first and below the last, a rule between blocks, labels in caps. */
   .qv-fold { padding: calc(var(--lead, 26px) * 0.5) 0 calc(var(--lead, 26px) * 0.5); }
   .qv-block + .qv-block { margin-top: var(--lead, 26px); }
+  /* ONE HIERARCHY IN THE FOLD (2026-09-10, owner: "The font hierarchy is
+     strange for example. Goes from small text to large text and different
+     font to small again and now itlaic. Kinda all over with no logic put
+     in"). Two roles, and only two: a BLOCK LABEL is --t-label, 600, tracked,
+     muted ink, one lead tall; everything a person READS is --t-read on the
+     lead, in the ink. Italic means exactly one thing on this page, a sketch,
+     so the hint drops its slope and keeps its size. Every margin here was a
+     near-nothing (4px under a label, 2px over a hint) and is now none, which
+     is what puts each line on its own rule. */
   .qv-block-label { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.12em;
-    color: var(--ink-muted); margin-bottom: 4px; text-align: left; }
+    color: var(--ink-muted); margin-bottom: 0; line-height: var(--lead, 26px); text-align: left; }
   /* The if-then sentence sits ON the label's ruling — no inner scrap. */
   .qv-if { margin: 0; text-align: left; font-size: var(--t-read); line-height: var(--lead, 26px);
     color: var(--ink); background: none; border: none; border-radius: 0; padding: 0; cursor: text; }
-  .qv-if:focus { outline: none; background: var(--paper-tint); border-radius: 6px;
-    box-shadow: 0 0 0 2px rgba(var(--accent),0.25); }
-  .qv-if-hint { margin: 2px 0 0; text-align: left; font-size: var(--t-label); font-style: italic;
-    color: var(--ink-muted); line-height: 1.4; }
+  .qv-if-hint { margin: 0; text-align: left; font-size: var(--t-label);
+    color: var(--ink-muted); line-height: var(--lead, 26px); }
   .qv-loose-list { list-style: none; margin: 0; padding: 0; text-align: left; }
-  .qv-loose-list li { display: flex; gap: 9px; align-items: baseline;
+  .qv-loose-list li { display: flex; gap: 9px; align-items: flex-start;
+    min-height: var(--lead, 26px);
     font-size: var(--t-read); line-height: var(--lead, 26px); color: var(--ink); }
-  .qv-bullet { flex: 0 0 auto; width: 12px; height: 12px; align-self: center; }
+  .qv-bullet { flex: 0 0 auto; width: 12px; height: 12px; align-self: flex-start;
+    margin-top: calc((var(--lead, 26px) - 12px) / 2); }
   .qv-bullet svg { width: 100%; height: 100%; display: block; }
   /* Later quarters as the roadmap shows them: faded, dashed, probable. */
   .qv-sketch { display: flex; gap: 8px; align-items: baseline; font-size: var(--t-label);
@@ -3579,10 +3663,78 @@
   .qv-sketch .qv-sk-label { font-style: italic; color: var(--ink); }
   .qv-focus-note { margin-top: 4px; text-align: left; font-size: var(--t-label);
     color: var(--ink-muted); }
-  .qv-own-input { width: 100%; background: var(--paper-tint); border: 1px dashed rgba(196,148,58,0.55);
-    border-radius: 9px; padding: 8px 11px; font-family: inherit; font-size: var(--t-read);
-    color: var(--ink); margin-top: 4px; }
-  .qv-own-input:focus { outline: none; border-style: solid; border-color: rgb(var(--accent)); }
+  /* The line a goal gets when its plan came back with no objective at all.
+     It is the same line as a quarter's, so it is written the same way. */
+  .qr-write { display: block; font-size: var(--t-read); line-height: var(--lead, 26px);
+    min-height: var(--lead, 26px); color: var(--ink); cursor: text; text-align: left; }
+  .qr-write:empty::before, .qv-loose-new:empty::before {
+    content: attr(data-empty); color: var(--ink-soft); }
+  /* A LOOSE DIRECTION CAN BE CARRIED OUT OF HERE (2026-09-10, owner: "i like
+     the suggestions you have. Maybe i can pin them somewhere as reminders so
+     i can see them"). They already survive to "keeping in mind" and to every
+     quarterly review, so what was missing was not memory, it was seeing them
+     and being able to add one. The pin lands a reminder in this week, the
+     road tomorrowLand already travels; a reminder carries no hours and no
+     debt, so law 8 holds. The mark is the app's door, an underline, because
+     that is what it is. */
+  /* The app's own wording for this quarter, offered beside theirs. It is
+     read, so it is --t-read on the lead; the swap is a door, so it is an
+     underline. */
+  .qv-alt { margin: 0; text-align: left; font-size: var(--t-read);
+    line-height: var(--lead, 26px); color: var(--ink); }
+  .qv-swap { display: block; background: none; border: none; padding: 0;
+    font: inherit; font-size: var(--t-label); line-height: var(--lead, 26px);
+    color: var(--ink-soft); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; }
+  .qv-swap:hover { color: var(--ink); }
+  .qv-pin { margin-left: auto; flex: 0 0 auto; background: none; border: none; padding: 0;
+    font: inherit; font-size: var(--t-label); color: var(--ink-soft); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; }
+  .qv-pin:hover { color: var(--ink); }
+  .qv-pinned { margin-left: auto; flex: 0 0 auto; font-size: var(--t-label); color: var(--ink-muted); }
+  /* THE ARITHMETIC, WHEN THE NUMBERS DO NOT MEET (law 2 as amended
+     2026-09-10). One line, in the capacity ceiling flag's own voice: the
+     numbers it read, and the plan going ahead on theirs regardless. Never a
+     verdict, and never a word about what has not been done. */
+  .qr-arc { min-height: var(--lead, 26px); font-size: var(--t-label);
+    line-height: var(--lead, 26px); color: var(--ink-muted); text-align: left; }
+  /* Under the road it lines up with the road's own words; on the habits
+     page there is no road, so it sits with the title. */
+  .qr-track + .qr-arc { padding-left: 30px; }
+  @media (max-width: 640px) { .qr-track + .qr-arc { padding-left: 26px; } }
+  /* THE RULED SCRAP, SCOPED. These four are shared with the goals-review
+     step, which is not part of this round, so the lead sweep rides a class
+     the quarters and habits steps carry rather than changing the rules
+     underneath a page nobody has looked at yet. */
+  /* THE AREA LEADS THE SCRAP (2026-09-10, owner: "The category headings are
+     small relative to the text. I feel like those should be the bigger
+     text"). It was 14px against a 17px title, so the room a goal lives in
+     read as a footnote to it. It cannot take the area's own colour: this
+     page counts three inks and is at its ceiling, and that exemption is
+     ruled never to be widened to make a page pass.
+     SO IT LEADS ON SIZE, AND THE SCALE GAINS ITS FOURTH VALUE. The app held
+     three sizes (30/17/14) with nothing between the page's own title and its
+     body, and the owner asked for the area to be the BIGGER text, larger
+     than the goal under it, which three values cannot express. Rendered as
+     three candidates on the page (same size and heavier, a step larger in
+     small caps, a step larger in the serif) she picked the middle one. So
+     --t-step is a real fourth value, not an alias: 165b's rule is one name
+     per size, and four names for four sizes keeps it. It is NOT a licence to
+     reach for a size when a page feels wrong; the per-page budgets still
+     hold, and this page paid for it by fixing the reality-check note, which
+     had no font-size at all and was landing at an unscaled 16px. */
+  .rv-ruled .rv-cat { font-size: var(--t-step); line-height: var(--lead, 26px);
+    letter-spacing: 0.09em; padding: 0 10px 0 0; }
+  /* The editable patch keeps its 1px of breathing room and gives it back in
+     margin, so the words are still on a slightly taller piece of paper and
+     the line is still exactly one rule. Same trick the weekly close uses to
+     fit a 44px tap target inside one lead. */
+  .rv-ruled .edit-signal { padding-block: 1px; margin-block: -1px; }
+  .rv-ruled .rv-head { margin-bottom: 0; }
+  .rv-ruled .rv-title { margin-bottom: 0; }
+  .rv-ruled .rv-bottom { margin-top: var(--lead, 26px); }
+  .rv-ruled .rv-tuned { margin-top: calc(var(--lead, 26px) * 0.5);
+    padding-top: calc(var(--lead, 26px) * 0.5 - 1px); }
   .qv-paused-line { margin: 4px auto 0; font-size: var(--t-read); color: var(--ink-muted);
     text-align: center; }
   .qv-floor-tag { display: inline-block; font-size: var(--t-label); font-weight: 600;
@@ -3601,18 +3753,24 @@
      drawn tick ring (a PREVIEW of This-week, not interactive here), the
      label as one clause — the what — and when · duration right-aligned in
      small caps, wrapping under the label on a narrow screen. */
-  .hv-group { margin-top: 10px; text-align: left; }
-  .hv-group + .hv-group { margin-top: 12px; }
+  /* The habits page rides the ruling on the same terms as the quarters road
+     (2026-09-10): the owner asked for the fixes to flow here too, and this
+     list carried the same near-nothings, 10 and 12 on a group, 4 under a
+     header, 4 on every row and a 1px nudge on the ring. Whole leads or
+     none, and the ring sits on the row's first line rather than being
+     hand-nudged onto it. */
+  .hv-group { margin-top: var(--lead, 26px); text-align: left; }
+  .hv-group + .hv-group { margin-top: var(--lead, 26px); }
   .hv-group-h { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.08em;
-    color: var(--ink-muted); margin-bottom: 4px; }
-  .hw-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
-    padding: 4px 0; }
+    line-height: var(--lead, 26px); color: var(--ink-muted); margin-bottom: 0; }
+  .hw-row { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: flex-start;
+    min-height: var(--lead, 26px); padding: 0; }
   .hw-ring { flex: 0 0 auto; width: 18px; height: 18px; color: var(--ink);
-    align-self: flex-start; margin-top: 1px; }
-  .hw-bullet { width: 13px; height: 13px; margin-top: 5px; }
+    align-self: flex-start; margin-top: calc((var(--lead, 26px) - 18px) / 2); }
+  .hw-bullet { width: 13px; height: 13px; margin-top: calc((var(--lead, 26px) - 13px) / 2); }
   .hw-ring svg { width: 100%; height: 100%; display: block; }
   .hw-label { flex: 1 1 60%; min-width: 55%; font-size: var(--t-read);
-    line-height: 1.45; color: var(--ink); }
+    line-height: var(--lead, 26px); color: var(--ink); }
   .hw-when { margin-left: auto; flex: 0 1 auto; min-width: 0; text-align: right;
     font-size: var(--t-label); font-weight: 600; letter-spacing: 0.06em;
     color: var(--ink-muted); }
@@ -3751,7 +3909,11 @@
   .rv-paused-tag { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.06em;
     color: var(--ink-muted); }
   .lv-focus-chip { color: var(--ink-soft); background: rgba(196,148,58,0.16); border-radius: 999px; padding: 2px 7px; }
-  .rv-rc-missing { margin-top: 4px; color: var(--ink-muted); }
+  /* This declared no font-size at all, and nothing in the file sets a base
+     one, so it landed at the browser's 16px: a fourth size on a page built
+     from two, in the middle of the fold. It is a note, so it is a label. */
+  .rv-rc-missing { margin-top: 0; font-size: var(--t-label); line-height: var(--lead, 26px);
+    color: var(--ink-muted); }
   .ci-contact-ms { font-size: var(--t-read); color: var(--ink-muted); margin: 2px 0 8px; }
   .ci-contact-skip { font-size: var(--t-label); color: var(--ink-muted); margin: 6px 0 0; }
 
@@ -4050,6 +4212,9 @@
   .ci-dig-dial-line { font-family: var(--voice-hand); font-size: var(--t-read);
     color: var(--ink-soft); line-height: 1.5; }
   .ci-dig-dial-line .ci-dial-num { font-size: var(--t-read); }
+  /* The area's one sentence under the name and the number, in the wheel's
+     own muted ink (2026-09-09). */
+  .ci-dig-dial-def { color: var(--ink-muted); }
   .ci-dig-dial-slide { position: relative; margin-top: 8px; }
   .ci-dig-dial-offer { font-family: var(--voice-hand); font-size: var(--t-read);
     color: var(--ink); margin-top: 10px; }
@@ -6670,6 +6835,7 @@
      one (Law 1). */
   .ch-work-held { margin: 0 0 0 33px; font-family: var(--voice-body); font-size: var(--t-label);
     letter-spacing: 0.05em; color: var(--ink-muted); line-height: var(--lead); }
+  .ch-work-held-todo { color: var(--ink-soft); }
   .ch-work-back { background: none; border: none; padding: 0 0 0 2px; cursor: pointer;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.06em;
     color: var(--ink); }
@@ -8756,6 +8922,15 @@
   #weekMount .wk-tick-row { display: flex; align-items: flex-start;
     column-gap: 10px; min-height: var(--lead); }
   #weekMount .wk-tick-days { margin-left: 0; line-height: var(--lead); }
+  /* WHAT WAS HOLDING IT (2026-09-10). The question and its circled answer on
+     one line, the answer to the right where the tick days sit, so the
+     section reads as the week back does: a row per piece of work, and the
+     thing you say about it at the end of the line. On a phone the answer
+     drops under the question rather than squeezing it to a word a line. */
+  .wk-held-row { display: flex; align-items: baseline; column-gap: 10px;
+    line-height: var(--lead); min-height: var(--lead); flex-wrap: wrap; }
+  .wk-held-q { flex: 1 1 auto; min-width: 0; }
+  .wk-held-row .qr-picks { flex: 0 0 auto; margin-left: auto; }
 
   /* THE GOAL'S SIGNATURE, REPAIRED (2026-08-28). barkSliver renders
      .bark-sliver > .sl-label > a dot + .sl-handle, and NOT ONE of those
@@ -8950,6 +9125,10 @@
   /* The tuner's rows. The verb, the piece of work, why — and the two
      answers, which are the same highlighted words the section above them
      uses, so the page ends with ONE control vocabulary instead of three. */
+  /* The tuner's rows lost their verb column and their two bordered pills
+     (2026-09-10): the label says what the change is, and the answer is the
+     circled word this app answers everything with. .wk-verb survives for the
+     quarterly review's own rows, which still name their verb. */
   .wk-diff { display: flex; gap: 10px; align-items: baseline; line-height: var(--lead); }
   .wk-verb { flex: 0 0 auto; font-size: var(--t-label); font-weight: 600;
     letter-spacing: 0.08em; color: var(--ink-muted); min-width: 64px; }
@@ -9259,6 +9438,15 @@
     -webkit-mask-image: var(--qr-ring); mask-image: var(--qr-ring);
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  /* THE STEP THE QUARTER WAS FOR, above the question about it: the words
+     being judged, in the plan's own voice, so "met" and "not yet" are
+     answers to something visible rather than to a title. */
+  .qr-step-line { font-family: var(--voice-hand); font-size: var(--t-read);
+    color: var(--ink); line-height: var(--lead); }
+  /* A finished step gets a beat, not a badge: the same note voice as every
+     other line on the page, in the accent's ink. Wins that evaporate are
+     why diligent people feel like they are on a treadmill. */
+  .qr-finished { color: rgb(var(--accent)); }
   .qr-note { font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
     color: var(--ink-muted); line-height: var(--lead); }
   .qr-week-line { font-family: var(--voice-hand); font-size: var(--t-read);
@@ -9587,7 +9775,8 @@
   /* A PATCH MUST HUG THE WORDS, NOT THE COLUMN. Half of these sit on block
      elements, where a background paints the full width and reads as a banner
      across the page rather than as a mark on the writing. */
-  .ch-goal-name.edit-signal, .ch-step.edit-signal, .rv-title.edit-signal {
+  .ch-goal-name.edit-signal, .ch-step.edit-signal, .rv-title.edit-signal,
+  .qv-if.edit-signal, .qr-write.edit-signal, .qv-loose-new.edit-signal {
     width: fit-content; max-width: 100%; }
   .ch-work-name.edit-signal { flex: 0 1 auto; }
   @media (hover: hover) and (pointer: fine) {
@@ -10280,11 +10469,11 @@
         at rest) instead of a capsule; a chosen one keeps the one selection
         treatment every chip already wears (the accent tint, the drawn
         tick), which outranks these by its own specificity. */
-  .rv-cat, .rv-toggle, .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .rv-genplan,
+  .rv-cat, .rv-toggle:not(.rv-drop-link), .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .rv-genplan,
   .rv-maint, .rv-cov-make, .rv-cov-open, .ci-driver-chip, .ci-breakdown-toggle,
   .ci-tune-kind, .qv-own, .qv-floor-tag, .hv-early, .rm-q-rc, .wk-acc, .lv-focus-chip,
   .rm-delete:not(.armed), .tw-hstep { border-radius: 8px; box-shadow: none; }
-  .rv-toggle, .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .ci-breakdown-toggle,
+  .rv-toggle:not(.rv-drop-link), .rv-h-opt, .rv-target-sel, .rv-ask-btns button, .ci-breakdown-toggle,
   .wk-acc, .tw-hstep { border-style: dashed; background: none; }
   .ci-driver-chip { border-style: dashed; }
 
@@ -10302,17 +10491,22 @@
         the ruled line where there is one, the brush under it where there is
         not (the modal's fields) — never a bordered rounded box. Selects are
         left as they are, above. */
-  .field input, .field textarea, .rv-q input, .qv-own-input, .rc-capture-in {
+  .field input, .field textarea, .rv-q input, .rv-why-note, .qv-own-input, .rc-capture-in {
     background: none; border: none; border-radius: 0; box-shadow: none; padding: 6px 2px 8px; }
-  .field input:focus, .field textarea:focus, .rv-q input:focus, .qv-own-input:focus,
+  .field input:focus, .field textarea:focus, .rv-q input:focus, .rv-why-note:focus, .qv-own-input:focus,
   .rc-capture-in:focus { outline: none; box-shadow: none; }
   .field { position: relative; }
-  .field:has(input, textarea)::after { content: ""; position: absolute; left: 0; right: 8px;
+  /* THE BRUSH REACHES THE REVIEW CARD'S FIELDS TOO (2026-09-10). This rule
+     took the box off `.rv-q input` above and then drew nothing under it,
+     because the stroke below was scoped to `.field` and the review card's
+     answer lines are not fields. Four invisible lines and no focus mark: the
+     "confusing where im supposed to type" the owner reported. */
+  .field:has(input, textarea)::after, .rv-q:has(input)::after { content: ""; position: absolute; left: 0; right: 8px;
     bottom: 0; height: 6px; background: var(--ink); opacity: 0.32; pointer-events: none;
     -webkit-mask-image: var(--swash); mask-image: var(--swash);
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-  .field:has(input:focus, textarea:focus)::after { opacity: 0.5; }
+  .field:has(input:focus, textarea:focus)::after, .rv-q:has(input:focus)::after { opacity: 0.5; }
 
   /* 7. FOCUS IS THE DRAWN RING, NOT A SHADOW. These box-shadow rings
         predate the one hand-drawn ring (A1) and doubled it. */
@@ -10335,7 +10529,8 @@
     padding: 26px calc(3.3% + 14px) 22px calc(var(--rule) * 1.714 + 3.3% + 10px);
     line-height: var(--lead); text-align: left; }
   .surf-lg .surf-sheet :is(.rv-title, .rv-objs, .rv-desc, .rv-bottom-line,
-    .qr-label, .hw-label, .rv-reason) { line-height: var(--lead); }
+    .qr-label, .hw-label, .rv-reason, .rv-q-text, .rv-q-why, .rv-h-line, .rv-h-q,
+    .rv-why-q, .rv-tension, .rv-tension-does, .rv-h-cost) { line-height: var(--lead); }
 </style>
 </head>
 <body>
@@ -13365,15 +13560,68 @@
       + `</svg>`;
   }
 
-  const CATS = {
-    health:        { label: "health", cls: "cat-health", icon: "heart" },
-    career:        { label: "career", cls: "cat-career", icon: "briefcase" },
-    finance:       { label: "finance", cls: "cat-finance", icon: "coins" },
-    relationships: { label: "relationships", cls: "cat-relationships", icon: "people" },
-    growth:        { label: "personal growth", cls: "cat-growth", icon: "spark" },
-    meaning:       { label: "meaning", cls: "cat-meaning", icon: "compass" },
-    Other:         { label: "other", cls: "cat-other", icon: "spark" },
-  };
+  // ---- THE SIX AREAS: ONE TABLE (2026-09-10) ----------------------------
+  // THE SINGLE SOURCE FOR THE SIX LIFE AREAS. Everything an area is lives on
+  // its row here: the key the board files by, the label a person reads, the
+  // sentence that defines the room, the colour token, the css class and the
+  // icon. `CATS` below and `CI_CATS` (the wheel's catalogue, far down this
+  // script) are both BUILT FROM THIS LIST, so a rename, a new column or a
+  // seventh area is one edit in one place.
+  // THERE WERE THREE OF THESE. CATS carried the labels and the classes,
+  // CI_CATS carried the labels again with the colours and the sentences, and
+  // PLAIN_CATS carried the dig sheet's own third wording. The set drifted
+  // twice: the lowercase sweep fixed CATS and never knew CI_CATS existed, so
+  // the same name read capitalised in one table for over a week; and until
+  // 3d0bba1 the two tables described the rooms in different words. PLAIN_CATS
+  // was retired with the 2026-09-09 ruling, and this table closes the last
+  // seam. The next surface that needs the six adds a COLUMN here, never a
+  // twin, and test 217b fails if a second roster of these names appears.
+  // `desc` IS THE RULING, not a convenience. One lowercase sentence per room,
+  // each carrying its own boundary (DECISIONS, "the six areas, defined once",
+  // 2026-09-09): the wheel shows it under the dial's name, a dial-born dig
+  // question opens with it, and the transcript hands all six to every read,
+  // so no prompt defines a room in its own words. Rewording one is a decision
+  // and gets written down; test 217 holds them.
+  // THE ORDER IS THE WHEEL'S, and the add screen's chips read the same way:
+  // health first, meaning last. `ROSE_AREAS` and `GOAL_AREAS` each hold the
+  // same six in a DIFFERENT order on purpose, one a set of bearings and one a
+  // ranking; those orders are geometry and precedence, not taxonomy, so they
+  // stay written out and test 217b holds their keys to this table.
+  const AREAS = [
+    { key: "health", label: "health", cls: "cat-health", icon: "heart",
+      color: "rgb(var(--cat-health))",
+      desc: "your body and your energy: sleep, fitness, food, and the state of your mind." },
+    { key: "career", label: "career", cls: "cat-career", icon: "briefcase",
+      color: "rgb(var(--cat-career))",
+      desc: "the work you are paid for, the craft of it, and where it is heading." },
+    { key: "finance", label: "finance", cls: "cat-finance", icon: "coins",
+      color: "rgb(var(--cat-finance))",
+      desc: "the money under everything: what comes in, what goes out, and what is saved or owed." },
+    { key: "relationships", label: "relationships", cls: "cat-relationships", icon: "people",
+      color: "rgb(var(--cat-relationships))",
+      desc: "the people in your life: partner, family, friends, and the company you keep." },
+    { key: "growth", label: "personal growth", cls: "cat-growth", icon: "spark",
+      color: "rgb(var(--cat-growth))",
+      desc: "what you learn, practise, or get better at for its own sake, apart from your work." },
+    { key: "meaning", label: "meaning", cls: "cat-meaning", icon: "compass",
+      color: "rgb(var(--cat-meaning))",
+      desc: "what your life is for: purpose, contribution, faith, and the calling you would follow whether or not it paid." },
+  ];
+  const AREA_KEYS = AREAS.map(a => a.key);
+  // `Other` IS NOT ONE OF THE SIX, and it is kept off the table above on
+  // purpose: a list where one member is spelled differently is a list that
+  // gets edited incompletely. It is the fallback, and it stays UNOFFERABLE:
+  // the add screen's chips filter it out, the wheel never dials it, no read
+  // is told it exists. What it does is catch a goal whose area is missing or
+  // unknown, so every surface still has a label, a class and a mark to draw
+  // instead of dropping the goal or throwing.
+  const OTHER_AREA = { label: "other", cls: "cat-other", icon: "spark" };
+  // The lookup the board draws from, keyed by area: the six in the order
+  // above, then the fallback, so `Object.entries(CATS)` still reads health
+  // first and `Other` last.
+  const CATS = Object.fromEntries(AREAS
+    .map(a => [a.key, { label: a.label, cls: a.cls, icon: a.icon }])
+    .concat([["Other", OTHER_AREA]]));
   const ICONS = {
     heart: `<path d="M12 20s-7-4.4-9.3-8.7C1 8 2.4 5 5.4 4.6c1.9-.3 3.5.7 4.3 2.1.4.7 1.1.7 1.5 0 .8-1.4 2.4-2.4 4.3-2.1 3 .4 4.4 3.4 2.7 6.7C19 15.6 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.7"/>`,
     briefcase: `<rect x="3" y="7" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7" fill="none" stroke="currentColor" stroke-width="1.7"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.7"/>`,
@@ -15020,6 +15268,10 @@
   // The canonical six, in the order the rose reads them. Labels and colours
   // come from CATS — never a second table. (The mockups say "ROMANCE" for
   // the sixth; that is wrong and they carry a correction note.)
+  // THIS ORDER IS A SET OF BEARINGS, not a roster: it is where each petal
+  // points, and it is deliberately not the wheel's order. So the keys stay
+  // written out here rather than derived from AREAS, and test 217b holds them
+  // to that table without touching the order.
   const ROSE_AREAS = ["career", "health", "finance", "meaning", "relationships", "growth"];
   // SIX petals here, deliberately, against the FIVE the waypoints and the
   // bloom wear: six areas need six petals. Do not harmonise them.
@@ -18008,7 +18260,15 @@
     // person's own rows above all: absence is silent (Law 1).
     const heldLine = m => {
       const h = String(m.holder == null ? "" : m.holder).trim().replace(/\s+—\s+/g, ", ");
-      return h ? `<div class="ch-work-held" data-held-mech="${escHtml(m.id)}" data-type-area="chapters/work">held by ${escHtml(h)}</div>` : "";
+      if (!h) return "";
+      // A HOLDER THEY HAVE NOT ARRANGED YET IS NOT A FACT ABOUT THEIR LIFE
+      // (2026-09-10, after the owner's correction of 9 September: proposals
+      // stay, fiction goes). When the plan proposed the holder rather than
+      // reading it in their words, the line says so until the piece of work
+      // that arranges it is done, and then it reads like any other.
+      const toDo = holderStillToSetUp(m);
+      return `<div class="ch-work-held" data-held-mech="${escHtml(m.id)}" data-type-area="chapters/work">held by ${escHtml(h)}${
+        toDo ? `<span class="ch-work-held-todo">, once you set it up</span>` : ``}</div>`;
     };
     const workRows = o => {
       const ms = workFor(o), off = offFor(o);
@@ -20658,8 +20918,13 @@
     if (!(goal.mechanisms || []).length) return { proposals: [], note: "" };
     const r = await tryModel("tune", {
       intake, goal: { category: goal.category, title: goal.title, description: goal.description },
-      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source })),
-      step: step ? { id: step.id, label: step.label, when: step.when } : null,
+      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source,
+        // The if-then the person wrote, which is the whole point of naming an
+        // obstacle at all: work designed around it, and a bad week met with
+        // their own move rather than an invented one.
+        obstacle: o.obstacle || null, obstaclePlan: o.obstaclePlan || null })),
+      step: step ? { id: step.id, label: step.label, when: step.when,
+        obstacle: step.obstacle || null, obstaclePlan: step.obstaclePlan || null } : null,
       sketch: sketchNext ? { id: sketchNext.id, label: sketchNext.label, when: sketchNext.when } : null,
       mechanisms: goal.mechanisms,
       week: weekCtx,   // { register, ticks, feel, partial }
@@ -20716,6 +20981,14 @@
     if (prior.completions != null) keep.completions = prior.completions;
     return Object.assign({}, next, keep);
   }
+  // ONE CIRCLED ANSWER, EVERYWHERE (2026-09-10). A two-way question is
+  // answered by circling a word, never by boxing it: the quarterly review's
+  // own generator, lifted out of its render so the weekly close asks in the
+  // same hand. `attr` is the data attribute the page wires (ev, oc, held),
+  // `id` whatever that page addresses, and `word` the answer itself.
+  const pickBtn = (attr, id, v, on, word) =>
+    `<button class="qr-pick${on ? " on" : ""}" data-${attr}="${id}" data-v="${v}" type="button">${word}</button>`;
+
   function applyWeekDiffs(goal, preMechs, diffs) {
     const prior = {};
     (preMechs || []).forEach(m => { prior[m.id] = m; });
@@ -20723,7 +20996,18 @@
     diffs.forEach(d => {
       if (!d.accepted || d.goalId !== goal.id) return;
       if (d.verb === "drop" && d.mechId) mechs = mechs.filter(m => m.id !== d.mechId);
-      else if (d.verb === "add" && d.mechanism) mechs.push(d.mechanism);
+      // AN ADDED LINE NEEDS AN ID OF ITS OWN. The model names its own ids,
+      // and a goal whose work already runs to m1, m2, m3 gets an add called
+      // "m2" as often as not: two rows with one id means every tick, every
+      // schedule edit and every drivesObjectiveId lookup hits whichever came
+      // first, so the person's new work silently wears the old row's
+      // completions. Minted here, on the one path that adds a line.
+      else if (d.verb === "add" && d.mechanism) {
+        const taken = mechs.some(m => m.id === d.mechanism.id);
+        mechs.push(!d.mechanism.id || taken
+          ? Object.assign({}, d.mechanism, { id: userId("am") })
+          : d.mechanism);
+      }
       else if (d.mechId && d.mechanism) {
         mechs = mechs.map(m => m.id === d.mechId ? mergeKeepUser(prior[d.mechId], d.mechanism) : m);
       }
@@ -20741,6 +21025,31 @@
   // held. Patterns, never scores: no digit is spoken, no streak is kept, and
   // a change lands only on a tap (law 1). Once accepted it is the person's
   // own step (whenSource "user"), which the budget then protects (law 4).
+  // A piece of work said in few enough words to sit inside a question.
+  const shortWork = m => {
+    const t = String(m.weekLabel || m.label || "this").trim().replace(/\.$/, "");
+    const w = t.split(/\s+/);
+    return (w.length > 6 ? w.slice(0, 6).join(" ") + "\u2026" : t).toLowerCase();
+  };
+  // This week's answers for one goal, as the tuner is shown them: the holder
+  // by name, and whether it held.
+  const heldThisWeek = g => (g.mechanisms || [])
+    .filter(m => String(m.holder || "").trim() && wkState && wkState.held[m.id] !== undefined)
+    .map(m => ({ mechId: m.id, work: m.weekLabel || m.label, holder: m.holder, saw: wkState.held[m.id] === true }));
+  // AN ARRANGEMENT THAT IS NOT HOLDING, counted the way the register is
+  // counted: by the app, never by the model, and never from one week. Two
+  // closed weeks running answered no is the signal; a week nobody closed
+  // says nothing, and silence is never read as a no.
+  function heldMissedTwice(g, wk) {
+    const prev = Object.values(weeks || {})
+      .filter(w => w && w.week && w.closedAt && w.week < wk)
+      .sort((a, b) => a.week < b.week ? 1 : -1)[0];
+    if (!prev || !prev.held) return [];
+    return (g.mechanisms || [])
+      .filter(m => String(m.holder || "").trim()
+        && (wkState && wkState.held[m.id] === false) && prev.held[m.id] === false)
+      .map(m => ({ mechId: m.id, work: m.weekLabel || m.label, holder: m.holder }));
+  }
   const WK_DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const WK_DAY_WORDS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
   const WK_NUM_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven"];
@@ -20860,9 +21169,9 @@
     wkState = rec
       ? { week: weekKey2, mode: "edit", feel: rec.feel || "", diffs: JSON.parse(JSON.stringify(rec.diffs || [])),
           notes: rec.notes || {}, registers: rec.registers || {}, partial: !!rec.partial,
-          pre: JSON.parse(JSON.stringify(rec.pre || {})), closed: true }
+          pre: JSON.parse(JSON.stringify(rec.pre || {})), held: Object.assign({}, rec.held || {}), closed: true }
       : { week: weekKey2, mode: "close", feel: "", diffs: null, notes: {}, registers: {}, partial,
-          pre: {}, closed: false };
+          pre: {}, held: {}, closed: false };
     // L2 (164): a sheet that cannot render must never trap — it closes
     // itself and says so, whatever the jumped state looked like.
     try {
@@ -20934,6 +21243,25 @@
       if (!rows.length) return "";
       return `<div data-type-area="weekly/goal" class="wk-goal-name">${sig(g)}<span>${escHtml(g.title)}</span></div>` + rows.join("");
     }).filter(Boolean).join("");
+    // WHAT WAS HOLDING IT, AND DID IT HOLD (2026-09-10, from the owner's
+    // own first report: the app proposed check-ins with a trainer and the
+    // trainer is what got her to the gym). A holder is the thing outside the
+    // person that keeps a piece of work happening, and until now the app
+    // named one and never asked after it again. One question per held row,
+    // circled, yes or no. Work with no holder is never asked about and never
+    // marked for it, hand-written work above all: absence is silent (Law 1).
+    // Nothing is counted: the answer exists so the tuner can meet an
+    // arrangement that is not working, and for no other purpose.
+    const heldRows = wkState.closed ? "" : active.map(g => {
+      const rows = (g.mechanisms || []).filter(m => String(m.holder || "").trim()).map(m => {
+        const a = wkState.held[m.id];
+        return `<div data-type-area="weekly/ask" class="wk-held-row">
+          <span class="wk-held-q">did ${escHtml(String(m.holder).trim())} see ${escHtml(shortWork(m))}?</span>
+          <span class="qr-picks">${pickBtn("held", m.id, "yes", a === true, "yes")}${
+            pickBtn("held", m.id, "no", a === false, "not this week")}</span></div>`;
+      }).join("");
+      return rows ? `<div data-type-area="weekly/goal" class="wk-goal-name">${sig(g)}<span>${escHtml(g.title)}</span></div>` + rows : "";
+    }).filter(Boolean).join("");
     // registers, computed here, deterministically — and only while the
     // week is still open: a closed record's registers are history
     if (!wkState.closed) active.forEach(g => {
@@ -20949,12 +21277,18 @@
         const note = wkState.notes[g.id] ? `<div data-type-area="weekly/note" class="wk-note">${escHtml(wkState.notes[g.id])}</div>` : "";
         return `<div data-type-area="weekly/goal" class="wk-goal-name">${sig(g)}<span>${escHtml(g.title)}</span><span class="wk-reg">${regLabel[wkState.registers[g.id]] || ""}</span></div>`
           + note
+          // THE CHANGE READS IN THE LABEL, AND THE ANSWER IS CIRCLED
+          // (2026-09-10). The row carried a verb in its own column, "swap",
+          // "lighter", "drop", which is the tuner's vocabulary and not the
+          // person's, and then two bordered pills that were the only boxed
+          // control left on a page whose every other answer is a circled
+          // word. Both are gone: the label already says what the change is,
+          // and yes or no is answered the way this app answers everything.
           + mine.map(d => `<div data-type-area="weekly/diff" class="wk-diff" data-diff="${escHtml(d.id)}">
-              <span class="wk-verb">${escHtml(d.verb)}</span>
               <span class="wk-diff-label">${escHtml(d.label)}<span class="wk-diff-reason">${escHtml(d.reason)}</span></span>
-              <span class="wk-diff-actions">
-                <button class="wk-acc ch-hi${d.accepted ? " on" : ""}" data-acc="${escHtml(d.id)}">${d.accepted ? "accepted" : "accept"}</button>
-                <button class="wk-acc ch-hi${d.accepted === false && d.seen ? " on" : ""}" data-rej="${escHtml(d.id)}">leave</button>
+              <span class="wk-diff-actions qr-picks">
+                <button class="qr-pick${d.accepted ? " on" : ""}" data-acc="${escHtml(d.id)}" type="button">yes</button>
+                <button class="qr-pick${d.accepted === false && d.seen ? " on" : ""}" data-rej="${escHtml(d.id)}" type="button">leave it</button>
               </span>
             </div>`).join("");
       }).filter(Boolean).join("");
@@ -20994,6 +21328,7 @@
         ` : `
           <div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">the week back</div><div class="wk-sec-rule"></div>
             ${back || `<div data-type-area="weekly/tick-row" class="wk-none-row">a quiet one. that's data, not debt.</div>`}</div>
+          ${heldRows ? `<div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">what was holding it</div><div class="wk-sec-rule"></div>${heldRows}</div>` : ``}
           <div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">one question</div><div class="wk-sec-rule"></div>
             <div class="wk-ask" data-type-area="weekly/ask">
               <span class="wk-ask-q">how did this week actually feel?</span>
@@ -21556,6 +21891,14 @@
       const d = wkState.diffs.find(x => x.id === b.dataset.rej);
       if (d) { d.accepted = false; d.seen = true; renderWeekSheet(); }
     }));
+    // The held answers. A second tap on the same word clears it, because a
+    // question nobody meant to answer should be as easy to unanswer.
+    mount.querySelectorAll("[data-held]").forEach(b => b.addEventListener("click", () => {
+      const id = b.dataset.held, want = b.dataset.v === "yes";
+      wkState.held[id] = wkState.held[id] === want ? undefined : want;
+      if (wkState.held[id] === undefined) delete wkState.held[id];
+      renderWeekSheet();
+    }));
     const tuneBtn = mount.querySelector("#wkTune");
     if (tuneBtn) tuneBtn.addEventListener("click", runWeekTune);
     const skipTune = mount.querySelector("#wkSkipTune");
@@ -21600,12 +21943,29 @@
         const t = await tuneWeekProposals(g, {
           register: wkState.registers[g.id], partial: wkState.partial,
           ticks: doneFor(g), feel: wkState.feel || null,
+          // The holders, and the ones that are not holding. Counted here,
+          // deterministically, like the register: two closed weeks running
+          // where the answer was no is an arrangement to change, and one
+          // week is not a pattern.
+          held: heldThisWeek(g), heldMissedTwice: heldMissedTwice(g, wkState.week),
         }, intakeNow);
         t.proposals.forEach(p => { p.accepted = false; all.push(p); });
         if (t.note) wkState.notes[g.id] = t.note;
         wkState.pre[g.id] = JSON.parse(JSON.stringify(g.mechanisms || []));
       }
-      wkState.diffs = all.filter(p => p.verb !== "keep");
+      // THREE A WEEK, ACROSS EVERYTHING (2026-09-10). Each goal is tuned on
+      // its own, so a board of five could hand back fifteen changes at the
+      // end of a quiet week, which is a chore list and not a check-in. The
+      // goals furthest behind get the room first, since that is where a
+      // smaller version of the work actually helps, and everything else
+      // holds for next week. Churn is a cost the person pays, not the app.
+      const REG_ORDER = { behind: 0, partial: 1, on: 2, ahead: 3 };
+      wkState.diffs = all.filter(p => p.verb !== "keep")
+        .map((p, i) => ({ p, i, r: REG_ORDER[wkState.registers[p.goalId]] == null ? 2 : REG_ORDER[wkState.registers[p.goalId]] }))
+        .sort((a, b) => (a.r - b.r) || (a.i - b.i))
+        .slice(0, 3)
+        .sort((a, b) => a.i - b.i)
+        .map(x => x.p);
     } catch (err) {
       zone.innerHTML = `<div data-type-area="weekly/note" class="wk-note">The tuner isn't reachable, the week can still close;
         the list stays exactly as it is.</div>
@@ -21654,6 +22014,12 @@
         mechanism: d.mechanism || null })),
       notes: wkState.notes,
       pre: wkState.pre,
+      // DID THE HOLDER SEE IT (2026-09-10). One answer per piece of held
+      // work, yes or no, and nothing is counted from it: no streak, no
+      // score, no mark on a row that says no. It is here so the tuner can
+      // meet an arrangement that is not working, which is the only thing
+      // anybody can do about one.
+      held: Object.assign({}, wkState.held || {}),
       partial: wkState.partial,
       closedAt: appNow().toISOString(),
       editableUntil: nextMonEnd.toISOString(),
@@ -21693,6 +22059,17 @@
     qrState = rec ? JSON.parse(JSON.stringify(rec)) : {
       label, step: "evidence",
       evidence: {}, dials: {}, capacity: { asked: false, hours: null },
+      // JUDGE THE STEP, AND ASK WHY (2026-09-10). The definitions list seven
+      // things a quarterly review does and this page ran four of them: it
+      // asked whether the world answered, turned two dials, asked what held
+      // it, and set next quarter. It never asked the first question, whether
+      // the step was met, so nothing downstream knew; it never asked the
+      // second, whether the obstacle they named at setting time was the one
+      // that actually showed up, which is how self-knowledge compounds
+      // quarter over quarter; and it never marked what finished, so a met
+      // step went by without a beat. outcome[goalId] = { met, obstacleWas,
+      // note }.
+      outcome: {},
       horizons: {}, paused: {}, objDiffs: null, mechDiffs: null, held: "",
       notes: {}, pre: { objectives: {}, mechanisms: {} },
       firmed: [], begun: false, closedAt: null,
@@ -21744,12 +22121,42 @@
     const sig = g => barkSliver(g.category,
       active.filter(x => x.category === g.category).length > 1 ? goalHandle(g) : "", true,
       { swatch: true });
-    // An answer is CIRCLED, not boxed — see .qr-pick. One generator, so the
-    // three places that ask a two-way question here cannot drift apart.
-    const pick = (attr, gid, v, on, word) =>
-      `<button class="qr-pick${on ? " on" : ""}" data-${attr}="${gid}" data-v="${v}" type="button">${word}</button>`;
-    const evidenceHtml = active.map(g => `
+    // An answer is CIRCLED, not boxed — see .qr-pick. ONE generator for the
+    // whole app now (pickBtn, hoisted 2026-09-10): this page asks three
+    // two-way questions and the weekly close asks its own, and a mark that
+    // means "your answer" cannot be drawn two ways.
+    const pick = pickBtn;
+    // THE STEP THIS QUARTER WAS FOR, and the words to judge it in. A
+    // maintenance goal holds a floor rather than reaching a milestone, and
+    // an exploration step is met by finding the answer out, so the two
+    // words change with the goal: judging a floor as "met or not" asks
+    // somebody whether they achieved staying married.
+    const stepOf = g => (g.objectives || []).find(o => !o.theme && !o.sketch && o.when === qrState.label)
+      || (g.objectives || []).find(o => !o.theme && !o.sketch) || null;
+    const outc = g => qrState.outcome[g.id] || {};
+    const outWords = g => g.kind === "maintenance" ? ["floor held", "slipped"]
+      : (stepOf(g) || {}).kind === "exploration" ? ["found out", "not yet"]
+      : ["met", "not yet"];
+    const evidenceHtml = active.map(g => {
+      const st = stepOf(g), o = outc(g), w = outWords(g);
+      const ifThen = st && st.obstacle ? ifThenSentence(st.obstacle, st.obstaclePlan) : "";
+      return `
       <div data-type-area="quarterly/goal" class="qr-goal">${sig(g)}<span>${escHtml(g.title)}</span></div>
+      ${st ? `<div data-type-area="quarterly/step" class="qr-step-line">${escHtml(appVoice(st.label, st.source === "user"))}</div>
+      <div data-type-area="quarterly/ask" class="qr-ask">how did it go?
+        <span class="qr-picks">${
+          pick("oc", g.id, "met", o.met === true, w[0])}${
+          pick("oc", g.id, "notyet", o.met === false, w[1])}</span></div>` : ``}
+      ${o.met === true ? `<div data-type-area="quarterly/note" class="qr-note qr-finished">that one is finished. worth a moment before the next.</div>` : ``}
+      ${o.met === false && ifThen ? `
+        <div data-type-area="quarterly/note" class="qr-note">when you set this you said: ${escHtml(ifThen)}</div>
+        <div data-type-area="quarterly/ask" class="qr-ask">was that what happened?
+          <span class="qr-picks">${
+            pick("ow", g.id, "named", o.obstacleWas === "named", "that was it")}${
+            pick("ow", g.id, "other", o.obstacleWas === "other", "something else")}</span></div>
+        ${o.obstacleWas === "other" ? `<div data-type-area="quarterly/write" class="qr-write-row"><textarea class="qr-write" data-ocnote="${g.id}" rows="1"
+          placeholder="what it actually was, a line, or leave it" aria-label="what actually got in the way">${escHtml(o.note || "")}</textarea>
+          ${SpeechRec ? talkButton("qroc" + g.id) : ``}</div>` : ``}` : ``}
       <div data-type-area="quarterly/ask" class="qr-ask">did the world get to respond?
         <span class="qr-picks">${
           pick("ev", g.id, "yes", evid(g).happened === true || (evid(g).happened === undefined && g.rcCapture && g.rcCapture.text), "yes")}${
@@ -21757,7 +22164,7 @@
       ${evid(g).happened === false ? `<div data-type-area="quarterly/note" class="qr-note">not yet is a real answer. it just means the test is still ahead.</div>` : ``}
       <div data-type-area="quarterly/write" class="qr-write-row"><textarea class="qr-write" data-evnote="${g.id}" rows="1"
         placeholder="what happened, a line, or leave it" aria-label="what happened">${escHtml(evid(g).note || (g.rcCapture && g.rcCapture.text) || "")}</textarea>
-        ${SpeechRec ? talkButton("qrev" + g.id) : ``}</div>`).join("");
+        ${SpeechRec ? talkButton("qrev" + g.id) : ``}</div>`; }).join("");
     const dial = g => qrState.dials[g.id] || { energy: 0, cost: 0 };
     const dialsHtml = active.map(g => `
       <div data-type-area="quarterly/goal" class="qr-goal">${sig(g)}<span>${escHtml(g.title)}</span></div>
@@ -21930,6 +22337,29 @@
       qrState.evidence[gid].happened = b.dataset.v === "yes";
       qrSaveDraft(); renderQuarterReview();
     }));
+    // Met or not, and if not, whether the obstacle they named was the one
+    // that showed up. A second tap on the same word clears the answer.
+    mount.querySelectorAll("[data-oc]").forEach(b => b.addEventListener("click", () => {
+      const gid = Number(b.dataset.oc), want = b.dataset.v === "met";
+      const o = qrState.outcome[gid] = qrState.outcome[gid] || {};
+      if (o.met === want) delete qrState.outcome[gid];
+      else o.met = want;
+      qrSaveDraft(); renderQuarterReview();
+    }));
+    mount.querySelectorAll("[data-ow]").forEach(b => b.addEventListener("click", () => {
+      const gid = Number(b.dataset.ow), v = b.dataset.v;
+      const o = qrState.outcome[gid] = qrState.outcome[gid] || {};
+      o.obstacleWas = o.obstacleWas === v ? undefined : v;
+      if (o.obstacleWas === undefined) delete o.obstacleWas;
+      qrSaveDraft(); renderQuarterReview();
+    }));
+    mount.querySelectorAll("[data-ocnote]").forEach(t => {
+      t.addEventListener("input", () => {
+        const o = qrState.outcome[Number(t.dataset.ocnote)];
+        if (o) o.note = t.value;
+      });
+      t.addEventListener("blur", qrSaveDraft);
+    });
     const qrDoor = mount.querySelector("#qrJournalDoor");
     if (qrDoor) qrDoor.addEventListener("click", () => {
       const strip = mount.querySelector("#qrJournalStrip");
@@ -22026,6 +22456,10 @@
     const review = label => g => ({
       quarter: qrState.label,
       evidence: qrState.evidence[g.id] || null,
+      // Their own judgment of the step that ended, and their reading of why
+      // it went that way: the two answers that decide what next quarter's
+      // step should be, and neither existed until now.
+      outcome: qrState.outcome[g.id] || null,
       dials: qrState.dials[g.id] || null,
       weeksClosed: Object.keys(weeks).length,
       capacityHours: qrState.capacity.hours,
@@ -22081,9 +22515,17 @@
         try {
           const t = await refitProposals(g, {
             quarter: qrState.label,
+            // What held, over a quarter of weeks: counted here, from the
+            // answers the weekly closes recorded, and handed over as a
+            // tally the refit never recomputes.
+            heldTally: heldTallyFor(g, qrState.label),
             nextStep: stepDiff ? stepDiff.label : null,
             pace: quarterPaceFor(g.id, qrState.label),
             evidence: qrState.evidence[g.id] || null,
+            // Their own judgment of the step that ended, and their reading
+            // of why: the two answers that decide what the next step should
+            // be, and neither of them existed until now.
+            outcome: qrState.outcome[g.id] || null,
             dials: qrState.dials[g.id] || null,
             capacityHours: qrState.capacity.hours,
             // Their own answer to "what held it", verbatim, or nothing.
@@ -22113,6 +22555,22 @@
   // WEEKS NOBODY CLOSED ARE NOT EVIDENCE. `weeksClosed` says how much of the
   // quarter this is drawn from, so a thin quarter reads as thin rather than
   // as failure (DEFINITIONS law 8).
+  // THE QUARTER'S OWN ANSWER ON WHAT HELD IT. One row per piece of held
+  // work: how many closed weeks its holder saw it and how many it did not.
+  // Weeks nobody closed count for nothing, here as everywhere.
+  function heldTallyFor(goal, label) {
+    const rows = Object.values(weeks || {})
+      .filter(w => w && w.week && w.closedAt && w.held
+        && quarterOfDate2(new Date(w.week + "T12:00:00")) === label);
+    return (goal.mechanisms || [])
+      .filter(m => String(m.holder || "").trim())
+      .map(m => {
+        let seen = 0, missed = 0;
+        rows.forEach(w => { if (w.held[m.id] === true) seen++; else if (w.held[m.id] === false) missed++; });
+        return { mechId: m.id, work: m.weekLabel || m.label, holder: m.holder, seen, missed };
+      })
+      .filter(r => r.seen || r.missed);
+  }
   function quarterPaceFor(goalId, label) {
     const rows = Object.values(weeks || {})
       .filter(w => w && w.week && w.closedAt
@@ -22141,7 +22599,11 @@
     const near = (goal.objectives || []).filter(o => !o.theme && !o.sketch);
     const r = await tryModel("refit", {
       intake, goal: { category: goal.category, title: goal.title, description: goal.description },
-      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source })),
+      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source,
+        // The if-then the person wrote, which is the whole point of naming an
+        // obstacle at all: work designed around it, and a bad week met with
+        // their own move rather than an invented one.
+        obstacle: o.obstacle || null, obstaclePlan: o.obstaclePlan || null })),
       mechanisms: goal.mechanisms,
       quarter: quarterCtx,   // { quarter, nextStep, pace, evidence, dials, capacityHours, held }
       portrait: portraitFor(),
@@ -22181,6 +22643,16 @@
   }
   function closeQuarter() {
     const label = qrState.label;
+    // WHAT FINISHED, WRITTEN DOWN. The person judged each step at the top of
+    // this review, and their word is the only thing that decides it: nothing
+    // is inferred from ticks. The mark rides on the objective, so the atlas
+    // and the roadmap read a finished quarter as finished.
+    goals.forEach(g => {
+      const o = qrState.outcome && qrState.outcome[g.id];
+      if (!o || o.met !== true) return;
+      const st = (g.objectives || []).find(x => !x.theme && !x.sketch && x.when === label);
+      if (st) st.done = true;
+    });
     // evidence → the contact counters, the gentle three-quarter mechanics
     goals.forEach(g => {
       const ev = qrState.evidence[g.id];
@@ -25413,6 +25885,19 @@
   }
 
   const completionsOf = m => (m && m.completions) || {};
+  // A PROPOSED HOLDER IS A THING TO SET UP UNTIL IT IS SET UP (2026-09-10).
+  // The habits read pairs a proposed holder with one small piece of work
+  // that arranges it, pointing back with `holderFor`. While that work is
+  // undone the roadmap says so, so the line never states an arrangement the
+  // person has not made yet. Their own holders, and any the plan read in
+  // their words, are facts from the moment they are written and never wear
+  // the note.
+  const holderStillToSetUp = m => {
+    if (!m || m.holderState !== "proposed") return false;
+    const g = goals.find(x => (x.mechanisms || []).some(y => y.id === m.id));
+    const setup = g && (g.mechanisms || []).find(y => y.holderFor === m.id);
+    return !!setup && !Object.keys(completionsOf(setup)).length;
+  };
 
   // A dated occurrence is done if its own date carries a completion. A
   // FLOATING one is done if any completion falls inside the week — that
@@ -31505,30 +31990,36 @@
     const rgb = t < 0.5 ? ciLerp(CI_LOW, CI_MID, t/0.5) : ciLerp(CI_MID, CI_HIGH, (t-0.5)/0.5);
     return `rgb(${rgb.join(",")})`;
   }
-  // A SECOND SOURCE OF THE SIX LIFE-AREA NAMES, which is why the lowercase
+  // THE WHEEL'S CATALOGUE, BUILT FROM THE ONE TABLE (2026-09-10). This was A
+  // SECOND SOURCE OF THE SIX LIFE-AREA NAMES, which is why the lowercase
   // sweep missed them: it fixed CATS and never knew this list existed. All six
   // labels were still capitalised here long after CATS was lowercase — the
-  // same name, two places, quietly disagreeing. Worth collapsing into CATS;
-  // logged in IMPROVEMENTS rather than done here, because the colours and the
-  // desc lines make it more than a rename.
-  const CI_CATS = [
-    { key: "health", label: "health", desc: "energy, fitness, sleep, mental health.", color: "rgb(var(--cat-health))" },
-    { key: "career", label: "career", desc: "work satisfaction, growth, impact.", color: "rgb(var(--cat-career))" },
-    { key: "finance", label: "finance", desc: "income, savings, financial security.", color: "rgb(var(--cat-finance))" },
-    { key: "relationships", label: "relationships", desc: "family, friends, romantic connection.", color: "rgb(var(--cat-relationships))" },
-    { key: "growth", label: "personal growth", desc: "learning, self-improvement, confidence.", color: "rgb(var(--cat-growth))" },
-    { key: "meaning", label: "meaning", desc: "purpose, values, or something bigger than yourself.", color: "rgb(var(--cat-meaning))" },
-  ];
-  // UT1d (180): the six areas in plain words — for sheets that must explain
-  // themselves to someone who has never read a settings screen.
-  const PLAIN_CATS = {
-    health: "the body-and-energy part of life",
-    career: "the work part of life",
-    finance: "the money-underneath-it-all part",
-    relationships: "the people part of life",
-    growth: "the learning-and-becoming part of life",
-    meaning: "the what-it-all-adds-up-to part",
-  };
+  // same name, two places, quietly disagreeing. The names, the sentences and
+  // the colours now come from AREAS (search "THE SIX AREAS: ONE TABLE"), and
+  // this line only picks the four columns the wheel and the reads want.
+  // KEEP THE SHAPE: it is exported as `catalogue()` on window.__pipeline and
+  // the harness reads key, label, desc and color off it (tests 116, 217, 217b).
+  //
+  // THE SIX AREAS, DEFINED ONCE (owner, 2026-09-09: "why is growth and impact
+  // under career and not in meaning or personal growth? ... we should define
+  // what each is in a sentence that makes logical sense. And ensure the
+  // categories make sense and are utilized"). `desc` is that sentence, and it
+  // is the only definition of a room anywhere: the wheel shows it under the
+  // dial's name, the dig sheet opens a dial-born question with it, and
+  // intakeTranscript carries all six to every read under THE SIX AREAS, so
+  // the prompts point at the transcript and define nothing themselves.
+  // Before this, four places each described the rooms in their own words
+  // (this list, PLAIN_CATS, the add read, the categorize read); career's line
+  // here read "growth, impact", one being the name of another room and the
+  // other filed under meaning by the categorize read; and the reads that
+  // draft the dials, the themes and the goals were handed six bare names.
+  // Each sentence carries its own boundary: career is what is paid for,
+  // growth is for its own sake and apart from the work, meaning is what the
+  // life is for. Test 217 holds the six to one lowercase sentence each, none
+  // naming another room.
+  const CI_CATS = AREAS.map(a => ({ key: a.key, label: a.label, desc: a.desc, color: a.color }));
+  // PLAIN_CATS, the dig sheet's own second wording of the six (UT1d, 180),
+  // retired 2026-09-09: the sheet reads `desc` above now (tests 116, 217).
   const ciValues = {};
   const ciSubValues = {};
   CI_CATS.forEach(c => ciValues[c.key] = 5);
@@ -31833,7 +32324,10 @@
   // A dig question the person is no longer being asked must not keep its old
   // answer: the next payload would present last run's words as this run's.
   function pruneDigAnswers(questions) {
-    const keep = new Set((questions || []).map(q => "dig_" + q.key));
+    // The probes are asked on their own page and are not the dig's to
+    // forget: a fresh set of dig questions must not take them with it.
+    const keep = new Set((questions || []).map(q => "dig_" + q.key)
+      .concat(PROBE_QUESTIONS.map(p => "dig_" + p.key)));
     Object.keys(ciJournal).forEach(k => {
       if (k.indexOf("dig_") === 0 && !keep.has(k)) delete ciJournal[k];
     });
@@ -31882,6 +32376,40 @@
     ciPatterns = {};
   }
 
+  // THE TWO ODD QUESTIONS (2026-09-10). The definitions have called for
+  // these since v3 and the app never asked them. What somebody states they
+  // want is contaminated by what they have absorbed they should want; these
+  // two go around that. Envy is embarrassing and therefore honest, a want
+  // somebody has not given themselves permission to say out loud. And what
+  // a person loved at ten and dropped is the richest vein of unrealized
+  // goals there is, because nobody chose to stop, life just moved.
+  //
+  // They answer into the same place the follow-ups do, so they ride the same
+  // road into every stage, and they carry the theme "probe" so the goals
+  // read knows where the unrequested goal is allowed to come from.
+  const PROBE_QUESTIONS = [
+    { key: "probe_envy", theme: "probe", q: "what do you envy in other people?",
+      ph: "I catch myself envying\u2026" },
+    { key: "probe_ten", theme: "probe", q: "what did you love at ten years old that you dropped?",
+      ph: "I used to spend hours\u2026" },
+  ];
+
+  // The follow-ups as the intake carries them: the question a person was
+  // actually asked, the theme it came from, and their answer. Unanswered
+  // questions are left out, a skip is an answer and never a gap to fill.
+  function followupsOf() {
+    const seen = new Set();
+    return ((ciDig && ciDig.questions) || []).concat(PROBE_QUESTIONS)
+      .filter(q => {
+        if (!q || !q.key || seen.has(q.key)) return false;
+        seen.add(q.key);
+        return true;
+      })
+      .map(q => ({ key: q.key, theme: q.theme || "", q: q.q || "",
+                   a: (ciJournal["dig_" + q.key] || "").trim() }))
+      .filter(f => f.a);
+  }
+
   function buildIntake() {
     const journals = {};
     JOURNAL_KEYS.forEach(k => { if (ciJournal[k] && ciJournal[k].trim()) journals[k] = ciJournal[k].trim(); });
@@ -31914,6 +32442,17 @@
       journals,
       themes: { offered: ciThemes.slice(), selected: ciSelectedThemes.slice() },
       ladder,
+      // THE FOLLOW-UP ANSWERS ARE PART OF THE INTAKE (2026-09-10). They are
+      // the deepest thing a person writes here: the entry is what they
+      // volunteer cold, and these are the answers to the questions a coach
+      // chose after reading it. They lived in ciJournal under "dig_<key>",
+      // which JOURNAL_KEYS deliberately excludes, and rode to ONE stage as a
+      // side payload, so the transcript, which is what every stage actually
+      // reads, never carried a word of them: the planner, the habits, the
+      // readiness check, the weekly tuner and the quarterly refit all worked
+      // from the entry alone. They belong in the intake itself, where
+      // everything downstream already looks.
+      followups: followupsOf(),
       ratings: {
         values: Object.assign({}, ciValues),
         receipts: Object.assign({}, ciReceipts),
@@ -31996,11 +32535,20 @@
       { key: "alreadyTried", q: "what have you already tried here, and what happened?",
         ph: "Apps, clubs, reaching out, moving cities\u2026 or nothing yet, which is also an answer." },
     ],
+    // GROWTH IS ASKED ABOUT THE PURSUIT FIRST (2026-09-09). Its two
+    // questions were "what have you started and not finished" and "what does
+    // a week look like when you are keeping something up": both about
+    // follow-through, neither about the thing being learned, so the room
+    // whose definition is what you practise for its own sake had no question
+    // that could earn a goal, and the owner's own run left it empty. The
+    // pursuit is asked first because it is what a goal here is built from;
+    // startedDropped stays, because the circumstances things collapse under
+    // are what the design has to survive. Test 217.
     growth: [
-      { key: "startedDropped", q: "What have you started and not finished, and what was going on when it stopped?",
+      { key: "pursuit", q: "what do you keep meaning to get good at, outside of the work you're paid for?",
+        ph: "A skill, an instrument, a language, a craft\u2026" },
+      { key: "startedDropped", q: "what have you started and not finished, and what was going on when it stopped?",
         ph: "The circumstances matter more than the thing itself\u2026" },
-      { key: "goodWeek", q: "what does a week look like when you ARE keeping something up?",
-        ph: "What's different about those weeks\u2026" },
     ],
     meaning: [
       { key: "matteredWhen", q: "when has something you did felt like it genuinely mattered? what was it?",
@@ -32977,11 +33525,16 @@
   // suggestion becomes a real goal. All optional — this exists to catch "sounds
   // exciting but ungrounded" before it's committed to, not to make anyone
   // justify what they want.
+  // The hint used to BE the placeholder, so the one thing on the row that
+  // should have said "write here" was a second sentence to read instead. It
+  // is the question's aside now, and the line itself just says how much.
   const GROUNDING_QUESTIONS = [
     { key: "sampled",  q: "have you actually tried a version of this yet?",
-      ph: "Or: the cheapest way you could try it in the next month\u2026" },
+      why: "or the cheapest way you could try it in the next month.",
+      ph: "a line is plenty" },
     { key: "fallback", q: "if this doesn't work out, what's the fallback?",
-      ph: "Knowing this usually makes it easier to start, not harder." },
+      why: "knowing this usually makes it easier to start, not harder.",
+      ph: "a line is plenty" },
   ];
 
   // One fixed welcome quote (owner's choice, 2026-08-21) — the first screen
@@ -33365,6 +33918,19 @@
         const idx = (i.themes && i.themes.selected || []).indexOf(label);
         if (idx >= 0) ciJournal["why" + idx] = ans;
       });
+      // THE FOLLOW-UPS COME BACK WITH THE BOARD (2026-09-10). Their answers
+      // ride in the saved intake now, so a returning person's check-in, and
+      // every re-read of their plan, reads what a first run read. The
+      // questions come back with them, since a question nobody can see is an
+      // answer to nothing: ciDig is rebuilt from what was saved when this
+      // device has no live dig of its own, and the probes stay out of it,
+      // being asked on their own page rather than by the dig.
+      (i.followups || []).forEach(f => { if (f && f.key) ciJournal["dig_" + f.key] = f.a || ""; });
+      const asked = (i.followups || []).filter(f => f && f.key && f.theme !== "probe" && f.q);
+      if (!ciDig && asked.length) {
+        ciDig = { questions: asked.map(f => ({ key: f.key, theme: f.theme, q: f.q })) };
+        registerFollowupText(ciDig);
+      }
       Object.entries(i.depth || {}).forEach(([area, d]) => {
         if (d.better) ciJournal["depth_" + area] = d.better;
         if (d.nextStep) ciJournal["next_" + area] = d.nextStep;
@@ -34347,6 +34913,11 @@
   // registered as it arrives — the transcript must show the model the question
   // a person was actually answering. (Also accepts the older followups shape,
   // for drafts saved before the dig existed.)
+  // The probes' wording, registered once: the transcript shows the model
+  // the question a person was actually answering, and these two are asked
+  // by the app rather than chosen per person by the dig.
+  PROBE_QUESTIONS.forEach(p => { QUESTION_TEXT["dig_" + p.key] = p.q; });
+
   function registerFollowupText(src) {
     if (!src) return;
     (src.questions || []).forEach(q => { QUESTION_TEXT["dig_" + q.key] = q.q; });
@@ -34371,6 +34942,21 @@
     Object.entries(intake.ladder || {}).forEach(([theme, ans]) => {
       written.push(`Q: (about the theme they marked core \u2014 "${theme}") Why does this matter?\nA: ${ans}`);
     });
+    // The follow-ups, under the questions they answered, inside the quotable
+    // section, because they ARE the person's words. Marked as follow-ups and
+    // by the theme they came from, so a stage can weight them: these are the
+    // answers to the questions the app chose after reading the entry, and
+    // they are the deepest layer of the intake.
+    (intake.followups || []).forEach(f => {
+      const about = f.theme === "probe" ? "one of the two odd questions"
+        : /^gap:/.test(f.theme) ? `the ${f.theme.slice(4)} part of life`
+        : /^aside:/.test(f.theme) ? `"${f.theme.slice(6)}"`
+        : f.theme === "capacity" ? "their hours"
+        : f.theme === "money" ? "the shape of their money"
+        : f.theme === "conditions" ? "what their days actually hold"
+        : `"${f.theme}"`;
+      written.push(`Q: (follow-up, about ${about}) ${f.q}\nA: ${f.a}`);
+    });
     // Render each depth answer under the question it was actually asked, so the
     // model reads facts rather than guessing what a bare field name means.
     Object.entries(intake.depth || {}).forEach(([area, d]) => {
@@ -34386,6 +34972,15 @@
       + `${clock.weeksLeftInQuarter} week${clock.weeksLeftInQuarter === 1 ? "" : "s"} left. Near-term objectives `
       + `belong in this quarter or the next. Never schedule anything into a quarter that has already passed. `
       + `The week runs Monday to Sunday, and the days of this week before today have already happened.`);
+
+    // THE SIX AREAS (2026-09-09): the one definition of each room, from
+    // CI_CATS, ahead of the words so a read files as it reads. Every prompt
+    // that names an area points here and defines nothing itself. The keys
+    // are what the reads return; the page's label rides along where it
+    // differs. Test 217.
+    out.push("=== THE SIX AREAS (the rooms every dial, theme and goal is filed under; context only, never quote as their words) ===\n"
+      + CI_CATS.map(c => `${c.key}${c.label !== c.key ? `, which the page calls ${c.label}` : ""}: ${c.desc}`).join("\n")
+      + "\nA room may hold one goal, several, or none: it is a segment of their vision, never a box to fill.");
 
     out.push("=== WHAT THEY WROTE (the only text you may quote as evidence) ===\n\n"
       + (written.length ? written.join("\n\n") : "(they haven't written anything yet)"));
@@ -34438,9 +35033,21 @@
       .filter(t => t && t.label && !sel.includes(t.label));
     if (left.length) out.push("=== THEMES OFFERED AND LEFT UNPICKED (the sheet's reading, context only, never quote as their words) ===\n"
       + left.map(t => `- (${KIND_WORD[t.kind] || "matters to you"}) ${t.label}` + (t.insight ? `: ${t.insight}` : "")).join("\n"));
-    if (intake.patterns && intake.patterns.abandonment) {
+    // DEFERRING IS NOT ABANDONING, and the difference decides the whole
+    // shape of a plan: somebody who quits needs the load capped and a
+    // bad-week floor, somebody who defers finishes everything they start and
+    // needs the time protected before something else claims it. The client
+    // has told those two apart since detectPatterns was written, and only
+    // ever said one of them out loud, so the deferrer was planned for as if
+    // nothing had been noticed.
+    const pat = intake.patterns || {};
+    if (pat.abandonment) {
       out.push("=== DETECTED PATTERN ===\nA history of starting things and dropping them"
-        + (intake.patterns.evidence ? `, from their own words: ${intake.patterns.evidence}` : "") + ".");
+        + (pat.evidence ? `, from their own words: ${pat.evidence}` : "") + ".");
+    } else if (pat.deferral) {
+      out.push("=== DETECTED PATTERN ===\nA habit of putting their own things off until "
+        + "something else claims the time. They finish what they start. What they lose is the hour."
+        + (pat.evidence ? ` In their own words: ${pat.evidence}` : ""));
     }
     return out.join("\n\n");
   }
@@ -34617,8 +35224,19 @@
     const t = (s || "").trim().replace(/\s+/g, " ");
     return "\u201c" + (t.length > 150 ? t.slice(0, 147).trim() + "\u2026" : t) + "\u201d";
   }
+  // EVERYTHING THEY WROTE, WHEREVER THEY WROTE IT (2026-09-10). This read
+  // the entry and the laddering answers alone, so the pattern detection ran
+  // over a fraction of what a person had actually said: the follow-up
+  // answers, which is where somebody writes "it is the first thing I cut",
+  // the area facts, and the note that says what the plan should respect were
+  // all invisible to it. Someone can only be read from what they wrote.
   const intakeVoice = intake =>
-    Object.values(intake.journals || {}).concat(Object.values(intake.ladder || {}));
+    Object.values(intake.journals || {})
+      .concat(Object.values(intake.ladder || {}))
+      .concat(Object.values(intake.depth || {}).flatMap(d => Object.values(d || {})))
+      .concat((intake.followups || []).map(f => f.a))
+      .concat([(intake.constraints || {}).situation])
+      .filter(x => typeof x === "string" && x.trim());
 
   // How many area words land in a single sentence. One stray "people" in a sentence
   // about web design is not the person raising their relationships; two words in one
@@ -34687,7 +35305,13 @@
     const ex = collectMirrorExtras();
     return JSON.stringify([it.journals, it.themes.selected, it.ladder, it.ratings.values,
       it.ratings.userEdited, it.ratings.drivers, it.depth, it.constraints,
-      it.capacity.statedHours, it.capacity.observed, ex.followups]);
+      it.capacity.statedHours, it.capacity.observed,
+      // The follow-ups off the intake now, not off the goals step's own
+      // extras: the same answers, but every stage reads them from here, so
+      // the signature that decides whether a draft still stands is read from
+      // the same place the draft was written from. ex is still consulted for
+      // a correction of the mirror.
+      it.followups, ex.correction]);
   }
   // The only writer of ciDraft from an async run: stale tokens are refused.
   // E1 (walkthrough-2): a wholesale replacement may NEVER discard the
@@ -35177,9 +35801,9 @@
       <div class="rv-h-line"><b>Realistically ${yearsLabel(realistic)}.</b> ${escHtml(h.basis || "")}</div>
       <div class="rv-h-q">how long do you want to give it?</div>
       <div class="rv-h-opts">
-${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched && o.y === chosen) ? " on" : ""}" data-y="${o.y}">${yearsLabel(o.y)}<span class="rv-h-tag">${o.tag}</span></button>`).join("")}
-<button type="button" class="rv-h-opt rv-h-own" data-own="1">my own ${DRAWN_ARROW}</button>
-<button type="button" class="rv-h-opt${unsure ? " on" : ""}" data-y="">not sure yet</button>
+${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !untouched && o.y === chosen) ? " on" : ""}" data-y="${o.y}">${yearsLabel(o.y)}<span class="rv-h-tag">${o.tag}</span></button>`).join("")}
+<button type="button" class="ci-chip rv-h-opt rv-h-own" data-own="1">my own ${DRAWN_ARROW}</button>
+<button type="button" class="ci-chip rv-h-opt${unsure ? " on" : ""}" data-y="">not sure yet</button>
       </div>
       <div class="rv-h-ownrow" style="display:none">
         <label>give it <input class="rv-h-ownin" type="number" min="0.5" max="40" step="0.5"
@@ -35193,6 +35817,59 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     </div>`;
   }
 
+  // ---- WHAT THEY SAID ON THE CARD, READ ONCE (2026-09-10) ----
+  // The why check, the two grounding answers and the readiness answers were
+  // written down, saved to the database, and read by NOTHING: no prompt, no
+  // planner section, no board surface. The owner asked what the why check and
+  // the reality check were for, which is the right question, because as built
+  // the answer was nothing. They are the last thing a person says before a
+  // plan is written, so they now travel as questions and answers under THEIR
+  // ANSWERS, and plan.system says what each one changes.
+  //
+  // The question is the key, not its position. The answers used to be keyed by
+  // the index of a question in a list that a re-run redraws, so a shorter list
+  // silently re-labelled what they had written, and `g.readiness` (the
+  // questions themselves) was never persisted, which orphaned every answer at
+  // the next load. Pairs fix both. The old index map is still read, so a draft
+  // saved before today keeps its answers.
+  const whyCheckQuestion = g => g.kind === "maintenance"
+    ? "what are you protecting here, is it yours to protect?"
+    : "do you genuinely want this, or feel you should?";
+
+  function readinessPairs(g) {
+    const raw = g.readinessAnswers;
+    if (Array.isArray(raw)) return raw.filter(x => x && x.q);
+    const qs = ((g.readiness || {}).questions) || [];
+    return Object.entries(raw || {})
+      .map(([k, a]) => ({ q: ((qs[k] || {}).ask) || "", a }))
+      .filter(x => x.q && x.a);
+  }
+  const readinessAnswerFor = (g, ask) => (readinessPairs(g).find(x => x.q === ask) || {}).a || "";
+  function setReadinessAnswer(g, ask, value) {
+    const list = readinessPairs(g).filter(x => x.q !== ask);
+    if ((value || "").trim()) list.push({ q: ask, a: value });
+    g.readinessAnswers = list;
+  }
+
+  // The block the planner is handed. Empty when they answered nothing, and
+  // then no section is sent at all rather than an empty heading.
+  function goalAnswers(g) {
+    const out = [];
+    const why = g.whyCheck;
+    if (why && why.verdict) out.push({
+      q: whyCheckQuestion(g),
+      a: why.verdict === "should"
+        ? ("more of a should" + (why.note && why.note.trim() ? ", " + why.note.trim() : ""))
+        : "genuinely theirs",
+    });
+    readinessPairs(g).forEach(x => out.push({ q: x.q, a: x.a }));
+    GROUNDING_QUESTIONS.forEach(rc => {
+      const a = ((g.realityCheck || {})[rc.key] || "").trim();
+      if (a) out.push({ q: rc.q, a });
+    });
+    return out;
+  }
+
   // ---------- step definitions ----------
   // What the final call gets beyond the intake: the dig answers paired with
   // the questions they actually answered.
@@ -35203,8 +35880,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     return { followups, correction: null };
   }
 
-  // UT1d (180): a dig question born from a wheel rating opens with the plain
-  // words for its area and the dial itself, at their number. Adjusting writes
+  // UT1d (180): a dig question born from a wheel rating opens with the area's
+  // one sentence (CI_CATS.desc, the only definition of a room) and the dial
+  // itself, at their number. Adjusting writes
   // straight back to the wheel; slid above 5, the sheet offers the skip —
   // the question may have answered itself. Extracted so the harness can
   // drive the dial without walking the whole discovery.
@@ -35214,7 +35892,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     if (!cat) return "";
     const v = ciValues[cat.key] || 5;
     return `<div class="ci-dig-dial" data-area="${cat.key}">
-        <div class="ci-dig-dial-line">${escHtml(cat.label.toLowerCase())}, ${escHtml(PLAIN_CATS[cat.key])}, at <span class="ci-dial-num">${v}</span></div>
+        <div class="ci-dig-dial-line">${escHtml(cat.label.toLowerCase())}, at <span class="ci-dial-num">${v}</span></div>
+        <div class="ci-dig-dial-line ci-dig-dial-def">${escHtml(cat.desc)}</div>
         <div class="ci-dig-dial-slide"><input type="range" class="ci-hslider" min="1" max="10" step="1"
           value="${v}" aria-label="${escHtml(cat.label)} satisfaction, 1 to 10"></div>
         <div class="ci-dig-dial-offer" hidden>looks better than you first said, <button class="ci-dig-skip ci-dial-skip" type="button">skip this one?</button></div>
@@ -35575,7 +36254,14 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       // same four answers, on paper instead of in boxes.
       { journalMode: true, render: b => {
           const CH = [
-            { key: "hoursPerWeek", q: "how much time can you honestly give this, most weeks?", cast: Number,
+            // THE QUESTION IS THE WHOLE OF LAW 3 (2026-09-10). "Budget under
+            // capacity" was being served twice: once here, by asking about
+            // most weeks, and again downstream by quietly spending only 70%
+            // of the answer. Two safety margins on one number is how a plan
+            // ends up too small to reach anything, and the second one was
+            // invisible, so nobody could argue with it. The page asks for the
+            // bad-week number now, and every read spends the whole of it.
+            { key: "hoursPerWeek", q: "how much time can you give this on an ordinary bad week, not a good one?", cast: Number,
               opts: [["2", "A stolen hour"], ["5", "A few evenings"], ["10", "Evenings + a weekend morning"], ["15", "Serious time"]] },
             { key: "dependents", q: "who's counting on you day to day?",
               opts: [["none", "Just me"], ["partner", "Me and a partner"], ["kids", "Kids in the mix"], ["family_care", "Family counts on me"]] },
@@ -35836,6 +36522,35 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           paint();
         }},
 
+      // TWO ODD QUESTIONS, ON THEIR OWN PAGE (2026-09-10). Both optional,
+      // both skippable in one tap, and nothing downstream treats a skip as a
+      // gap. They sit here, after the follow-ups, because by now the person
+      // has written about the life they have and answered questions about
+      // it, and these two are the ones that go at the life they have not
+      // said out loud. The page says what they are for: the app is looking
+      // for the goal nobody asked for, and it says so rather than slipping
+      // two strange questions into the run unexplained.
+      { journalMode: true, render: b => {
+          b.innerHTML = stepHeader("Two odd questions.",
+            "Neither is about your plan. They are how I find the thing you never asked for. Skip either.")
+            + PROBE_QUESTIONS.map(p => `<div class="ci-qblock">
+                <div class="ci-q-row"><p class="ci-q">${escHtml(p.q)}</p>${talkButton("dig_" + p.key)}</div>
+                ${journalPage({ key: "dig_" + p.key, ph: p.ph, cls: "ci-dig-page" })}
+              </div>`).join("")
+            + `<div class="ci-nav">
+                 <button class="ci-back" type="button" onclick="window.__ciBack()">\u2190 Back</button>
+                 <div style="display:flex;gap:12px;align-items:center;">
+                   <button class="ci-dig-skip" type="button" data-probe-skip>skip both</button>
+                   <button class="btn-solid" type="button" onclick="window.__ciNext()">Next \u2192</button>
+                 </div>
+               </div>`;
+          wireJournalPages(b);
+          b.querySelectorAll(".ci-journal-input").forEach(ta => {
+            if (ciJournal[ta.dataset.key]) { ta.value = ciJournal[ta.dataset.key]; ta.dispatchEvent(new Event("input")); }
+          });
+          b.querySelector("[data-probe-skip]").addEventListener("click", () => ciNext());
+        }},
+
       // v3 STEP ONE of the discovery's three: the life goals, high level.
       // Only the goals call has run when this paints \u2014 vision, titles,
       // timelines (estimate vs target), the why check, active/paused, and the
@@ -35913,7 +36628,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               stopWait();
               progReset();
               if (tok !== ciRenderSeq) return;
-              b.innerHTML = stepHeader("Your life goals organized, yours to change") + analysisErrorHtml(err);
+              b.innerHTML = stepHeader("your life goals, organized, yours to change") + analysisErrorHtml(err);
               return;
             }
             clearTimeout(longT);
@@ -35928,7 +36643,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           }
           // The vision passage IS the subtitle now \u2014 no second line of
           // instruction competing with it for the same space.
-          b.innerHTML = stepHeader("Your life goals organized, yours to change")
+          b.innerHTML = stepHeader("your life goals, organized, yours to change")
             + `<div class="rv-vision rv-vision-edit" id="rvVision" contenteditable="plaintext-only" role="textbox" aria-label="your vision, in your words">${escHtml(ciDraft.vision || "")}</div>
                <div class="rv-vision-hint">your vision, tap to put it in your own words</div>
                <div class="rv-caps-line" id="rvCapsLine"></div>`
@@ -35971,6 +36686,17 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             });
           }
           function paint() {
+            // A LATE CALLBACK PAINTS NOTHING (2026-09-10). paint() is called
+            // from async work that outlives the page it was started on: the
+            // readiness read, the shaping of an added goal, the streamed
+            // draft. When the person has moved on, `list` is the node that
+            // step captured and `ciDraft` may be gone, so the paint threw
+            // "Cannot read properties of null" from nowhere in particular,
+            // landed in the harness as an asynchronous fault, and was blamed
+            // on whichever test happened to be running. Measured at one run
+            // in six on identical bytes. Every caller already means "paint if
+            // this is still the page", so say it once, here.
+            if (!list || !ciDraft) return;
             recomputeDraftSplit();
             list.innerHTML = "";
             if (!ciDraft.goals.length) {
@@ -35995,12 +36721,19 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               const isNew = g.isNew;
               const row = document.createElement("div");
               row.className = "rv-item" + (g.dropped ? " dropped" : "");
-              // DEFAULT view: category, title, description, "Why this came up",
-              // and one quiet bottom line. Everything a person only sometimes
-              // wants — the horizon, the why check, the status, the grounding,
-              // and the way out — waits behind "tune →". Same fields, revealed
-              // when they are asked for.
+              // THE FACE ASKS, THE FOLD EXPLAINS (2026-09-10). The face
+              // carries the category, the title, and the three things this
+              // page exists to settle: is this yours, how long are you giving
+              // it, does it start now. Behind "why this one →" is everything
+              // a person READS rather than answers: the description, why it
+              // came up, the reframe, the second look, and the optional
+              // questions that sharpen the plan. Dropping a goal lives in the
+              // card's own menu, where renaming does.
               const tuned = !!g.tuneOpen;
+              // A per-goal second look lived only inside the fold, so a card
+              // nobody tuned never said it had one. The cross-goal kind says
+              // its piece above the list already and is not this card's.
+              const secondLook = !!(g.tension && !g.tension.resolved && g.tension.kind !== "resource");
               const hz = g.horizon;
               const realisticYrs = hz && hz.realisticYears;
               const chosenYrs = horizonYearsOf(g) || realisticYrs;
@@ -36014,6 +36747,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 g.kind === "floor" && g.floorAuto ? "held as a floor, under 2 hrs/week"
                   : g.kind === "floor" ? "keeping the door open" : "",
                 g.keptAsWritten ? "kept as written, couldn't shape it right now" : "",
+                secondLook ? "one thing worth a look" : "",
+                // A goal they marked a "should" and kept is a decision, and
+                // the card says so where the rest of the card's own line is.
+                // The planner is told the same thing: plan it as theirs.
+                g.whyCheck && g.whyCheck.verdict === "should" ? "chosen, not defaulted" : "",
               ].filter(Boolean).join(" · ");
 
               // The face is five titles first (item 27): category, title, one
@@ -36022,6 +36760,35 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               // drawn × (item 30) — only the three add paths, never a
               // title-edited AI goal (draftId suffix, not provenance).
               const handAdded = /[ucg]$/.test(g.draftId || "");
+              // ONE LIST OF QUESTIONS, NOT TWO (2026-09-10). The model's
+              // follow-ups and the two standing ones were two headings inside
+              // a second fold whose label ("Check this is grounded") broke the
+              // lowercase law and whose arrow meant the same thing open and
+              // shut. They are one list now, and the standing pair is drawn
+              // from a constant, so it is on the page whether or not the
+              // readiness call has landed or ever lands.
+              // Asked once per goal, the moment its fold is open, in the
+              // background. It hangs off the fold being OPEN rather than off
+              // the tap that opened it, so a card restored with its fold up
+              // still asks.
+              if (tuned && !g.readiness && !g.readinessAsked) {
+                g.readinessAsked = true;
+                checkReadiness(g, buildIntake()).then(r => {
+                  g.readiness = r;
+                  // Only repaint if this is still the draft on screen and they
+                  // have not shut the card in the meantime.
+                  if (g.tuneOpen && ciDraft && ciDraft.goals[i] === g && list.isConnected) paint();
+                }).catch(() => { g.readinessAsked = false; });
+              }
+              const asked = (((g.readiness || {}).questions) || []).map(q => ({
+                  ask: q.ask, why: q.why || "", cls: "rv-readiness-in",
+                  attr: `data-ask="${escHtml(q.ask || "")}"`,
+                  ph: "a line is plenty", value: readinessAnswerFor(g, q.ask),
+                })).concat(GROUNDING_QUESTIONS.map(rc => ({
+                  ask: rc.q, why: rc.why || "", cls: "rv-reality-in",
+                  attr: `data-k="${rc.key}"`,
+                  ph: rc.ph, value: (g.realityCheck || {})[rc.key] || "",
+                })));
               row.innerHTML = `
                 <button class="lv-card-menu-handle" type="button" aria-label="goal menu"
                   title="rename or drop">⋯</button>
@@ -36032,17 +36799,47 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   ${handAdded && !g.dropped ? `<button class="rv-remove-x" type="button"
                      aria-label="remove this goal" title="remove, it won't be saved"><svg viewBox="0 0 44 44" aria-hidden="true">${DRAWN_X[1]}</svg></button>` : ``}
                 </div>
-                ${g.categoryUnplaced && !g.dropped ? `<div class="ci-review-actions rv-cat-fix">${["health","career","finance","relationships","growth","meaning"].map(k =>
+                ${g.categoryUnplaced && !g.dropped ? `<div class="ci-review-actions rv-cat-fix">${AREA_KEYS.map(k =>
                   `<button type="button" class="ci-chip" data-k="${k}">${CATS[k].label}</button>`).join("")}</div>` : ``}
+                ${g.unrequested && !g.dropped ? `<div class="rv-unrequested" data-type-area="review/unrequested">${
+                  escHtml(g.unrequestedWhy || "you didn't say this, but everything you told me points here")}</div>` : ``}
                 <div class="rv-title${g.dropped ? "" : " edit-signal"}" contenteditable="${g.dropped ? "false" : "true"}"${g.dropped ? "" : ` role="textbox" aria-label="the goal's title, in your words"`}>${escHtml(stripDot(g.title))}</div>
                 ${(g.orphanedWhens || []).length ? `<div class="rv-orphan-when">${g.orphanedWhens.map(o =>
                   `Your ${escHtml(o.when)} slot had nothing to attach to, set it again on the new week if you want it.`).join("<br>")}</div>` : ``}
                 ${g.dropped
                   ? `<div class="rv-bottom"><span class="rv-bottom-line">dropped. it won't be saved.</span>
                        <button class="rv-tune rv-toggle">keep it after all</button></div>`
-                  : `<div class="rv-bottom">
+                  : `
+                <!-- THE THREE THINGS THIS PAGE EXISTS TO ASK (2026-09-10).
+                     Do you want this, how long are you giving it, is it now:
+                     the why check, the timeline and active-or-paused all lived
+                     behind "tune →", so on most runs nobody answered any of
+                     them and the goals were accepted by default. This is the
+                     last gate before a plan gets written from these cards,
+                     and a question nobody sees is not a gate. What stays in
+                     the fold is what a person READS rather than answers. -->
+                  ${horizonBlock(g, i)}
+                  <div class="rv-why">
+                    <div class="rv-why-q">${escHtml(whyCheckQuestion(g))}</div>
+                    <div class="rv-why-btns">
+                      <button class="ci-chip rv-why-mine${g.whyCheck && g.whyCheck.verdict === "mine" ? " on" : ""}">genuinely mine</button>
+                      <button class="ci-chip rv-why-should${g.whyCheck && g.whyCheck.verdict === "should" ? " on" : ""}">more of a “should”</button>
+                    </div>
+                    ${g.whyCheck && g.whyCheck.verdict === "should" ? `
+                      <div class="rv-q">
+                        <input class="rv-why-note" placeholder="a line, or leave it" aria-label="whose voice is that?"
+                               value="${escHtml(g.whyCheck.note || "")}" />
+                      </div>
+                      <div class="rv-why-line">whose voice is that? a “should” can stay, chosen now instead of assumed.</div>` : ``}
+                  </div>
+                  <div class="rv-status">
+                    <span class="rv-status-label">this goal starts</span>
+                    <button class="ci-chip rv-st-active${g.status !== "parked" ? " on" : ""}">active</button>
+                    <button class="ci-chip rv-st-paused${g.status === "parked" ? " on" : ""}">paused, not now, not gone</button>
+                  </div>
+                     <div class="rv-bottom">
                        <span class="rv-bottom-line">${escHtml(bottomLine)}</span>
-                       <button class="rv-tune">${tuned ? "done ↑" : "tune →"}</button>
+                       <button class="rv-tune">${tuned ? "done ↑" : "why this one →"}</button>
                      </div>
                 <div class="rv-tuned" style="display:${tuned ? "block" : "none"}">
                   ${g.description ? `<div class="rv-desc">${escHtml(g.description)}</div>` : ``}
@@ -36052,54 +36849,27 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                       <span class="rv-reason-label">the reframe</span>
                       <p>${escHtml(g.control.explain || "You can't fully control that outcome, so this goal is about what you can.")}</p>
                       ${g.control.aspiration ? `<p class="rv-reframe-asp">${escHtml(g.control.aspiration)}</p>` : ``}
+                      ${g.control.originalTitle ? `<p class="rv-reframe-mine-line">you wrote: ${escHtml(stripDot(g.control.originalTitle))}</p>` : ``}
                       <div class="rv-reframe-btns">
                         <button class="ci-chip rv-reframe-use${g.title !== g.control.originalTitle ? " on" : ""}">use the reframe</button>
-                        <button class="ci-chip rv-reframe-mine${g.title === g.control.originalTitle ? " on" : ""}">keep my wording</button>
+                        ${g.control.originalTitle ? `<button class="ci-chip rv-reframe-mine${g.title === g.control.originalTitle ? " on" : ""}">my own wording</button>` : ``}
                       </div>
                     </div>` : ``}
-                  ${g.tension && !g.tension.resolved && g.tension.kind !== "resource" ? `
+                  ${secondLook ? `
                     <div class="ci-tension-note rv-tension"><strong>worth a second look:</strong> ${escHtml(g.tension.question)}
-                      ${g.tension.reasoning ? `<div class="ci-tension-ev">${escHtml(g.tension.reasoning)}</div>` : ``}</div>` : ``}
-                  ${horizonBlock(g, i)}
-                  <div class="rv-why">
-                    <div class="rv-q-text">${g.kind === "maintenance"
-                      ? "The why check: what are you protecting here, is it yours to protect?"
-                      : "The why check: do you genuinely want this, or feel you should?"}</div>
-                    <div class="rv-why-btns">
-                      <button class="ci-chip rv-why-mine${g.whyCheck && g.whyCheck.verdict === "mine" ? " on" : ""}">genuinely mine</button>
-                      <button class="ci-chip rv-why-should${g.whyCheck && g.whyCheck.verdict === "should" ? " on" : ""}">more of a “should”</button>
-                    </div>
-                    ${g.whyCheck && g.whyCheck.verdict === "should" ? `
-                      <input class="rv-why-note" placeholder="Whose voice is that? One line, or leave it." aria-label="whose voice is that?"
-                             value="${escHtml(g.whyCheck.note || "")}" />
-                      <div class="rv-why-line">a “should” can stay on the board, now it stays chosen, not defaulted.</div>` : ``}
-                  </div>
-                  <div class="rv-status">
-                    <span class="rv-status-label">this goal starts</span>
-                    <button class="ci-chip rv-st-active${g.status !== "parked" ? " on" : ""}">active</button>
-                    <button class="ci-chip rv-st-paused${g.status === "parked" ? " on" : ""}">paused, not now, not gone</button>
-                  </div>
+                      ${g.tension.reasoning ? `<div class="ci-tension-ev">${escHtml(g.tension.reasoning)}</div>` : ``}
+                      <span class="rv-tension-does">your plan gets written knowing this. pausing one of them below is the other way to answer it.</span>
+                      <button class="rv-tension-set" type="button">set this aside</button></div>` : ``}
                   <div class="rv-detail">
-                    <button class="rv-more">${g.detailOpen ? "Hide" : "Check this is grounded"} ${DRAWN_ARROW}</button>
-                    <div class="rv-detail-body" style="display:${g.detailOpen ? "block" : "none"}; margin-top:12px;">
-                      <p class="rv-optional">all optional. skipping any of this is fine, it just makes the
-                         plan better if you answer.</p>
-                      ${(g.readiness && g.readiness.questions && g.readiness.questions.length) ? `
-                        <div class="rv-ask-title">before this can be planned properly</div>
-                        ${g.readiness.questions.map((q, qi) => `
-                          <div class="rv-q">
-                            <div class="rv-q-text">${escHtml(q.ask)}</div>
-                            <div class="rv-q-why">${escHtml(q.why || "")}</div>
-                            <input class="rv-readiness-in" data-qi="${qi}" aria-label="${escHtml(q.ask || "your answer")}" value="${escHtml((g.readinessAnswers || {})[qi] || "")}" />
-                          </div>`).join("")}` : ``}
-                      <div class="rv-ask-title">a quick reality check</div>
-                      ${GROUNDING_QUESTIONS.map(rc => `
-                        <div class="rv-q">
-                          <div class="rv-q-text">${rc.q}</div>
-                          <input class="rv-reality-in" data-k="${rc.key}" placeholder="${rc.ph}" aria-label="${escHtml(rc.q || rc.ph || "")}"
-                                 value="${escHtml((g.realityCheck || {})[rc.key] || "")}" />
-                        </div>`).join("")}
-                    </div>
+                    <div class="rv-ask-title">a few questions that sharpen this</div>
+                    <p class="rv-optional">all optional, they just make the plan better.</p>
+                    ${asked.map(q => `
+                      <div class="rv-q">
+                        <div class="rv-q-text">${escHtml(q.ask)}</div>
+                        ${q.why ? `<div class="rv-q-why">${escHtml(q.why)}</div>` : ``}
+                        <input class="${q.cls}" ${q.attr} aria-label="${escHtml(q.ask)}" placeholder="${escHtml(q.ph)}"
+                               value="${escHtml(q.value)}" />
+                      </div>`).join("")}
                   </div>
                   <button class="rv-drop-link rv-toggle brushed-link">drop this goal</button>
                 </div>`}`;
@@ -36151,6 +36921,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               const whyNote = row.querySelector(".rv-why-note");
               if (whyNote) whyNote.addEventListener("input", () => {
                 ciDraft.goals[i].whyCheck.note = whyNote.value;
+                saveDraft();
               });
               const stActive = row.querySelector(".rv-st-active");
               if (stActive) stActive.addEventListener("click", () => {
@@ -36162,6 +36933,13 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               });
               // The fold. Expanded state is remembered per card for the
               // session, so paint() after any edit reopens what was open.
+              // Opening it also asks the model what is missing, in the
+              // background: the questions used to sit behind a SECOND fold
+              // whose open fired the call in the foreground, showed
+              // "Checking…", and on a failure shut itself and toasted, taking
+              // the two standing questions down with it. Those are a
+              // constant, so they are on the page either way now, and the
+              // model's arrive underneath them when they land.
               const tuneBtn = row.querySelector(".rv-tune");
               if (tuneBtn && !tuneBtn.classList.contains("rv-toggle")) {
                 tuneBtn.addEventListener("click", () => {
@@ -36169,30 +36947,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   paint();
                 });
               }
-              const moreBtn = row.querySelector(".rv-more");
-              if (moreBtn) moreBtn.addEventListener("click", async () => {
-                const g2 = ciDraft.goals[i];
-                g2.detailOpen = !g2.detailOpen;
-                // Only ask the model what's missing when they actually open it.
-                if (g2.detailOpen && !g2.readiness) {
-                  const was = moreBtn.textContent;
-                  moreBtn.textContent = "Checking\u2026";
-                  try {
-                    g2.readiness = await checkReadiness(g2, buildIntake());
-                  } catch (err) {
-                    moreBtn.textContent = was;
-                    g2.detailOpen = false;
-                    showToast(analysisErrorToast(err));
-                    return;
-                  }
-                }
-                paint();
-              });
               row.querySelectorAll(".rv-readiness-in").forEach(inp => {
                 inp.addEventListener("input", () => {
-                  const g2 = ciDraft.goals[i];
-                  g2.readinessAnswers = g2.readinessAnswers || {};
-                  g2.readinessAnswers[inp.dataset.qi] = inp.value;
+                  setReadinessAnswer(ciDraft.goals[i], inp.dataset.ask, inp.value);
+                  saveDraft();
                 });
               });
               row.querySelectorAll(".rv-reality-in").forEach(inp => {
@@ -36200,7 +36958,26 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   const g2 = ciDraft.goals[i];
                   g2.realityCheck = g2.realityCheck || {};
                   g2.realityCheck[inp.dataset.k] = inp.value;
+                  saveDraft();
                 });
+              });
+              // The way out of a second look, on the exact path the board
+              // already uses: resolved here, on the dismissed list that rides
+              // in every intake, and written through the store at once. A
+              // dismissal is permanent, so a re-run never raises it again.
+              const tenSet = row.querySelector(".rv-tension-set");
+              if (tenSet) tenSet.addEventListener("click", () => {
+                const g2 = ciDraft.goals[i];
+                if (!g2.tension) return;
+                g2.tension.resolved = true;
+                const id = g2.tension.id;
+                if (id && !ciDismissedTensions.includes(id)) {
+                  ciDismissedTensions.push(id);
+                  Promise.resolve(store.dismissTension(g2.tension))
+                    .catch(e => console.warn("[tension] dismissal not written:", e && e.message));
+                }
+                saveDraft();
+                paint();
               });
 
               row.querySelectorAll(".rv-h-opt").forEach(btn => {
@@ -36301,7 +37078,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             if (composeAdd) {
               const c = document.createElement("div");
               c.className = "rv-item rv-compose";
-              const CHIPCATS = ["health","career","finance","relationships","growth","meaning"];
+              const CHIPCATS = AREA_KEYS;   // the six, from the one table
               c.innerHTML = `<div class="rv-head"><div class="rv-cat">${composeAdd.category
                   ? escHtml((CATS[composeAdd.category] || CATS.growth).label)
                   : `placed for you, or pick:`}</div></div>
@@ -36325,6 +37102,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             }
             paperify(list, ".rv-item");
             list.querySelectorAll(".rv-drop-link").forEach((btn, bi) => inkUnderline(btn, bi, "currentColor"));
+            // The way out of a second look is a link, so it wears the brushed
+            // stroke every link wears. Without it, at label size in soft ink,
+            // it read as one more caption rather than something to press.
+            list.querySelectorAll(".rv-tension-set").forEach((btn, bi) => inkUnderline(btn, bi + 3, "currentColor"));
             saveDraft();   // the draft (goals included, 16b) survives a reload
             const composeIn = list.querySelector(".rv-compose-in");
             if (composeIn) {
@@ -36386,7 +37167,25 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 <div class="rv-reason-label">worth a second look</div>
                 <p class="rv-cross-q">${escHtml(cross.tension.question)}</p>
                 ${cross.tension.reasoning ? `<p class="rv-cross-why">${escHtml(cross.tension.reasoning)}</p>` : ``}
+                <p class="rv-cross-why">your plan gets written knowing this. pausing one of them is the other
+                   way to answer it.</p>
+                <button class="rv-tension-set" type="button">set this aside</button>
               </div></div></div>`;
+            // The same way out the per-goal note has, on the same path: a
+            // dismissal is permanent and a re-run never raises it again.
+            const setAside = mount.querySelector(".rv-tension-set");
+            if (setAside) inkUnderline(setAside, 1, "currentColor");
+            if (setAside) setAside.addEventListener("click", () => {
+              cross.tension.resolved = true;
+              const id = cross.tension.id;
+              if (id && !ciDismissedTensions.includes(id)) {
+                ciDismissedTensions.push(id);
+                Promise.resolve(store.dismissTension(cross.tension))
+                  .catch(e => console.warn("[tension] dismissal not written:", e && e.message));
+              }
+              saveDraft();
+              paintCrossTension();
+            });
           }
 
   // The coverage ledger, rendered: everything the person said, accounted for.
@@ -36549,7 +37348,9 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           const tok = ciRenderSeq;
           const kept = ciDraft.goals.filter(g => !g.dropped);
           const actives = kept.filter(g => g.status !== "parked");
-          const sigOf = g => JSON.stringify([g.title, g.target ?? null, g.status]);
+          // What the plan was written against. Their answers join it: a plan
+          // that ignores an answer they just gave is worse than not asking.
+          const sigOf = g => JSON.stringify([g.title, g.target ?? null, g.status, goalAnswers(g)]);
           const stalePlans = actives.filter(g => !(g.objectives || []).length || g.plannedSig !== sigOf(g));
           if (stalePlans.length) {
             // Wait state: the header names what's happening (item 12) and the
@@ -36557,12 +37358,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             // caption at the bottom is the one status line.
             b.innerHTML = stepHeader(
                 stalePlans.length === actives.length
-                  ? "Laying out the road for each goal."
+                  ? "Laying out the road for each life goal."
                   : "Re-drafting only what you changed.",
                 "About a minute.")
               + `<div class="rv-list">` + actives.map(g => {
                   const c = CATS[g.category] || CATS.growth;
-                  return `<div class="rv-item" data-plangid="${escHtml(g.draftId)}"><div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
+                  return `<div class="rv-item rv-ruled" data-plangid="${escHtml(g.draftId)}"><div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
                     <div class="rv-title">${escHtml(g.title)}</div>
                     <div class="rv-objs rv-objs-pending"></div>
                   </div>`; }).join("") + `</div>`
@@ -36622,9 +37423,20 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             <path filter="url(#rough)" d="M10 3.2 C 14.5 3.2, 17 6.6, 17 10 S 13.8 16.8, 10 16.8 S 3 13.7, 3 10 S 5.8 3.4, 10 3.2"
               fill="${filled ? "currentColor" : "var(--paper-sheet)"}" stroke="currentColor" stroke-width="1.7" opacity="${filled ? ".88" : ".8"}"/>
           </svg>`;
+          // THE ROAD IS DRAWN IN THE PAPER'S OWN INK (2026-09-10, owner
+          // picked it off three candidates rendered on the page). It was
+          // #b9ae8c, a mid tan under the bleed filter on tan paper, so it
+          // could not win and three dots read as a bullet list rather than a
+          // road. --rule-ink is the grey green the sheet's own ruled lines
+          // are drawn in, so the road belongs to the page instead of sitting
+          // on it, and it costs no new colour: the ink budget counts text,
+          // and this line is neither text nor a mark that means anything on
+          // its own. The area's own colour and the writing ink were the
+          // other two, and both were declined for spending colour on a
+          // structural line.
           const roadLine = `<div class="qr-line" aria-hidden="true"><svg viewBox="0 0 10 100" preserveAspectRatio="none">
             <path filter="url(#bleed)" d="M5 1 C 4.3 20, 5.7 38, 4.8 55 S 5.4 88, 5 99"
-              stroke="#b9ae8c" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></div>`;
+              stroke="rgb(var(--rule-ink))" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></div>`;
           // Hoisted to roadEndMark: it reads the years the person chose, the
           // estimate only when they chose nothing, the same as the card.
           const endMark = roadEndMark;
@@ -36635,8 +37447,15 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
             const shortQ = clock.weeksLeftInQuarter < SHORT_QUARTER_WEEKS;
             const whenLabel = w => w === clock.quarter && shortQ
               ? `${w} · ${clock.weeksLeftInQuarter} week${clock.weeksLeftInQuarter === 1 ? "" : "s"} left` : (w || "");
+            // "sketch" rides the quarter it describes rather than sitting at
+            // the right edge as a tag (owner, 2026-09-10: "lets make it make
+            // more sense what those 'reality check' and 'sketch' are
+            // referring to"). The Atlas ruling already said why: a row is a
+            // paragraph, and a label parked in its own column reads as
+            // belonging to the wrong step the moment the clause wraps.
+            const skLabel = w => w ? `${w} · sketch` : "sketch";
             b.innerHTML = stepHeader("The quarters",
-              "The road for each goal. This quarter is set; the rest comes into focus at the check-ins.")
+              "The road for each life goal. Some quarters are set, others are sketched and come into focus as time goes on.")
               + `<div class="rv-list">` + shown.map(g => {
                   const c = CATS[g.category] || CATS.growth;
                   const fulls = (g.objectives || []).filter(x => !x.theme && !x.sketch);
@@ -36646,47 +37465,52 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   const loose = (g.objectives || []).filter(x => x.theme);
                   const open = !!g.qTuneOpen;
                   const end = endMark(g);
-                  return `<div class="rv-item">
+                  const arc = arcGapLine(g);
+                  return `<div class="rv-item rv-ruled">
                     <div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
                     <div class="rv-title">${escHtml(g.title)}</div>
                     ${o ? `<div class="qr-track">${roadLine}
                       <div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
                         <span class="qr-when">${escHtml(whenLabel(o.when))}</span>
-                        ${g._ownEditing
-                          ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…" aria-label="your step, in your words">`
-                          : `<span class="qr-label" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="this quarter's step, in your words">${escHtml(appVoice(o.label, wroteIt(o)))}</span>`}
-                        ${o.evidence ? `<span class="qr-tag qr-tag-rc">reality check</span>` : o.source === "user" ? `<span class="qr-tag qr-tag-rc">your step</span>` : ``}</div>
+                        <span class="qr-label edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="this quarter's step, in your words">${escHtml(appVoice(o.label, wroteIt(o)))}</span></div>
                       ${laterFulls.map(x => `<div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
                         <span class="qr-when">${escHtml(whenLabel(x.when))}</span>
-                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span>
-                        ${x.evidence ? `<span class="qr-tag qr-tag-rc">reality check</span>` : ``}</div>`).join("")}
+                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span></div>`).join("")}
                       ${sketches.map(x => `<div class="qr-q qr-sk"><span class="qr-dot">${roadDot(false)}</span>
-                        <span class="qr-when">${escHtml(x.when || "")}</span>
-                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span>
-                        <span class="qr-tag qr-tag-prob">sketch</span></div>`).join("")}
+                        <span class="qr-when">${escHtml(skLabel(x.when))}</span>
+                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span></div>`).join("")}
                       ${end ? `<div class="qr-end">${escHtml(end)}</div>` : ``}
                     </div>
+                    ${arc ? `<div class="qr-arc">${escHtml(arc)}</div>` : ``}
+                      <div class="qv-block">
+                        <div class="qv-block-label">if it goes wrong</div>
+                        <div class="qv-if edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="if it goes wrong, then what">${escHtml(ifThenText(o))}</div>
+                        <div class="qv-if-hint">naming this now roughly doubles the odds you follow through.</div>
+                      </div>
                     <div class="rv-bottom"><span class="rv-bottom-line"></span>
                       <button class="rv-tune qr-tune" data-gid="${g.draftId}">${open ? "done ↑" : "tune →"}</button></div>
                     <div class="rv-tuned qv-fold" style="display:${open ? "block" : "none"}">
                       ${evidenceOf(g) ? `` : `<div class="rv-rc-missing">no reality check in this plan yet, add one: a step where the world gets to respond.</div>`}
-                      <div class="qv-block">
-                        <div class="qv-block-label">if it goes wrong</div>
-                        <div class="qv-if" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="if it goes wrong, then what">${escHtml(ifThenText(o))}</div>
-                        <div class="qv-if-hint">naming this now roughly doubles the odds you follow through.</div>
-                      </div>
-                      ${o.source === "user" || g._ownEditing ? `` : `<div class="qv-block">
-                        <div class="qv-block-label">want a different step?</div>
-                        <button class="qv-own" data-gid="${g.draftId}">✎ write your own step instead</button>
-                      </div>`}
-                      ${loose.length ? `<div class="qv-block">
-                        <div class="qv-block-label">loose directions, not commitments</div>
-                        <ul class="qv-loose-list">${loose.map(x => `<li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span>${escHtml(x.label)}</li>`).join("")}</ul>
+                      ${o.alt && o.alt.label ? `<div class="qv-block">
+                        <div class="qv-block-label">another way to say it</div>
+                        <div class="qv-alt">${escHtml(appVoice(o.alt.label, o.alt.source === "user"))}</div>
+                        <button class="qv-swap" data-gid="${g.draftId}">use these words instead</button>
                       </div>` : ``}
-                    </div>` : `<div class="rv-objs"><em>no objective landed for this quarter, write your own below.</em></div>
-                      ${g._ownEditing
-                        ? `<input class="qv-own-input" data-gid="${g.draftId}" placeholder="Your step, in your words…" aria-label="your step, in your words">`
-                        : `<button class="qv-own qv-own-new" data-gid="${g.draftId}">✎ write this quarter's step</button>`}`}
+                      <div class="qv-block">
+                        <div class="qv-block-label">loose directions, not commitments</div>
+                        <ul class="qv-loose-list">${loose.map(x => `<li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span>${escHtml(appVoice(x.label, wroteIt(x)))}${
+                          x.pinned
+                            ? `<span class="qv-pinned">pinned to this week</span>`
+                            : `<button class="qv-pin" data-gid="${g.draftId}" data-oid="${escHtml(x.id || "")}">pin to this week</button>`}</li>`).join("")}
+                          <li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span><span
+                            class="qv-loose-new edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}"
+                            role="textbox" aria-label="a loose direction of your own"
+                            data-empty="write one of your own"></span></li></ul>
+                      </div>
+                    </div>` : `<div class="rv-objs">no objective landed for this quarter, write your own here.</div>
+                      <div class="qr-write edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}"
+                        role="textbox" aria-label="this quarter's step, in your words"
+                        data-empty="write this quarter's step"></div>`}
                   </div>`; }).join("") + `</div>`
               + (pausedCount ? `<div class="qv-paused-line">${pausedCount} goal${pausedCount === 1 ? "" : "s"} paused, they hold their place and get a quarter the day they wake.</div>` : ``)
               + `<div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">← Back, change the goals</button>
@@ -36721,27 +37545,17 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                 saveDraft();
               });
             });
-            b.querySelectorAll(".qv-own").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                if (!g) return;
-                // One per quarter, always: the person's step REPLACES the
-                // proposal rather than stacking on it (owner ruling, held
-                // answer 2). The input paints in the label's place; commit
-                // swaps the text and flips provenance on the SAME objective.
-                g._ownEditing = true;
-                paintB();
-                const inp = b.querySelector(`.qv-own-input[data-gid="${g.draftId}"]`);
-                if (inp) inp.focus();
-              });
-            });
-            b.querySelectorAll(".qv-own-input").forEach(inp => {
-              const g = keptById(inp.dataset.gid);
-              const commit = () => {
-                if (!g) return;
-                const text = inp.value.trim();
-                delete g._ownEditing;
-                if (!text) { paintB(); return; }   // empty = changed their mind
+            // The line a goal gets when its plan came back empty. It is the
+            // same authoring the quarter's own line does, which is what
+            // DEFINITIONS held answer 2 actually guarantees: one step per
+            // quarter, theirs, replacing the proposal rather than stacking
+            // on it. The button that used to live here is gone, so this is
+            // the only case the inline line could not already cover.
+            b.querySelectorAll(".qr-write[data-gid]").forEach(el => {
+              el.addEventListener("input", () => {
+                const g = keptById(el.dataset.gid);
+                const text = el.textContent.trim();
+                if (!g || !text) return;
                 let o = objOf(g);
                 if (!o) {
                   o = { id: "o" + ((g.objectives || []).length + 1), label: text, kind: "objective",
@@ -36751,13 +37565,66 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   o.label = text;
                   o.source = "user";
                 }
-                paintB();
-              };
-              inp.addEventListener("keydown", e => {
-                if (e.key === "Enter") { e.preventDefault(); commit(); }
-                if (e.key === "Escape") { delete (g || {})._ownEditing; paintB(); }
+                saveDraft();
               });
-              inp.addEventListener("blur", commit);
+            });
+            // A loose direction of their own. It is a theme on the goal, the
+            // same shape the planner writes and the same one "keeping in
+            // mind" reads, so nothing new is stored and it rides the
+            // quarterly review like the rest. Until today themes could only
+            // ARRIVE, from the model or from a demoted extra; there was no
+            // door on the person's side of this list.
+            b.querySelectorAll(".qv-loose-new[data-gid]").forEach(el => {
+              el.addEventListener("input", () => {
+                const g = keptById(el.dataset.gid);
+                const text = el.textContent.trim();
+                if (!g || !text) return;
+                if (!el.dataset.oid) {
+                  const t = { id: userId("th"), label: text, when: null, theme: true,
+                              sketch: false, source: "user" };
+                  g.objectives = (g.objectives || []).concat([t]);
+                  el.dataset.oid = t.id;
+                } else {
+                  const t = (g.objectives || []).find(x => x.id === el.dataset.oid);
+                  if (t) t.label = text;
+                }
+                saveDraft();
+              });
+            });
+            // PINNED, SO SHE SEES IT (owner, 2026-09-10). A direction is not
+            // a task, so it lands as a reminder: no duration, no hours, no
+            // pebble, nothing on the rose, and no debt if it is never done
+            // (law 8). tomorrowLand already carries text out of a page and
+            // into the week exactly this way.
+            // THE OFFER IS A SWAP, NEVER A LOSS (law 1 as amended). Taking it
+            // exchanges the two wordings on the same objective, so the line
+            // she wrote is still there to take back on the next tap. Whoever
+            // wrote the words on the page owns them, so `source` travels with
+            // the text: that is what appVoice reads, and it must never say
+            // the app's sentence is hers.
+            b.querySelectorAll(".qv-swap").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const g = keptById(btn.dataset.gid);
+                const ob = objOf(g);
+                if (!ob || !ob.alt || !ob.alt.label) return;
+                const mine = { label: ob.label, source: ob.source || "ai" };
+                ob.label = ob.alt.label;
+                ob.source = ob.alt.source || "ai";
+                ob.alt = mine;
+                saveDraft();
+                paintB();
+              });
+            });
+            b.querySelectorAll(".qv-pin").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const g = keptById(btn.dataset.gid);
+                const t = ((g || {}).objectives || []).find(x => x.id === btn.dataset.oid);
+                if (!t || t.pinned) return;
+                if (!addReminder({ label: t.label, date: null, wk: weekKeyOf() })) return;
+                t.pinned = true;
+                saveDraft();
+                paintB();
+              });
             });
             saveDraft();
             narrate("s-quarters-ready");
@@ -36851,7 +37718,13 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
               + `<div class="hb-scrap-slot"><div class="hb-scrap torn-paper"><div class="torn-sheet hb-scrap-sheet">
                   ${say ? `<div>${escHtml(say)}</div>` : ``}
                   <div class="hb-bars">${actives.map(barFor).join("")}</div>
-                  ${anyLoad ? `<div class="hb-total">${anyLoad.spent} of ${anyLoad.budget.hours} hrs a week${anyLoad.spent < anyLoad.budget.hours ? ". Under capacity on purpose." : ""}</div>` : ``}
+                  ${anyLoad ? `<div class="hb-total">${anyLoad.spent} of ${anyLoad.budget.hours} hrs a week${
+                    // THE ONE TIME THE PLAN ASKS FOR LESS THAN THEY OFFERED,
+                    // it says so and says why, in their own words. A number
+                    // half the size of the answer somebody typed, with no
+                    // sentence beside it, reads as the app not believing them.
+                    anyLoad.budget.share === 0.5 ? `, half of what you said you could give. you wrote about things you have dropped before, so this is the version that survives a bad week.`
+                    : anyLoad.spent < anyLoad.budget.hours ? ". Under capacity on purpose." : ""}</div>` : ``}
                 </div></div></div>`
               + `<div class="hb-comp-slot"><div class="hb-comp torn-paper"><div class="torn-sheet hb-comp-sheet">
                   <div class="hb-comp-art" id="hbCompArt"></div>
@@ -36890,9 +37763,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
                   const goalSpent = spentOf(g);
                   const goalBudget = perGoalHours(g, intakeNow, activeCount);
                   const cutOpen = !!g.hvCutOpen;
-                  return `<div class="rv-item">
+                  const arc = arcGapLine(g);
+                  return `<div class="rv-item rv-ruled">
                     <div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
                     <div class="rv-title">${escHtml(g.title)}${g.kind === "floor" ? `<span class="qv-floor-tag">keeping the door open</span>` : ``}</div>
+                    ${arc ? `<div class="qr-arc">${escHtml(arc)}</div>` : ``}
                     ${groups || `<div class="rv-objs"><em>nothing fit this goal's share of the week, the check-ins can grow it.</em></div>`}
                     <div class="hv-addown-row"><button class="rm-see-week-inline hv-add-own" type="button" data-gid="${g.draftId}">+ add your own</button></div>
                     <div class="rv-bottom"><span class="hv-goal-load">${goalSpent} of ${goalBudget} hrs this goal</span>
@@ -37244,12 +38119,24 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     const j = intake.journals || {};
     const ladderPairs = Object.entries(intake.ladder || {}).map(([k, v]) => ["ladder:" + k, v]);
     const depthPairs = Object.entries(intake.depth || {}).map(([k, d]) => ["depth:" + k, d && d.better]);
+    // A TENSION NEEDS BOTH HALVES, AND ONE HALF HAD NOWHERE TO COME FROM
+    // (2026-09-10). Both pools were built from journal answers the flow no
+    // longer asks: the five narrative screens became one entry, and the
+    // depth page went, so the stated pool held the entry and the revealed
+    // pool held nothing at all. No tension has fired on a real run since.
+    // The entry is where somebody states what they want, and the follow-ups
+    // are where they say what has been in the way, so both belong in both:
+    // which half a sentence plays is decided by the rule's own words, not by
+    // which page it was typed on.
+    const followupPairs = (intake.followups || []).map(f => ["followup:" + f.key, f.a]);
 
     const statedPool = taggedSentences(
-      [["flow", j.flow], ["unconstrained", j.unconstrained]].concat(ladderPairs, depthPairs));
+      [["entry", j.entry], ["flow", j.flow], ["unconstrained", j.unconstrained]]
+        .concat(ladderPairs, depthPairs, followupPairs));
     const revealedPool = taggedSentences(
-      [["obstacles", j.obstacles], ["regret", j.regret], ["faded", j.faded], ["anything", j.anything]]
-        .concat(ladderPairs));
+      [["entry", j.entry], ["obstacles", j.obstacles], ["regret", j.regret],
+       ["faded", j.faded], ["anything", j.anything]]
+        .concat(ladderPairs, followupPairs));
 
     const out = [];
     TENSION_RULES.forEach(rule => {
@@ -37293,8 +38180,17 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // The recurring work underneath an objective. An objective is an outcome for a
   // quarter; a mechanism is what happens in a week that makes it arrive.
 
-  // Deliberately below capacity. A plan that uses every available hour fails on
-  // the first bad week and takes the rest of the board with it.
+  // THE CLAIM IS THE BAD-WEEK NUMBER (their ruling, 2026-09-10). The page
+  // asks what they can give on an ordinary bad week, not a good one, so the
+  // margin is already inside the answer and the plan spends the whole of it.
+  // A second, silent 30% shave on top of that question is not caution, it is
+  // arithmetic nobody can see or argue with, and it produced plans a third
+  // smaller than the week the person had described.
+  //
+  // The halving stays, and only for a detected history of dropping things:
+  // that is a safety law, it is said out loud on the habits page and in the
+  // split's own sentence, and it is the one case where the plan deliberately
+  // asks for less than the person offered.
   function mechanismBudget(intake) {
     // capacity.statedHours is the claim every stage reads; the old
     // constraints path stays as the fallback for intakes saved before the
@@ -37302,13 +38198,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     const cap = intake.capacity || null;
     const hours = (cap && cap.statedHours) || (intake.constraints || {}).hoursPerWeek || 5;
     const p = intake.patterns || {};
-    // When generate proposed a split, the split IS the sustainability
-    // decision — it was made reading the whole capacity object, and the
-    // owner's worked example spends the full claim (9+3+3 of 15). The 0.7
-    // shave stays only for splitless drafts; the abandonment halving is a
-    // safety law and survives both paths.
-    const hasSplit = !!(cap && cap.proposedSplit && Object.keys(cap.proposedSplit).length);
-    const share = p.abandonment ? 0.5 : hasSplit ? 1.0 : 0.7;
+    const share = p.abandonment ? 0.5 : 1.0;
     return {
       hours: Math.round(hours * share * 10) / 10,
       share,
@@ -37413,7 +38303,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     const payload = {
       intake, goal,
       objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind,
-        source: o.source, sketch: !!o.sketch, hardDate: o.hardDate || null })),
+        source: o.source, sketch: !!o.sketch, hardDate: o.hardDate || null,
+        // The if-then the person wrote, which is the whole point of naming an
+        // obstacle at all: work designed around it, and a bad week met with
+        // their own move rather than an invented one.
+        obstacle: o.obstacle || null, obstaclePlan: o.obstaclePlan || null })),
       budget: { perGoal, total: total.hours, maxHabits: total.maxHabits, share: total.share },
       // The quarter clock, so the stage can size setups to the weeks that
       // actually remain (see the whitelist note in draftPlan).
@@ -37637,7 +38531,11 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     }
     const r = await tryModel("tune", {
       intake, goal: { category: goal.category, title: goal.title, description: goal.description },
-      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source })),
+      objectives: near.map(o => ({ id: o.id, label: o.label, when: o.when, kind: o.kind, source: o.source,
+        // The if-then the person wrote, which is the whole point of naming an
+        // obstacle at all: work designed around it, and a bad week met with
+        // their own move rather than an invented one.
+        obstacle: o.obstacle || null, obstaclePlan: o.obstaclePlan || null })),
       mechanisms: goal.mechanisms,
       weekly, budget,
       // UT1.5d (201): the tuner is told a hard answer exists, so it can meet
@@ -37879,6 +38777,29 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     return yrs ? `→ ${yearsLabel(yrs)}` : ``;
   }
 
+  // THE ARITHMETIC, WHEN THE NUMBERS DO NOT MEET (law 2 as amended
+  // 2026-09-10: "never judge the dream, and never hide the arithmetic").
+  // A measurement is not a verdict. When the years they set are well under
+  // the app's own estimate, the line says both numbers and says the plan is
+  // running at theirs anyway — the capacity ceiling flag's voice, which has
+  // said exactly this about their hours since August. It never appears when
+  // they set nothing, because then there is no disagreement to report, only
+  // the app's guess. It says nothing about what has not been done (their
+  // ruling, 2026-09-08); the subject is the road ahead.
+  // ARC_GAP_AT is the whole of "when the gap is big" (their choice, offered
+  // always-on and declined): 2 years against an estimate of 4 speaks, 3
+  // against 4 stays quiet. One number, and moving it is one edit.
+  const ARC_GAP_AT = 0.6;
+  function arcGapLine(g) {
+    if (!g || g.kind === "floor" || g.hardDate) return "";
+    const est = ((g.horizon || {}).realisticYears);
+    if (typeof est !== "number" || !(est > 0)) return "";
+    const chosen = g.target != null && g.target !== "" && Number(g.target) > 0 ? Number(g.target) : null;
+    if (!chosen || chosen / est >= ARC_GAP_AT) return "";
+    return `you set ${yearsLabel(chosen)}, the estimate is about ${yearsLabel(est)}. `
+      + `the plan runs at yours, and the first check in will tell you if it's real.`;
+  }
+
   // A weeks-scale goal IS a deadline: the date every week counts toward.
   // The anchor is hardDate when stored (set at adoption), else now + weeks.
   function deadlineOf(g) {
@@ -37958,12 +38879,27 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     order.forEach((w, qi) => {
       const group = byWhen.get(w);
       if (qi >= maxQuarters) { group.forEach(x => demoted.push(x)); return; }
-      const pick = group.find(x => x.source === "user") || group.find(x => x.evidence) || group[0];
+      const userPick = group.find(x => x.source === "user");
+      const pick = userPick || group.find(x => x.evidence) || group[0];
       // How many leading quarters stay FULL (not sketched): all of them for
-      // a deadline goal, two when the current quarter is short, one normally.
+      // a deadline goal, two when the current quarter is short or the goal is
+      // the focus, one normally.
       const fullQ = o.fullDepth ? Infinity : Math.max(1, o.fullQuarters || 1);
       const keptObj = Object.assign({}, pick,
         { sketch: qi < fullQ ? false : true });
+      // BOTH WORDINGS SURVIVE, AND HERS IS THE ONE ON THE PAGE (law 1 as
+      // amended 2026-09-10). The prompt hands back their own named next step
+      // near enough verbatim, marked source "user", and this rule then puts
+      // it ahead of the app's own line for that quarter — so the better
+      // sentence was written and thrown away, which is what the owner met:
+      // "the default text should be the autogenerated one because it's much
+      // more motivating language than what I had typed."
+      // It is kept as an OFFER beside theirs, never in place of it, and only
+      // where the app deferred BECAUSE the step was theirs. Where the pick
+      // was made on evidence or on order, there is nothing to offer and the
+      // loser demotes to a theme exactly as before.
+      const twin = userPick ? group.find(x => x !== pick && x.source !== "user" && x.label) : null;
+      if (twin) keptObj.alt = { label: twin.label, source: twin.source || "ai" };
       // The person's own step is exempt: their wording lands verbatim (Law 1)
       // however long it runs — the clause rule is for drafted labels.
       if (keptObj.source !== "user" && !labelClauseOk(keptObj.label, keptObj.sketch)) {
@@ -37971,7 +38907,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
           JSON.stringify(keptObj.label));
       }
       kept.push(keptObj);
-      group.filter(x => x !== pick).forEach(x => demoted.push(x));
+      group.filter(x => x !== pick && x !== twin).forEach(x => demoted.push(x));
     });
     return kept
       .concat(themes)
@@ -38031,6 +38967,12 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // estimate. See planHorizonOf.
     const pace = planHorizonOf(goal);
     if (pace) base.horizon = pace;
+    // THEIR ANSWERS: the why check, the grounding pair and the readiness
+    // answers, as questions and answers. See goalAnswers — these were written
+    // down and read by nothing until 2026-09-10. The key is one both servers
+    // already whitelist, so nothing had to be redeployed to carry them.
+    const said = goalAnswers(goal);
+    if (said.length) base.answers = said;
     if (deadline) base.deadline = deadline;
     if (goal.hardDate && !deadline) base.hardDate = goal.hardDate;
     if (ctx && ctx.vision) base.vision = ctx.vision;
@@ -38039,9 +38981,21 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     if (ctx && ctx.review) base.review = ctx.review;          // block 2: the quarterly review's answers
     if (ctx && ctx.portrait && ctx.portrait.length) base.portrait = ctx.portrait;
     if (ctx && ctx.sketches && ctx.sketches.length) base.sketches = ctx.sketches;
+    // DEPTH FOLLOWS PRIORITY, NOT JUST POSITION (2026-09-10, owner: "the next
+    // goals are fully drafted depending on priority and length of the goal.
+    // Some sketched"). Length was already in: a deadline plans every quarter
+    // it spans in full, and a short current quarter pulls the next one in
+    // full because it starts within a month. Priority was not, because no
+    // goal carries one. But an answer does, given one step earlier: the focus,
+    // "if the week collapses to one thing, which thing?". The goal she named
+    // gets its second quarter in full as well, so the thing she said she
+    // would keep is the thing drawn furthest ahead. Naming none, which the
+    // page offers, changes nothing.
+    const isFocus = !!(ciFocusKey && goal && goal.draftId === ciFocusKey);
+    const fullQuarters = shortQ || isFocus ? 2 : 1;
     const normalize = data => {
       const objs = withObjectiveIds(normalizePlan(data,
-        { quarters: qn, fullDepth: !!deadline, fullQuarters: shortQ ? 2 : 1 }));
+        { quarters: qn, fullDepth: !!deadline, fullQuarters }));
       // The stated date lives on the objective in its quarter, so the roadmap
       // can pin it and the mechanisms stage can prepare for it.
       if (goal.hardDate) {
@@ -38080,6 +39034,8 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
   // goals in other areas rather than be one. That fails for anyone whose central
   // pursuit IS meaning — a creative vocation that is not a career change and not
   // health has nowhere else to live, and the goal simply never gets generated.
+  // The order here is the ranking's own, not the wheel's, so like ROSE_AREAS
+  // the keys stay written out; test 217b holds them to AREAS.
   const GOAL_AREAS = ["career", "growth", "finance", "relationships", "health", "meaning"];
 
   const VAGUE = ["don't know", "dont know", "not sure", "couldn't tell you", "no idea", "i guess", "maybe"];
@@ -38173,12 +39129,17 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
 
   function cleanGoals(out) {
     const goals = (out.goals || []).slice(0, 6).map(g => Object.assign({}, g, {
-      // Anything outside the five real categories becomes Other rather than
+      // Anything outside the six real areas becomes Other rather than
       // being dropped or crashing the card renderer.
       category: CATS[g.category] && g.category !== "Other" ? g.category : "Other",
       title: clip(g.title, CAPS.title),
       description: clip(g.description, CAPS.description),
       rationale: clip(g.rationale, CAPS.rationale),
+      // The mark that says the person never asked for this one, and the line
+      // that says why. Both survive the clip, because this list is a rebuild
+      // and anything not named here is dropped.
+      unrequested: !!g.unrequested,
+      unrequestedWhy: g.unrequestedWhy || "",
     }));
     return Object.assign({}, out, { goals });
   }
@@ -38439,14 +39400,16 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       ? { type: c.type, reframed: !!c.reframed, originalTitle: c.originalTitle || "",
           aspiration: c.aspiration || "", explain: c.explain || "" }
       : { type: "process", reframed: false, originalTitle: "", aspiration: "", explain: "" };
-    // The reframed title is stashed so a review screen can offer both
-    // wordings. G2s (146): the goal ARRIVES wearing the PERSON's words —
-    // "Keep my wording" is the default; the reframe makes its case
-    // unselected and applies only on their click.
-    if (g.control.reframed) {
-      g.control.suggestedTitle = g.title;
-      if (g.control.originalTitle) { g.title = g.control.originalTitle; g.original = g.control.originalTitle; }
-    }
+    // THE REFRAME IS THE DEFAULT (owner, 2026-09-10: "I like that i can use
+    // the reframe or keep my wording. I think default should be the
+    // reframe"). It arrives lit, and the person's own wording sits under it
+    // on the card, one tap away, so nothing of theirs is lost or hidden and
+    // the choice is still theirs to make. This reverses G2s (146), which had
+    // the goal arrive wearing their words; it also settles a contradiction,
+    // because the board's own add page has defaulted to the reframe all
+    // along. suggestedTitle still holds the reframe so the chip can put it
+    // back after they have taken their own wording.
+    if (g.control.reframed) g.control.suggestedTitle = g.title;
     return g;
   }
 
@@ -38894,7 +39857,10 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // itself, so a round trip can assert what arrived by name and by value.
     portraitMaterial, updatePortrait, strikePortraitLine, openPortrait, renderPortrait,
     // The quarter's own counting, and the refit drafted from it.
-    quarterPaceFor, refitProposals,
+    quarterPaceFor, refitProposals, heldTallyFor, closeWeekSheet,
+    // The week sheet's own state and render, so the suite can put a
+    // proposal on the page without a model on the end of it.
+    wkStateGet: () => wkState, renderWeekSheet,
     portraitGet: () => portrait, portraitFor,
     // Exported so a test can assert the door's title WITH ITS CASING against
     // the one function that produces it, instead of lowercasing both sides
@@ -39020,7 +39986,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     // Wave 3 seams: the atlas — the pure selector, the stored handle, the page.
     quartersAcrossGoals, goalHandle, openAtlas, closeAtlas, renderAtlas,
     buildAtlasWater, horizonOutLabel,
-    horizonYearsOf, quartersToPlanFor, planHorizonOf, roadEndMark, quarterSeqAround, atlasFilterGet: () => atlasFilter,
+    horizonYearsOf, quartersToPlanFor, planHorizonOf, roadEndMark, arcGapLine, ARC_GAP_AT, quarterSeqAround, atlasFilterGet: () => atlasFilter,
     openChapters, closeChapters, renderChapters,
     // Wave 4 seams: the shelf and the wish list.
     mountShelf, shelfZones, shelfLayout, openBooksSheet, replayShelfTour, openFaqPage, addReleaseWish,
@@ -39060,7 +40026,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
       moveTo(x, y) { if (roam.slot) { roam.slot.style.transition = "none"; roamMove(x, y, 0); void roam.slot.offsetHeight; roam.slot.style.transition = ""; } },
     },
     quarterBubbleStates, speakScrap, speakBubble, speakAside, bubbleSkinFor, mountCompanion, openRcSheet,
-    adoptModelGoal,
+    adoptModelGoal, goalAnswers, whyCheckQuestion,
     tapPools: () => COMPANION_TAP_LINES, arrivalPools: () => COMPANION_ARRIVAL_LINES,
     plantAsides: () => ({ tap: PLANT_TAP_ASIDES, arrival: PLANT_ARRIVAL_ASIDES }),
     speechRules: { ARRIVAL_COOLDOWN_MS, DAILY_LINE_CEILING, BOUNCE_WINDOW_MS },
@@ -39097,7 +40063,7 @@ ${opts.map(o => `<button type="button" class="rv-h-opt${(!unsure && !untouched &
     touchedLine, nextStepPick, dismissNextStep, weeklyTickPrefill,
     weekPaceRegister, stubWeekInfo, weekDoorState, applyWeekDiffs,
     mergeKeepUser, weekRecordFor, tuneWeekProposals, mechFrequency,
-    quarterReviewOpen, quarterEndDate, nextQuarterLabel, openQuarterReview, quarterSeq,
+    quarterReviewOpen, quarterEndDate, nextQuarterLabel, openQuarterReview, closeQuarterOverlay, quarterSeq,
     applyQuarterStepDiff, quarterMidpointDate, markerWindow, markerLineFor,
     applyModelFlags, tensionId, setObjectiveLabel, goalKey, allocateMechanisms,
     retestMerge, retestKeeps, retestKeepList, retestVision, retestNote,
