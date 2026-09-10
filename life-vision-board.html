@@ -17545,6 +17545,24 @@
     journalOpenNow = false;
     closeBookPage(document.getElementById("journalOverlay"));
   }
+  // THE BOOK IS SHUT WHEN IT LOOKS SHUT (2026-09-10). journalOpenNow is the
+  // companion's quiet zone: while it is true the roam clock refuses to run
+  // and re-asks every two seconds, for ever. Only closeJournal() ever
+  // cleared it, and only the journal's own ✕ calls that, so any other way
+  // the page came away, another book opening over it, a re-render, a test
+  // taking the class off, left the flag true with no book on screen and the
+  // companion frozen for the rest of the session: never walking, never
+  // strolling to the sand after a greeting. This is what made test 211 flap
+  // (caught 2026-09-10 with the state printed at the moment it gave up:
+  // journalOpen true, everything else clear). The flag is now checked
+  // against the page and heals itself when the two disagree.
+  function journalQuietNow() {
+    if (!journalOpenNow) return false;
+    const ov = document.getElementById("journalOverlay");
+    if (ov && ov.classList.contains("open")) return true;
+    journalOpenNow = false;
+    return false;
+  }
   // ---- THE VINE: ONE LEAF FOR EVERY DAY WRITTEN ----
   // The stack CAPS on purpose: this is not a count wearing leaves. Twenty
   // days and twenty-two are not meant to be told apart by counting, only by
@@ -23950,7 +23968,7 @@
     clearTimeout(roam.timer);
     roam.timer = setTimeout(() => {
       if (!roam.el || !roam.el.isConnected) return companionRoamStop();
-      if (document.hidden || roam.held || walkRunning || journalOpenNow) { roamNext(2000, fn); return; }
+      if (document.hidden || roam.held || walkRunning || journalQuietNow()) { roamNext(2000, fn); return; }
       fn();
     }, ms);
   }
@@ -24076,8 +24094,17 @@
   // ---- the rare acts ----
   function roamRunAct() {
     if (roam.actsDone >= 2 || roam.state === "nap" || roam.state === "stroll" || walkRunning) return;
+    // AN ACT NEEDS A FIGURE STILL ON THE PAGE (2026-09-10). The acts are
+    // scheduled minutes ahead by roamScheduleActs and only ever asked
+    // whether the machine was switched off, never whether the figure is
+    // still in the document. Close the page in between and the plant's
+    // butterfly and the fox's yip both reach for el.parentElement, which is
+    // null once the figure is detached, and throw where nothing catches:
+    // "Cannot read properties of null (reading 'appendChild')". The zzz
+    // loop below already asks isConnected; the acts now ask it too.
     roam.actsDone++;
     const k = roam.kind, el = roam.el;
+    if (!el || !el.isConnected || !el.parentElement) return;
     if (k === "dog") {                                                      // zoomies: the bottom edge is a runway
       const { vp } = roamWorld();
       const home = roamHomeRect();
@@ -24105,6 +24132,7 @@
       el.classList.add("a-pounce");
       setTimeout(() => el.classList.remove("a-pounce"), 1600);
       if (roam.rng() < 0.15) setTimeout(() => {                             // the rare nose-to-sky yip
+        if (!el.isConnected || !el.parentElement) return;   // 1.7s is long enough for the page to go
         const m = document.createElement("div");
         m.className = "cb-mark"; m.innerHTML = MARK_SVG;
         el.parentElement.appendChild(m);
@@ -25054,23 +25082,33 @@
   // the roam's clock as before. Asleep stays asleep, reduced motion never
   // moves, a figure the roam is not carrying stays put, and a page too
   // short to have a foot below the seat keeps it home.
-  function companionOffToTheSand(ms) {
+  function companionOffToTheSand(ms, triesLeft) {
     const slot = document.getElementById("twCompanion");
     if (!slot || roam.state === "off" || roam.slot !== slot) return false;
+    // A REQUEST WITH A MOMENT ATTACHED WAITS IN SECONDS, NOT MINUTES
+    // (2026-09-10). This is the walk that follows a greeting, so it belongs
+    // to the greeting: if the page cannot be measured yet, or the figure is
+    // still mid-anything, the ask was handed straight back to the idle
+    // wander, whose next tick is 25 to 70 seconds out. By then the hello is
+    // long over and the walk simply never happened, which is why the
+    // companion sometimes sat still after saying hello. It now asks again in
+    // under a second, a few times, and only then gives the clock back.
+    const tries = triesLeft == null ? 6 : triesLeft;
     roamNext(ms, () => {
       // Whatever stops the walk hands the clock back to the roam, so the
       // figure never loses its heartbeat over a greeting.
       const later = () => roamNext(25000 + roam.rng() * 45000, roamTickState);
-      if (roam.state !== "sit" || roam.held || roam.slot !== slot) return later();
+      const soon = () => { if (tries > 0) companionOffToTheSand(400, tries - 1); else later(); };
+      if (roam.state !== "sit" || roam.held || roam.slot !== slot) return soon();
       const stack = document.querySelector("#thisWeekMount .tw-stack");
       const home = roamHomeRect();
-      if (!stack || !home.width) return later();
+      if (!stack || !home.width) return soon();
       const fig = { w: home.width, h: home.height || 150 };
       const foot = stack.getBoundingClientRect().bottom;
       const wide = !!(window.matchMedia && window.matchMedia("(min-width: 1280px)").matches);
       const y = (wide ? Math.min(foot, innerHeight - 12) : foot) - fig.h - 6;
       const x = wide ? home.x : Math.round((innerWidth - fig.w) / 2);
-      if (y <= home.y + 40) return later();
+      if (y <= home.y + 40) return soon();
       roamStroll(later, { x: Math.round(x), y: Math.round(y) });
     });
     return true;
@@ -32161,6 +32199,16 @@
   let ciPrevValues = null;       // last quarter's wheel, for comparison
   let ciDraft = null;            // proposed goals, before the user accepts them
   let ciDraftFrom = null;        // draftSig() of the answers that draft was read from
+  // THE PROFILE: what the app has understood so far, rebuilt one page at a
+  // time as they move (2026-09-10, the owner's redesign). Working notes, not
+  // a page: she ruled it internal, so nothing renders it and nobody strikes a
+  // line. `ciProfileFrom` holds the material each page was last read from, so
+  // an answer changed on a Back re-reads that page and only that page, and
+  // `ciProfileWait` is the tail of the chain, which the goals step waits on
+  // because the reads fire without being awaited and the page turns at once.
+  let ciProfile = null;
+  const ciProfileFrom = {};
+  let ciProfileWait = Promise.resolve();
   const ciReceipts = {};         // the quote that produced each rating
   const ciDrivers = {};          // WHY a low area is low — see DRIVERS below
   const ciUserEdited = {};       // areas the user moved by hand — these are TRUTH
@@ -32379,6 +32427,10 @@
     // patterns are read from the intake this run builds, never the last.
     ciDraft = null;
     ciPatterns = {};
+    // The profile is this run's understanding of them, so a start over drops
+    // it whole, the same rule as the wheel above.
+    ciProfile = null;
+    Object.keys(ciProfileFrom).forEach(k => { delete ciProfileFrom[k]; });
   }
 
   // THE TWO ODD QUESTIONS (2026-09-10). The definitions have called for
@@ -32414,6 +32466,87 @@
                    a: (ciJournal["dig_" + q.key] || "").trim() }))
       .filter(f => f.a);
   }
+
+  // ---------- the profile, a page at a time ----------
+  // THE PAGES THAT TEACH SOMETHING. Each names the slice of the intake it
+  // added, and nothing else: the read is handed this page's new material
+  // alone, so it stays small and cheap however long the quiz gets. A page
+  // that adds nothing the model can read (the two-odd-questions page before
+  // it is answered) simply returns null and is skipped.
+  const PROFILE_PAGES = {
+    entry: () => {
+      const t = (ciJournal.entry || "").trim();
+      return t ? { theirWriting: t } : null;
+    },
+    themes: () => {
+      if (!ciSelectedThemes.length) return null;
+      const picked = (ciThemes || []).filter(t => ciSelectedThemes.includes(t.label));
+      return { theyPicked: picked.map(t => ({ label: t.label, kind: t.kind, theirWords: t.evidence || "" })),
+               offeredButNotPicked: (ciThemes || []).filter(t => !ciSelectedThemes.includes(t.label)).map(t => t.label),
+               whyEachMatters: Object.fromEntries(ciSelectedThemes
+                 .map((l, i) => [l, (ciJournal["why" + i] || "").trim()]).filter(([, v]) => v)) };
+    },
+    wheel: () => ({
+      howEachAreaIsGoing: Object.fromEntries(CI_CATS.map(c => [c.key, {
+        outOfTen: ciValues[c.key], theyMovedItThemselves: !!ciUserEdited[c.key],
+        whatIsGoingOn: ciDrivers[c.key] ? (DRIVERS.find(d => d.key === ciDrivers[c.key]) || {}).label || "" : "",
+        theirWords: ciReceipts[c.key] || "",
+      }])),
+    }),
+    capacity: () => ({
+      hoursTheyClaim: ciCapacity.statedHours, whoStatedIt: ciCapacity.statedBy,
+      whoCountsOnThem: ciConstraints.dependents, moneyRoom: ciConstraints.moneyFlex,
+      where: ciConstraints.location || "", theirSituation: (ciJournal.situation || "").trim(),
+      howTheirHoursActuallyGo: ciCapacity.observed || null,
+    }),
+    dig: () => {
+      const answers = {};
+      ((ciDig && ciDig.questions) || []).forEach(q => {
+        const a = (ciJournal["dig_" + q.key] || "").trim();
+        if (a) answers[q.q] = a;
+      });
+      return Object.keys(answers).length ? { theirFollowUpAnswers: answers } : null;
+    },
+    odd: () => {
+      const answers = {};
+      PROBE_QUESTIONS.forEach(q => {
+        const a = (ciJournal["dig_" + q.key] || "").trim();
+        if (a) answers[q.q] = a;
+      });
+      return Object.keys(answers).length ? { theTwoOddQuestions: answers } : null;
+    },
+  };
+
+  // Fire and forget: the page turns at once and the read lands behind it. The
+  // chain is kept so the goals step can wait for whatever is still in the air
+  // (profileSettled), and a page whose material has not moved since it was
+  // last read is skipped, which is what keeps a Back-and-Next free.
+  function noteProfile(page) {
+    const make = PROFILE_PAGES[page];
+    if (!make) return;
+    let material = null;
+    try { material = make(); } catch (e) { return; }
+    if (!material) return;
+    const sig = JSON.stringify(material);
+    if (ciProfileFrom[page] === sig) return;
+    ciProfileFrom[page] = sig;
+    ciProfileWait = ciProfileWait.then(async () => {
+      const r = await tryModel("profile", { profile: ciProfile, material, page });
+      if (r.ok && r.data && Array.isArray(r.data.lines)) {
+        ciProfile = r.data;
+        saveDraft();
+      } else if (!r.ok) {
+        // A page's read failing is not the run failing: the profile keeps
+        // what it had, the signature is released so the next pass tries
+        // again, and the goals step still gets whatever stands.
+        delete ciProfileFrom[page];
+        console.warn(`[profile] ${page} did not land: ${r.reason || "?"}`);
+      }
+    }).catch(() => {});
+  }
+  // What the goals step waits on. Never rejects: a failed page has already
+  // been swallowed above, and a wait that throws would take the step with it.
+  function profileSettled() { return ciProfileWait; }
 
   function buildIntake() {
     const journals = {};
@@ -33441,6 +33574,10 @@
       // mid-flow reload silently dropped hand-added cards, title edits and
       // parked flips — everything on the draft. Now the whole draft rides.
       draft: ciDraft,
+      // The profile rides the draft like everything else, so a reload keeps
+      // what the pages have taught and no page is read twice for it.
+      profile: ciProfile,
+      profileFrom: Object.assign({}, ciProfileFrom),
       // The answers that draft was read from, so a reload knows whether the
       // draft still stands or the goals step owes a re-read.
       draftFrom: ciDraftFrom,
@@ -33509,6 +33646,9 @@
       // non-null ciDraft and paints it instead of re-generating over the
       // person's additions and edits. clearDraft() still ends its life.
       ciDraft = d.draft || null;
+      ciProfile = d.profile || null;
+      Object.keys(ciProfileFrom).forEach(k => { delete ciProfileFrom[k]; });
+      Object.assign(ciProfileFrom, d.profileFrom || {});
       ciDraftFrom = d.draftFrom || null;
       return true;
     } catch (e) { return false; }
@@ -35378,6 +35518,14 @@
   }
   function ciNext() {
     if (ciGate && !ciGate()) return;
+    // THE PAGE TEACHES ON THE WAY OUT (2026-09-10). The read fires for the
+    // page being LEFT, after its gate has passed, so it reads a finished
+    // answer and never a half-typed one. It is not awaited: the next page
+    // paints immediately and the read lands behind it, which is what the
+    // owner asked for. A page whose material has not moved is skipped
+    // inside noteProfile, so Back and Next costs nothing.
+    const leaving = ciSteps[ciStepIdx];
+    if (leaving && leaving.profileKey) noteProfile(leaving.profileKey);
     if (ciStepIdx < ciSteps.length - 1) { ciStepIdx++; ciRender(); }
   }
   function ciBack() { if (ciStepIdx > 0) { ciStepIdx--; ciRender(); } }
@@ -35951,7 +36099,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       // upfront, Continue reads the entry and nudges on whichever of the four
       // territories it hasn't touched — a checklist under the page fills in
       // as the coverage read confirms each one.
-      { journalMode: true, render: b => {
+      { profileKey: "entry", journalMode: true, render: b => {
           b.classList.add("ci-entry-step");   // page-one type runs a step larger
           b.innerHTML = `<h1 class="ci-h1">${userName ? `Your first journal entry, ${escHtml(userName)}.` : "Your first journal entry."}</h1>
             <div class="ci-talk-row">
@@ -36075,7 +36223,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
 
       // Stage call 1 of 3 — six themes and the happiness read, one call.
       // The person must pick exactly three.
-      { render: async b => {
+      { profileKey: "themes", render: async b => {
           const tok = ciRenderSeq;
           // The wait header names what's happening, not what's next (item 12);
           // "Pick the three…" arrives only with the result.
@@ -36198,7 +36346,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       // anchorTop: the row unfolds and the follow-up appears BELOW the wheel;
       // centred, the page re-centred on each and carried the wheel with it.
       // The garden set the same rule for itself on 8 September.
-      { anchorTop: true, render: b => {
+      { profileKey: "wheel", anchorTop: true, render: b => {
           const themeCats = [...new Set(ciMirror.themes
             .filter(t => ciSelectedThemes.includes(t.label)).map(t => t.category))];
           // Item 102: the read-back prose is gone — the shape says it. The
@@ -36257,7 +36405,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       // the name page, and the optional note is the sheet's last section. The
       // chip VALUES and what this step sends onward are unchanged — this is the
       // same four answers, on paper instead of in boxes.
-      { journalMode: true, render: b => {
+      { profileKey: "capacity", journalMode: true, render: b => {
           const CH = [
             // THE QUESTION IS THE WHOLE OF LAW 3 (2026-09-10). "Budget under
             // capacity" was being served twice: once here, by asking about
@@ -36454,7 +36602,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
 
       // Stage call 2 of 3 — the dig: questions chosen from the three picks and
       // the gaps the balance surfaced, answered journal-style.
-      { journalMode: true, render: async b => {
+      { profileKey: "dig", journalMode: true, render: async b => {
           const tok = ciRenderSeq;
           b.innerHTML = stepHeader("Choosing what to ask you.", "Just a few seconds.")
             + thinkingBlock("priorities");
@@ -36535,7 +36683,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       // said out loud. The page says what they are for: the app is looking
       // for the goal nobody asked for, and it says so rather than slipping
       // two strange questions into the run unexplained.
-      { journalMode: true, render: b => {
+      { profileKey: "odd", journalMode: true, render: b => {
           b.innerHTML = stepHeader("Two odd questions.",
             "Neither is about your plan. They are how I find the thing you never asked for. Skip either.")
             + PROBE_QUESTIONS.map(p => `<div class="ci-qblock">
@@ -36570,6 +36718,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           // costs nothing. The wait state says which of the two it is.
           const sigNow = draftSig();
           if (!ciDraft || ciDraftFrom !== sigNow) {
+            // The page reads fire without being awaited, so the last one may
+            // still be in the air when the walk arrives here. This is the
+            // only place that has to wait for them.
+            await profileSettled();
             const tok = ciRenderSeq;
             b.innerHTML = (ciDraft
                 ? stepHeader("You changed some answers. Reading them again.",
@@ -38354,6 +38506,12 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       // The quarter clock, so the stage can size setups to the weeks that
       // actually remain (see the whitelist note in draftPlan).
       capacity: intake.capacity || captureCapacity(),
+      // WHAT THE QUIZ UNDERSTOOD ABOUT THEM (2026-09-10). The weekly work is
+      // where a plan meets a real week, and the profile is the only place
+      // that holds what their week actually allows, what they avoid, and
+      // what their setbacks look like. Absent on a board that predates the
+      // profile, and the stage reads as it always did without it.
+      profile: ciProfile || undefined,
     };
     if (deadline) payload.deadline = deadline;
 
@@ -39038,7 +39196,12 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The capacity object (with the quarter clock) travels top-level too:
     // the transcript path sends prose plus whitelisted parts, and an object
     // riding only inside intake never reaches the model there.
+    // The quarters are drawn from the goal they carry AND what the quiz
+    // understood about the person (2026-09-10, the owner: "based on that plus
+    // the prfile it does the quarters"). Absent on a board older than the
+    // profile, and the stage reads as it always did without it.
     const base = { intake, goal, quartersToPlan: qn, capacity: intake.capacity || captureCapacity() };
+    if (ciProfile) base.profile = ciProfile;
     const shortQ = (base.capacity.weeksLeftInQuarter || 99) < SHORT_QUARTER_WEEKS;
     // The years it has, and whose number that is, as its own section: the
     // planner paces to HORIZON.years (the target when set), never the
@@ -39537,7 +39700,15 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     if (!Object.keys(intake.journals || {}).length && !Object.keys(intake.depth || {}).length) {
       throw new AnalysisUnavailable("no_input");
     }
-    const payload = { intake };
+    // THE GOALS ARE WRITTEN FROM WHAT THE QUIZ UNDERSTOOD (2026-09-10, the
+    // owner: the AI learns page by page and "at the end it puts it all
+    // together to define the goals"). She chose the profile alone over the
+    // profile plus the raw answers, which is why every profile line carries
+    // her words: nothing of hers is lost, it just arrives already thought
+    // about. The intake still rides when there is NO profile at all, which
+    // is an old draft resumed or every page's read having failed, and a run
+    // with neither has nothing to read and says so above.
+    const payload = ciProfile ? { profile: ciProfile } : { intake };
     if (extras && extras.followups && extras.followups.length) payload.followups = extras.followups;
     if (extras && extras.correction) payload.correction = extras.correction;
 
@@ -40129,6 +40300,13 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The journal's single writer and the fresh-start reset, so the suite can
     // prove a previous run's answers cannot reach the next run's payload.
     resetDiscovery, setJournal, pruneDigAnswers,
+    // The profile, a page at a time: the read, the wait the goals step takes,
+    // what it holds, and the material each page hands over, so a test can
+    // drive one page without walking the whole quiz.
+    noteProfile, profileSettled, profile: () => ciProfile,
+    profilePages: () => Object.keys(PROFILE_PAGES),
+    profileMaterial: (page) => (PROFILE_PAGES[page] ? PROFILE_PAGES[page]() : null),
+    setProfile(v) { ciProfile = v || null; },
     journalKeys: () => Object.keys(ciJournal).sort(),
     setDig(d) { ciDig = d || null; },
     serializeState, applyState, saveState, restoreState,
