@@ -3687,6 +3687,11 @@
     color: var(--ink-soft); cursor: pointer;
     text-decoration: underline; text-underline-offset: 3px; }
   .qv-swap:hover { color: var(--ink); }
+  /* THEIR OWN TWO LINES, one above the other, the shape detectTensions has
+     always used. Quoted rather than styled into evidence: it is a label size
+     because it is the app pointing, not the app talking. */
+  .qv-said { font-size: var(--t-label); line-height: var(--lead, 26px);
+    color: var(--ink-muted); text-align: left; white-space: pre-line; }
   .qv-pin { margin-left: auto; flex: 0 0 auto; background: none; border: none; padding: 0;
     font: inherit; font-size: var(--t-label); color: var(--ink-soft); cursor: pointer;
     text-decoration: underline; text-underline-offset: 3px; }
@@ -31993,8 +31998,8 @@
   // THE WHEEL'S CATALOGUE, BUILT FROM THE ONE TABLE (2026-09-10). This was A
   // SECOND SOURCE OF THE SIX LIFE-AREA NAMES, which is why the lowercase
   // sweep missed them: it fixed CATS and never knew this list existed. All six
-  // labels were still capitalised here long after CATS was lowercase — the
-  // same name, two places, quietly disagreeing. The names, the sentences and
+  // labels were still capitalised here long after CATS was lowercase, the
+  // same name in two places, quietly disagreeing. The names, the sentences and
   // the colours now come from AREAS (search "THE SIX AREAS: ONE TABLE"), and
   // this line only picks the four columns the wheel and the reads want.
   // KEEP THE SHAPE: it is exported as `catalogue()` on window.__pipeline and
@@ -37491,6 +37496,14 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                       <button class="rv-tune qr-tune" data-gid="${g.draftId}">${open ? "done ↑" : "tune →"}</button></div>
                     <div class="rv-tuned qv-fold" style="display:${open ? "block" : "none"}">
                       ${evidenceOf(g) ? `` : `<div class="rv-rc-missing">no reality check in this plan yet, add one: a step where the world gets to respond.</div>`}
+                      ${g.tension && !g.tension.resolved && g.tension.kind === "stated" ? `<div class="qv-block">
+                        <div class="qv-block-label">worth a second look</div>
+                        <div class="qv-alt">${escHtml(g.tension.question)}</div>
+                        ${g.tension.reasoning ? `<div class="qv-said">${escHtml(g.tension.reasoning)}</div>` : ``}
+                        ${g.tension.instead ? `<div class="qv-said">you might mean: ${escHtml(g.tension.instead)}</div>
+                          <button class="qv-swap qv-retitle" data-gid="${g.draftId}">use those words for the goal</button>` : ``}
+                        <button class="qv-swap qv-setaside" data-gid="${g.draftId}">set this aside</button>
+                      </div>` : ``}
                       ${o.alt && o.alt.label ? `<div class="qv-block">
                         <div class="qv-block-label">another way to say it</div>
                         <div class="qv-alt">${escHtml(appVoice(o.alt.label, o.alt.source === "user"))}</div>
@@ -37611,6 +37624,35 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                 ob.label = ob.alt.label;
                 ob.source = ob.alt.source || "ai";
                 ob.alt = mine;
+                saveDraft();
+                paintB();
+              });
+            });
+            // SET ASIDE IS FOREVER (law 5), and it is the same store the rest
+            // of the app dismisses into, so the question cannot come back on
+            // the board wearing the id it was dismissed under here.
+            b.querySelectorAll(".qv-setaside").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const g = keptById(btn.dataset.gid);
+                if (!g || !g.tension) return;
+                if (ciDismissedTensions.indexOf(g.tension.id) === -1) ciDismissedTensions.push(g.tension.id);
+                g.tension.resolved = true;
+                saveDraft();
+                paintB();
+              });
+            });
+            // THE REWORDING IS A PROPOSAL, TAKEN BY HAND OR NOT AT ALL. Law 1
+            // is untouched by it: their title is kept on the goal, so the tap
+            // is reversible in the same breath as the quarter's own swap, and
+            // taking it marks the title as theirs BECAUSE they chose it.
+            b.querySelectorAll(".qv-retitle").forEach(btn => {
+              btn.addEventListener("click", () => {
+                const g = keptById(btn.dataset.gid);
+                if (!g || !g.tension || !g.tension.instead) return;
+                const mine = g.title;
+                g.title = g.tension.instead;
+                g.titleSource = "user";
+                g.tension.instead = mine;          // theirs, one tap back
                 saveDraft();
                 paintB();
               });
@@ -38950,6 +38992,42 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     return flagged;
   }
 
+  // LAW 1'S OTHER HALF: THE APP MAY DISAGREE IN THE OPEN (amended 2026-09-10,
+  // from the owner: "Shouldnt API be able to tell if maybe the person's own
+  // bias is getting in the way of their true feelings?"). Law 1 forbids the
+  // app REWRITING what a person wrote; it never forbade questioning it, and
+  // nothing in the app had ever read their own words back against the goal
+  // they typed. This is that read landing.
+  //
+  // IT IS A TENSION, WHICH IS THE WHOLE POINT. DEFINITIONS already names this
+  // object: two things the person said that cannot both be fully true, which
+  // the app names and never resolves. Riding g.tension means it inherits the
+  // things that make such a question bearable rather than accusing: it can be
+  // set aside, a dismissal is permanent (law 5, via tensionId over their own
+  // words, so a reworded question cannot come back wearing a new id), only
+  // one question is open per goal at a time, and the goals step renders it
+  // with no new markup.
+  //
+  // BOTH HALVES, OR NOTHING. The reasoning carries THEIR two lines in the
+  // same shape detectTensions uses, because a contradiction with nothing to
+  // point at is not a question, it is an opinion about them. A reply missing
+  // either quote is dropped rather than shown, and the offered rewording is
+  // optional: `instead` is a proposal beside their title, never applied here.
+  function applyContradiction(goal, c) {
+    if (!goal || !c) return null;
+    const theirs = String(c.theirs || "").trim();
+    const mine = String(c.mine || "").trim();
+    const ask = String(c.ask || "").trim();
+    if (!theirs || !mine || !ask) return null;      // no receipts, no question
+    if (goal.tension && !goal.tension.resolved) return null;   // one at a time
+    const id = tensionId("stated", theirs + "|" + mine);
+    if (new Set(ciDismissedTensions || []).has(id)) return null;
+    goal.tension = { id, kind: "stated", question: ask,
+      reasoning: trimQuote(theirs) + "\n   +\n" + trimQuote(mine),
+      instead: String(c.instead || "").trim() || null, resolved: false };
+    return goal.tension;
+  }
+
   async function draftPlan(goal, intake, ctx) {
     // The heavy-lifting payload (v3): the planner reads the person's edited
     // vision, the rest of the board, and the named tensions — not just one
@@ -38993,8 +39071,17 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // page offers, changes nothing.
     const isFocus = !!(ciFocusKey && goal && goal.draftId === ciFocusKey);
     const fullQuarters = shortQ || isFocus ? 2 : 1;
+    // EITHER SHAPE (2026-09-10). The plan read used to return a bare array of
+    // objectives, and both servers unwrapped to it. The contradiction is
+    // about the GOAL rather than any one quarter, so it cannot ride an
+    // objective, and an array cannot carry a sibling: the servers now hand
+    // the whole object through. A bare array is still accepted, because the
+    // harness stubs return one and a published function deployed before
+    // today still answers that way.
+    const objectivesOf = d => Array.isArray(d) ? d : ((d && d.objectives) || []);
+    const contradictionOf = d => (!d || Array.isArray(d)) ? null : (d.contradiction || null);
     const normalize = data => {
-      const objs = withObjectiveIds(normalizePlan(data,
+      const objs = withObjectiveIds(normalizePlan(objectivesOf(data),
         { quarters: qn, fullDepth: !!deadline, fullQuarters }));
       // The stated date lives on the objective in its quarter, so the roadmap
       // can pin it and the mechanisms stage can prepare for it.
@@ -39006,9 +39093,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       return objs;
     };
     let r = await tryModel("plan", base);
-    if (!(r.ok && Array.isArray(r.data) && r.data.length)) {
+    if (!(r.ok && objectivesOf(r.data).length)) {
       throw new AnalysisUnavailable(r.reason || "empty_result", r.detail);
     }
+    applyContradiction(goal, contradictionOf(r.data));
     // The reality-check contract, enforced in validation ON THE NORMALIZED
     // SET — checking the raw output let normalization demote the evidence
     // objective afterwards. A plan that never lets the world respond gets ONE
@@ -39986,7 +40074,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // Wave 3 seams: the atlas — the pure selector, the stored handle, the page.
     quartersAcrossGoals, goalHandle, openAtlas, closeAtlas, renderAtlas,
     buildAtlasWater, horizonOutLabel,
-    horizonYearsOf, quartersToPlanFor, planHorizonOf, roadEndMark, arcGapLine, ARC_GAP_AT, quarterSeqAround, atlasFilterGet: () => atlasFilter,
+    horizonYearsOf, quartersToPlanFor, planHorizonOf, roadEndMark, arcGapLine, ARC_GAP_AT, applyContradiction, quarterSeqAround, atlasFilterGet: () => atlasFilter,
     openChapters, closeChapters, renderChapters,
     // Wave 4 seams: the shelf and the wish list.
     mountShelf, shelfZones, shelfLayout, openBooksSheet, replayShelfTour, openFaqPage, addReleaseWish,
