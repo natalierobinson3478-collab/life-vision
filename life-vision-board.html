@@ -20393,9 +20393,22 @@
     setTimeout(maybeFirstWalk, 250);
   
     // LAST, because it measures: the cards and the shelf have to be on the
-    // page before there is anything to fit. A frame later, so the shelf's own
-    // svg has been laid out — it is sized inline and its height follows its
-    // width.
+    // page before there is anything to fit.
+    // AND IN THIS PASS, NOT THE NEXT ONE (2026-09-10). It was a bare rAF, on
+    // the reasoning that the shelf's inline-sized svg needed a frame to be
+    // laid out. It does not: the search's own `root.scrollHeight` read forces
+    // a synchronous layout of the whole document, svg included, which is the
+    // same layout the frame would have produced. What the rAF DID do is let
+    // the browser paint the board at --lv-fit: 1 first, so a desktop board
+    // was drawn once at full size and then shrank — measured 294px of travel
+    // on the goal columns at 1280, the largest shift left on the board
+    // (CLS 0.164). Fitting here means the first painted frame is the fitted
+    // one.
+    // THE FRAME-LATER PASS STAYS, as a second opinion rather than the only
+    // one: it costs a repeat of a search that is idempotent — it clears the
+    // factor and re-derives it from scratch — and it is what catches
+    // anything that genuinely did settle after this pass.
+    fitBoardToWindow();
     requestAnimationFrame(fitBoardToWindow);
   }
 

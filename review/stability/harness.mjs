@@ -36,14 +36,17 @@ const PHONE = { width: 390, height: 844 };
 const DESK = { width: 1280, height: 900 };
 
 /* ---- a server of our own, so a run needs nothing else standing ----
- * PORT 8731 ON PURPOSE: the page refuses to register the service worker
- * there (the gate is in the page), so the harness measures the file on disk
- * and never a copy some earlier run left in a worker's cache. */
+ * NO SERVICE WORKER REACHES A RUN, twice over: the page registers one only on
+ * https or on the hostname `localhost`, and the harness serves on 127.0.0.1;
+ * and port 8731 is the workshop's own, which the page's gate names and
+ * refuses by number. So a run always measures the file on disk, never a copy
+ * an earlier one left in a worker's cache. If 8731 is busy the server takes
+ * whatever port it is given — the hostname guard is the one that matters. */
 const PORT = Number(argv.port || 8731);
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
 
-function serve() {
+function serve(port) {
   return new Promise((res, rej) => {
     const srv = http.createServer((req, rsp) => {
       const u = decodeURIComponent(req.url.split('?')[0]);
@@ -53,9 +56,15 @@ function serve() {
       fs.createReadStream(f).pipe(rsp);
     });
     srv.on('error', rej);
-    srv.listen(PORT, () => res(srv));
+    srv.listen(port, () => res(srv));
   });
 }
+// 0 asks the OS for a free one. A stale server from an earlier run holding
+// 8731 must not be the reason a suite cannot say whether the app is stable.
+const serveSomewhere = async () => {
+  try { return await serve(PORT); }
+  catch (e) { if (e.code !== 'EADDRINUSE') throw e; return serve(0); }
+};
 
 /* ---- what the browser actually painted ----
  * The layout-shift API is the arbiter, not rAF ordering: a value that changes
@@ -122,7 +131,7 @@ const call = (p, fn) => p.evaluate(f => {
 
 /* ---- the cases ---- */
 const CASES = [];
-const testCase = (name, widths, run) => CASES.push({ name, widths, run });
+const testCase = (name, widths, run, opts) => CASES.push({ name, widths, run, ...(opts || {}) });
 
 // The guard itself. If this ever fails, nothing else in the file may be trusted.
 testCase('namespace-is-not-the-live-board', [PHONE], async (p, t) => {
@@ -283,12 +292,25 @@ testCase('no-page-is-sized-by-the-large-viewport', [PHONE], async (p, t) => {
   t.atMost(fits.over, 0, 'the empty board must not overflow its window');
 });
 
+// 7. THE BOARD IS FITTED IN THE FRAME IT IS DRAWN IN. fitBoardToWindow
+//    shrinks the board's own measures until the page fits the window, by
+//    measuring. Measured is right; measured a frame LATE means the board is
+//    painted once at full size and then shrinks under the reader.
+testCase('board-is-fitted-before-its-first-paint', [DESK], async (p, t) => {
+  const ls = await shifts(p);                     // buffered: the boot itself
+  t.atMost(+cls(ls).toFixed(4), 0.005,
+    `the board must not resize after it is painted — ${ls.map(e => e.src.join(' | ')).join(' ;; ').slice(0, 260)}`);
+  // and the fit must still be the largest one that works, not just any
+  const fit = await p.evaluate(() => document.documentElement.style.getPropertyValue('--lv-fit'));
+  t.ok(fit !== '', 'the desktop board should carry a fit factor');
+}, { landing: 'board' });
+
 /* ---- runner ---- */
 const only = argv.only ? String(argv.only) : null;
-const srv = await serve();
+const srv = await serveSomewhere();
 const browser = await chromium.launch();
 let failed = 0, ran = 0;
-const URL = `http://127.0.0.1:${PORT}/life-vision-board.html?demo=full`;
+const URL = `http://127.0.0.1:${srv.address().port}/life-vision-board.html?demo=full`;
 
 for (const c of CASES) {
   if (only && !c.name.includes(only)) continue;
@@ -298,6 +320,10 @@ for (const c of CASES) {
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
+    // A case may ask to land somewhere other than wherever the app decides.
+    if (c.landing) await page.addInitScript(pf => {
+      try { localStorage.setItem('lvtest.demo.lifevision.landingpref.v1', pf); } catch (e) {}
+    }, c.landing);
     await page.addInitScript(INSTRUMENT);
     await page.goto(URL, { waitUntil: 'load' });
     await page.waitForTimeout(3000);
