@@ -19181,6 +19181,21 @@
     deskify(el);
     el.classList.add("open");
     if (el.classList.contains("book-page")) markTopBook();
+    // AN OVERLAY SEATS ITS MARK HERE TOO (2026-09-10). 169b gave the book
+    // PAGES a synchronous seat and left the sheets — the books sheet, the
+    // release page, "how this works" — to seatSoon. A rAF on its own would
+    // still land before the paint; what does not is the chain that actually
+    // fires on these. The class-change observer's seat runs while the sheet
+    // is still being laid out and pageSheetOf has nothing to measure, so the
+    // seat that lands is the ResizeObserver's — and a ResizeObserver
+    // callback runs AFTER the frame's rAF phase, so the seatSoon it queues
+    // is the NEXT frame's. One painted frame with the mark at the window's
+    // corner, then it snaps onto the paper: measured 36px on the release
+    // page and 84px on "how this works" at 390. Seating on the way in costs
+    // one measurement and puts the mark on its paper in the first painted
+    // frame; seatSoon is untouched and stays the backstop for every later
+    // change.
+    else seatCloseMark(el);
     return el;
   }
   function closeBookPage(el) {
