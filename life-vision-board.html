@@ -32974,6 +32974,13 @@
     // Three or more lines: the plan calls run a minute-plus and the line
     // advances every six seconds, so a two-line set froze early and read as
     // a hang. All three show on a normal wait.
+    // The tuning breath, after she has kept, edited and deleted: it reads the
+    // goals she settled on and works out how long each honestly takes and what
+    // share of her week it wants.
+    settle: ["Reading the goals you kept\u2026",
+             "Working out how long each one honestly takes\u2026",
+             "Weighing them against the hours you actually have\u2026",
+             "Still going. This one thinks about your whole set\u2026"],
     plans: ["Goals are drafted, laying out each road\u2026",
             "Scoping this quarter to the hours you actually have\u2026",
             "Sketching the later quarters\u2026"],
@@ -33703,14 +33710,17 @@
   // The hint used to BE the placeholder, so the one thing on the row that
   // should have said "write here" was a second sentence to read instead. It
   // is the question's aside now, and the line itself just says how much.
-  const GROUNDING_QUESTIONS = [
-    { key: "sampled",  q: "have you actually tried a version of this yet?",
-      why: "or the cheapest way you could try it in the next month.",
-      ph: "a line is plenty" },
-    { key: "fallback", q: "if this doesn't work out, what's the fallback?",
-      why: "knowing this usually makes it easier to start, not harder.",
-      ph: "a line is plenty" },
-  ];
+  // THE GROUNDING PAIR IS RETIRED (2026-09-10, the owner: "i think we can get
+  // rid of the have you tried a version of this and the fallback question. I
+  // dont think theyre doing anything"). They were two standing questions on
+  // every goal, "have you actually tried a version of this yet?" and "if this
+  // doesn't work out, what's the fallback?", asked once when a suggestion
+  // became a real goal. Their answers DID travel: they joined the answer list
+  // that rides into the quarters and the habits, which she was told before
+  // deciding. She cut them anyway, and that is hers to decide: a question that
+  // feels pointless to answer is a cost whatever is done with the answer.
+  // What a goal is asked now is the model's own questions about THAT goal,
+  // capped at three. Ruling in DECISIONS.md.
 
   // One fixed welcome quote (owner's choice, 2026-08-21) — the first screen
   // says the same thing to everyone, every time, rather than rotating through
@@ -35578,11 +35588,23 @@
     if (ciGoalsPhase === 2) return ciNext();
     const kept = (ciDraft && ciDraft.goals || []).filter(g => !g.dropped);
     if (!kept.length) { ciGoalsPhase = 2; ciRender(); return; }
+    // A PAGE THAT SAYS IT IS WORKING (2026-09-10, the owner: "i clicked next
+    // and now its just still at my life goals with the next button greyed out.
+    // It should have the same loading page letting me know its working on it.
+    // Not just a greyed out button"). Every other model step in this app
+    // paints stepHeader + thinkingBlock and runs startWait for the rotating
+    // line and the clock; this one dimmed a button and left her looking at the
+    // page she had just finished. It takes the same road as the rest now.
     const b = document.getElementById("ciStepBody");
-    const nav = b && b.querySelector(".ci-nav .btn-solid");
-    if (nav) { nav.disabled = true; nav.textContent = "reading them back \u2026"; }
+    const tok = ciRenderSeq;
+    if (b) b.innerHTML = stepHeader("Reading the goals you kept.",
+                                    "How long each one takes, and what it asks of your week.")
+                       + thinkingBlock("settle");
+    const stopWait = startWait("settle");
     try {
       const out = await settleGoals(kept);
+      stopWait();
+      if (tok !== ciRenderSeq) return;
       ciDraft.coverage = out.coverage;
       ciDraft.flags = out.flags;
       if (out.capacity) ciCapacity.proposedSplit = out.capacity.proposedSplit || ciCapacity.proposedSplit;
@@ -35591,8 +35613,14 @@
       saveDraft();
       ciRender();
     } catch (err) {
-      if (nav) { nav.disabled = false; nav.textContent = "next, how long and how much \u2192"; }
-      const slot = b && b.querySelector("#rvCoverage");
+      stopWait();
+      if (tok !== ciRenderSeq) return;
+      // Back to the goals she just edited, with the reason under them: this is
+      // a second call, and it does not cost her the first.
+      ciGoalsPhase = 1;
+      await ciRender();
+      const body = document.getElementById("ciStepBody");
+      const slot = body && body.querySelector("#rvCoverage");
       if (slot) slot.innerHTML = analysisErrorHtml(err);
     }
   }
@@ -36091,10 +36119,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         : "genuinely theirs",
     });
     readinessPairs(g).forEach(x => out.push({ q: x.q, a: x.a }));
-    GROUNDING_QUESTIONS.forEach(rc => {
-      const a = ((g.realityCheck || {})[rc.key] || "").trim();
-      if (a) out.push({ q: rc.q, a });
-    });
     return out;
   }
 
@@ -36875,7 +36899,17 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           }
           // The vision passage IS the subtitle now \u2014 no second line of
           // instruction competing with it for the same space.
-          b.innerHTML = stepHeader("your life goals, organized, yours to change")
+          // THE SECOND BREATH SAYS WHAT IT IS FOR (2026-09-10, the owner:
+          // "The life goal optimization page should make it clear these are
+          // your life goals. This is the amount of time i think. You can
+          // change it. You can pause it or delete it. You can see why i added
+          // it."). The first page asks which goals are mine; the second asks
+          // what each one wants. Same cards, different question, so the header
+          // says which question is on the table.
+          b.innerHTML = (ciGoalsPhase === 2
+              ? stepHeader("your life goals, and what each one asks",
+                  "how long I think each takes, yours to change. pause one, drop one, or see why I added it.")
+              : stepHeader("your life goals, organized, yours to change"))
             + `<div class="rv-vision rv-vision-edit" id="rvVision" contenteditable="plaintext-only" role="textbox" aria-label="your vision, in your words">${escHtml(ciDraft.vision || "")}</div>
                <div class="rv-vision-hint">your vision, tap to put it in your own words</div>
                <div class="rv-caps-line" id="rvCapsLine"></div>`
@@ -37024,11 +37058,15 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                   ask: q.ask, why: q.why || "", cls: "rv-readiness-in",
                   attr: `data-ask="${escHtml(q.ask || "")}"`,
                   ph: "a line is plenty", value: readinessAnswerFor(g, q.ask),
-                })).concat(GROUNDING_QUESTIONS.map(rc => ({
-                  ask: rc.q, why: rc.why || "", cls: "rv-reality-in",
-                  attr: `data-k="${rc.key}"`,
-                  ph: rc.ph, value: (g.realityCheck || {})[rc.key] || "",
-                })));
+                })).slice(0, 3);
+              // THREE QUESTIONS, AND NO STANDING PAIR (2026-09-10, the owner:
+              // "i think we can get rid of the have you tried a version of
+              // this and the fallback question. I dont think theyre doing
+              // anything"). She was told their answers do reach the planner
+              // and cut them anyway, which is hers to decide: a question that
+              // feels pointless to answer is a cost even when the answer is
+              // read. What is left is the model's own, asked about THIS goal,
+              // and never more than three of them.
               row.innerHTML = `
                 <button class="lv-card-menu-handle" type="button" aria-label="goal menu"
                   title="rename or drop">⋯</button>
@@ -37096,10 +37134,15 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                       <p>${escHtml(g.control.explain || "You can't fully control that outcome, so this goal is about what you can.")}</p>
                       ${g.control.aspiration ? `<p class="rv-reframe-asp">${escHtml(g.control.aspiration)}</p>` : ``}
                       ${g.control.originalTitle ? `<p class="rv-reframe-mine-line">you wrote: ${escHtml(stripDot(g.control.originalTitle))}</p>` : ``}
-                      <div class="rv-reframe-btns">
-                        <button class="ci-chip rv-reframe-use${g.title !== g.control.originalTitle ? " on" : ""}">use the reframe</button>
-                        ${g.control.originalTitle ? `<button class="ci-chip rv-reframe-mine${g.title === g.control.originalTitle ? " on" : ""}">my own wording</button>` : ``}
-                      </div>
+                      <!-- THE REFRAME IS WHAT IT FOUND, not a choice
+                           (2026-09-10, the owner: "the button use the reframe
+                           is always greyed out so whats the point ... just get
+                           rid of the my own wording and use what you found").
+                           She was right twice. "use the reframe" read
+                           control.suggestedTitle, a field the answer shape has
+                           never carried, so it could not act and never lit;
+                           and the reframed wording is already the title, with
+                           her own words kept on the line above as context. -->
                     </div>` : ``}
                   ${secondLook ? `
                     <div class="ci-tension-note rv-tension"><strong>worth a second look:</strong> ${escHtml(g.tension.question)}
@@ -37139,18 +37182,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                 ciDraft.goals[i].title = t.textContent;
                 ciDraft.goals[i].provenance = "user";
                 saveDraft();
-              });
-              const useBtn = row.querySelector(".rv-reframe-use");
-              if (useBtn) useBtn.addEventListener("click", () => {
-                const g2 = ciDraft.goals[i];
-                if (g2.control.suggestedTitle) { g2.title = g2.control.suggestedTitle; g2.original = g2.title; }
-                paint();
-              });
-              const mineBtn = row.querySelector(".rv-reframe-mine");
-              if (mineBtn) mineBtn.addEventListener("click", () => {
-                const g2 = ciDraft.goals[i];
-                if (g2.control.originalTitle) { g2.title = g2.control.originalTitle; g2.original = g2.title; }
-                paint();
               });
               const whyMine = row.querySelector(".rv-why-mine");
               if (whyMine) whyMine.addEventListener("click", () => {
@@ -37197,14 +37228,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
               row.querySelectorAll(".rv-readiness-in").forEach(inp => {
                 inp.addEventListener("input", () => {
                   setReadinessAnswer(ciDraft.goals[i], inp.dataset.ask, inp.value);
-                  saveDraft();
-                });
-              });
-              row.querySelectorAll(".rv-reality-in").forEach(inp => {
-                inp.addEventListener("input", () => {
-                  const g2 = ciDraft.goals[i];
-                  g2.realityCheck = g2.realityCheck || {};
-                  g2.realityCheck[inp.dataset.k] = inp.value;
                   saveDraft();
                 });
               });
@@ -39033,13 +39056,30 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // not. This used to read the estimate alone, so a two-year choice against
   // a four-year estimate planned, and paced, as four (owner, 2026-09-08:
   // "it still drafts my goals in 4 years instead of the accelerated 2").
+  // THREE QUARTERS OF PLAN, AND THE ARC BEYOND IS SKETCHED (2026-09-10, the
+  // owner on her own board: "it literally generated like 20 quarter goals for
+  // some of my life goals lmao. can we not do that"). Two faults met here.
+  // The weeks branch had no ceiling, and the goals shape asks the model for
+  // `weeks` even on a years-scale goal, so a seven year screenwriting goal
+  // arrived with about 364 weeks, asked for 28 quarters, and was given an
+  // objective for every one of them. And a plan four years deep is guesswork
+  // wearing the clothes of a commitment: the sketches exist for exactly that
+  // ("penciled in, it firms up at your check-ins") and the planner already
+  // returns them.
+  //
+  // So weeks decides the scale only for a goal that is genuinely short, which
+  // is what a weeks-scale goal means; anything a year or longer is paced in
+  // years, as the horizon block on the card already reads it. Three quarters
+  // is the owner's number, chosen over two and four.
+  const QUARTERS_PLANNED_MAX = 3;
   function quartersToPlanFor(goal) {
     const h = (goal && goal.horizon) || {};
-    if (typeof h.weeks === "number" && h.weeks > 0) {
-      return Math.max(1, Math.ceil(h.weeks / QUARTER_WEEKS));
-    }
     const yrs = horizonYearsOf(goal);
-    if (yrs) return yrs <= 1 ? 2 : 3;
+    const shortByWeeks = typeof h.weeks === "number" && h.weeks > 0
+      && h.weeks <= QUARTER_WEEKS * QUARTERS_PLANNED_MAX
+      && !(typeof h.realisticYears === "number" && h.realisticYears >= 1);
+    if (shortByWeeks) return Math.max(1, Math.ceil(h.weeks / QUARTER_WEEKS));
+    if (yrs) return Math.min(QUARTERS_PLANNED_MAX, yrs <= 1 ? 2 : QUARTERS_PLANNED_MAX);
     return 2;
   }
 
@@ -40242,7 +40282,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // content audit reads it to check coverage against a persona's expectations.
     draft: () => ciDraft,
     draftLifeGoals, draftQuarters, draftHabits, planContext, normalizePlan,
-    groundingQuestions: () => GROUNDING_QUESTIONS,
     draftMechanisms, tuneMechanisms, distillGoal, extractHorizon, capCheck, mechanismBudget, allocateMechanisms,
     evidenceOf, planContract, applyContact, detectContactDrift,
     contactFlagQuestion: () => CONTACT_FLAG_QUESTION, contactFlagAt: () => CONTACT_FLAG_AT,
