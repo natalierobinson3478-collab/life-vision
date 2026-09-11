@@ -37005,7 +37005,13 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
               // background. It hangs off the fold being OPEN rather than off
               // the tap that opened it, so a card restored with its fold up
               // still asks.
-              if (tuned && !g.readiness && !g.readinessAsked) {
+              // NOT UNTIL THE TUNING BREATH (2026-09-10, the owner, opening a
+              // fold on the first page and finding questions she thought were
+              // on the next one). The first page is keep, edit or delete; a
+              // question that sharpens a goal is refinement of one already
+              // kept, which is the second page's whole job. Asking earlier
+              // also spent a call per goal on goals she was about to delete.
+              if (ciGoalsPhase === 2 && tuned && !g.readiness && !g.readinessAsked) {
                 g.readinessAsked = true;
                 checkReadiness(g, buildIntake()).then(r => {
                   g.readiness = r;
@@ -37100,6 +37106,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                       ${g.tension.reasoning ? `<div class="ci-tension-ev">${escHtml(g.tension.reasoning)}</div>` : ``}
                       <span class="rv-tension-does">your plan gets written knowing this. pausing one of them below is the other way to answer it.</span>
                       <button class="rv-tension-set" type="button">set this aside</button></div>` : ``}
+                  ${ciGoalsPhase === 2 ? `
                   <div class="rv-detail">
                     <div class="rv-ask-title">a few questions that sharpen this</div>
                     <p class="rv-optional">all optional, they just make the plan better.</p>
@@ -37110,7 +37117,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                         <input class="${q.cls}" ${q.attr} aria-label="${escHtml(q.ask)}" placeholder="${escHtml(q.ph)}"
                                value="${escHtml(q.value)}" />
                       </div>`).join("")}
-                  </div>
+                  </div>` : ``}
                   <button class="rv-drop-link rv-toggle brushed-link">drop this goal</button>
                 </div>`}`;
 
