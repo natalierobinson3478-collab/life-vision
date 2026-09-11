@@ -9686,6 +9686,24 @@
   .walk-hole { position: absolute; border-radius: 18px;
     box-shadow: 0 0 0 200vmax rgba(58, 54, 38, 0.42);
     transition: left 0.55s ease, top 0.55s ease, width 0.55s ease, height 0.55s ease; }
+  /* THE FIRST BEAT ARRIVES, IT DOES NOT TRAVEL (2026-09-10). The hole, the
+     cursor and the scrap are inserted with no geometry and placed 380ms
+     later, and all three carry a transition on the properties that placement
+     writes — so the opening move of the tour was a spotlight, an arrow and a
+     piece of paper sliding out of the top-left corner of the screen, from a
+     position nothing had ever been at. A transition is for going from one
+     beat to the NEXT; the first placement is not a change, it is where the
+     tour starts.
+     THEY ARE ALSO NOT PAINTED UNTIL THEY ARE PLACED. The dimming is the
+     hole's own box-shadow spreading 200vmax from its box, so a hole with no
+     geometry yet is not a spotlight — it is the whole screen going dark with
+     nothing lit in it, which is what those 380ms looked like while
+     scrollIntoView settled. The overlay itself stays put, so a tap during
+     them still lands on the tour and not on the board behind it.
+     walkStart drops the class after the first placement. */
+  #walkOverlay.walk-first .walk-hole,
+  #walkOverlay.walk-first .walk-cursor,
+  #walkOverlay.walk-first .walk-line { transition: none; visibility: hidden; }
   .walk-cursor { position: absolute; width: 22px; height: 22px; overflow: visible;
     transition: left 0.7s ease 0.15s, top 0.7s ease 0.15s; }
   #walkOverlay .walk-line { position: fixed; max-width: 300px; z-index: 2;
@@ -20461,7 +20479,7 @@
     beats = beats.flatMap(b => b.subs ? b.subs : [b]);
     document.querySelectorAll("#walkOverlay").forEach(x => x.remove());
     document.body.insertAdjacentHTML("beforeend", `
-      <div id="walkOverlay" aria-label="a quick tour" role="dialog">
+      <div id="walkOverlay" class="walk-first" aria-label="a quick tour" role="dialog">
         <div class="walk-hole"></div>
         <svg class="walk-cursor" viewBox="0 0 20 20" aria-hidden="true">
           <path filter="url(#rough)" d="M3 2 L8 17 L10.6 10.6 L17 8.6 Z"
@@ -20505,6 +20523,11 @@
         const belowSpace = innerHeight - r.bottom;
         lineEl.style.left = Math.max(12, Math.min(innerWidth - 320, r.left)) + "px";
         lineEl.style.top = (belowSpace > 90 ? r.bottom + pad + 16 : Math.max(12, r.top - pad - 58)) + "px";
+        // The first beat is where it belongs now; from here a move IS a
+        // change and the transitions are the whole point. A layout read
+        // first, so the placement above is committed while the transition is
+        // still off rather than being coalesced with the class coming away.
+        if (ov.classList.contains("walk-first")) { void hole.offsetWidth; ov.classList.remove("walk-first"); }
       }, 380);
     };
     const next = () => {
