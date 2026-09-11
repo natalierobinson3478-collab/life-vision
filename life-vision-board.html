@@ -19952,6 +19952,19 @@
       try { localStorage.setItem(SEEN_KEY, JSON.stringify(profileSeen)); } catch (e) {}
     }
     startOverRoad = true;
+    // AND WRITE THE BLANK DOWN (2026-09-10, the owner: "i chose the start
+    // from scratch oen though", after closing the app and reopening to find
+    // her answers waiting). Everything above cleared memory and nothing
+    // wrote it, so the device's copy and the account still held the old
+    // board, and applyState rehydrates the saved intake into the flow's own
+    // stores on every load, by design, so a returning person's check-in
+    // sees what the first run saw. The answers therefore came back at the
+    // next open, or at the next sync, however cleanly the start over had
+    // swept. serializeState builds the intake LIVE from these stores, so
+    // saving now writes the empty one. The goals are untouched here and
+    // stay untouched: the page promises they are replaced when she saves at
+    // the end of the new run, not when she starts it.
+    saveState();
     renderAll();
     // A demo never shows the name page (maybeWelcome gates on DEMO), so it
     // walks straight into the fresh discovery, in the test namespace.
@@ -32547,6 +32560,22 @@
   // What the goals step waits on. Never rejects: a failed page has already
   // been swallowed above, and a wait that throws would take the step with it.
   function profileSettled() { return ciProfileWait; }
+  // HALF A PROFILE IS NOT A PROFILE (2026-09-10, found on the owner's own
+  // first run: "it saved my answers i had before so maybe they didnt go
+  // through the new plan"). "Run the discovery again" can open at the dig,
+  // four pages in, and the DEMO jump opens at the goals; the pages skipped
+  // never teach, so ciProfile came out holding the follow-ups and the two odd
+  // questions and NOTHING of the entry, the picks, the wheel or the hours.
+  // Non-null is not the test, completeness is: the goals read takes the
+  // profile alone only when every teaching page has taught it, and otherwise
+  // the raw answers ride as they always did, so a short cut can lose the
+  // thinking but can never lose her words.
+  function profileComplete() {
+    if (!ciProfile) return false;
+    const want = (ciSteps || []).map(st => st && st.profileKey).filter(Boolean);
+    if (!want.length) return false;
+    return want.every(k => ciProfileFrom[k] !== undefined);
+  }
 
   function buildIntake() {
     const journals = {};
@@ -39708,7 +39737,12 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // about. The intake still rides when there is NO profile at all, which
     // is an old draft resumed or every page's read having failed, and a run
     // with neither has nothing to read and says so above.
-    const payload = ciProfile ? { profile: ciProfile } : { intake };
+    // A COMPLETE profile stands alone, her ruling. A partial one rides WITH
+    // the answers rather than in place of them: the thinking still helps, and
+    // nothing of hers is missing while it does.
+    const payload = profileComplete() ? { profile: ciProfile }
+                  : ciProfile ? { intake, profile: ciProfile }
+                  : { intake };
     if (extras && extras.followups && extras.followups.length) payload.followups = extras.followups;
     if (extras && extras.correction) payload.correction = extras.correction;
 
@@ -40303,7 +40337,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The profile, a page at a time: the read, the wait the goals step takes,
     // what it holds, and the material each page hands over, so a test can
     // drive one page without walking the whole quiz.
-    noteProfile, profileSettled, profile: () => ciProfile,
+    noteProfile, profileSettled, profileComplete, profile: () => ciProfile,
+    startOverBlank,
     profilePages: () => Object.keys(PROFILE_PAGES),
     profileMaterial: (page) => (PROFILE_PAGES[page] ? PROFILE_PAGES[page]() : null),
     setProfile(v) { ciProfile = v || null; },
