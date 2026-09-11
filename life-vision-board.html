@@ -3548,6 +3548,15 @@
   .rv-why-note:focus { outline: none; border-color: rgb(var(--accent)); }
   .rv-why-q { font-size: var(--t-read); line-height: 1.5; }
   .rv-why-line { margin-top: 6px; font-size: var(--t-label); color: var(--ink-muted); font-style: italic; }
+  /* THE CARD READS IN THREE PARTS (2026-09-10, the owner: "clean up like how
+     its blocked so its easier to read"). Air and one hairline between them,
+     never a box: a box drawn on paper reads as UI, and this page is a sheet.
+     The rule is the same wobbly ink the rest of the app draws with, at the
+     weight a pencil leaves, so it separates without announcing itself. */
+  .rv-band { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(63,79,49,0.14); }
+  .rv-band:first-of-type { border-top: none; padding-top: 0; }
+  .rv-band-asks > .rv-horizon:first-child { margin-top: 0; }
+  .rv-band-decide > .rv-status:first-child { margin-top: 0; }
   .rv-status { margin-top: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .rv-status-label { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.07em;
     color: var(--ink-muted); }
@@ -37079,9 +37088,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                 </div>
                 ${g.categoryUnplaced && !g.dropped ? `<div class="ci-review-actions rv-cat-fix">${AREA_KEYS.map(k =>
                   `<button type="button" class="ci-chip" data-k="${k}">${CATS[k].label}</button>`).join("")}</div>` : ``}
+                <div class="rv-title${g.dropped ? "" : " edit-signal"}" contenteditable="${g.dropped ? "false" : "true"}"${g.dropped ? "" : ` role="textbox" aria-label="the goal's title, in your words"`}>${escHtml(stripDot(g.title))}</div>
                 ${g.unrequested && !g.dropped ? `<div class="rv-unrequested" data-type-area="review/unrequested">${
                   escHtml(g.unrequestedWhy || "you didn't say this, but everything you told me points here")}</div>` : ``}
-                <div class="rv-title${g.dropped ? "" : " edit-signal"}" contenteditable="${g.dropped ? "false" : "true"}"${g.dropped ? "" : ` role="textbox" aria-label="the goal's title, in your words"`}>${escHtml(stripDot(g.title))}</div>
                 ${(g.orphanedWhens || []).length ? `<div class="rv-orphan-when">${g.orphanedWhens.map(o =>
                   `Your ${escHtml(o.when)} slot had nothing to attach to, set it again on the new week if you want it.`).join("<br>")}</div>` : ``}
                 ${g.dropped
@@ -37096,6 +37105,15 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                      last gate before a plan gets written from these cards,
                      and a question nobody sees is not a gate. What stays in
                      the fold is what a person READS rather than answers. -->
+                  <!-- THREE PARTS, NOT ONE COLUMN (2026-09-10, the owner:
+                       "clean up like how its blocked so its easier to read").
+                       The card was one unbroken run of ruled lines, so the
+                       goal, the decisions and the questions all read as the
+                       same weight. They are banded now: what this goal IS,
+                       then what it ASKS of her, then what would sharpen it.
+                       A hairline and air, never a box: a box on paper reads
+                       as UI, and this page is a sheet. -->
+                  <div class="rv-band rv-band-asks">
                   ${ciGoalsPhase === 2 && g.horizon ? horizonBlock(g, i) : ``}
                   <div class="rv-why">
                     <div class="rv-why-q">${escHtml(whyCheckQuestion(g))}</div>
@@ -37110,10 +37128,13 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                       </div>
                       <div class="rv-why-line">whose voice is that? a “should” can stay, chosen now instead of assumed.</div>` : ``}
                   </div>
+                  </div>
+                  <div class="rv-band rv-band-decide">
                   <div class="rv-status">
                     <span class="rv-status-label">this goal starts</span>
                     <button class="ci-chip rv-st-active${g.status !== "parked" ? " on" : ""}">active</button>
                     <button class="ci-chip rv-st-paused${g.status === "parked" ? " on" : ""}">paused, not now, not gone</button>
+                  </div>
                   </div>
                      <div class="rv-bottom">
                        <span class="rv-bottom-line">${escHtml(bottomLine)}</span>
