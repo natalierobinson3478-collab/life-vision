@@ -32440,6 +32440,7 @@
     // patterns are read from the intake this run builds, never the last.
     ciDraft = null;
     ciPatterns = {};
+    ciGoalsPhase = 1;
     // The profile is this run's understanding of them, so a start over drops
     // it whole, the same rule as the wheel above.
     ciProfile = null;
@@ -35456,6 +35457,16 @@
   // ---------- flow control ----------
   let ciSteps = [];
   let ciStepIdx = 0;
+  // THE GOALS PAGE HAS TWO BREATHS (2026-09-10, the owner: "The goal gets
+  // generated with its area, title, description, whether its active. The user
+  // can edit those things and then hits next to continue with more of the
+  // tuning aspects."). Phase 1 is the edit: the five things she changes, the
+  // why check and active-or-paused, which are the questions about whether to
+  // KEEP a goal. Phase 2 is the tuning: the timeline question, the reframe
+  // offer and the ledger, none of which exist until the settle pass has read
+  // the goals she kept. One page, two phases, rather than a second step, so
+  // the cards, the editing and the add path are not duplicated.
+  let ciGoalsPhase = 1;
   // True while re-running the discovery over a finished board ("test it again"):
   // lets __ciFinish adopt the new goals even though hasOnboarded is already set.
   let ciRetest = false;
@@ -35557,7 +35568,42 @@
     if (leaving && leaving.profileKey) noteProfile(leaving.profileKey);
     if (ciStepIdx < ciSteps.length - 1) { ciStepIdx++; ciRender(); }
   }
-  function ciBack() { if (ciStepIdx > 0) { ciStepIdx--; ciRender(); } }
+  // THE TUNING BREATH, run from the goals page's own Next (2026-09-10). The
+  // goals she KEPT are sent, so nothing is tuned for one she deleted, and the
+  // page comes back in phase two carrying the timeline question, the reframe
+  // offers and the ledger. A failure leaves her in phase one with the reason
+  // on the page: it is a second call, and the goals she just edited are not
+  // lost to it.
+  async function ciTune() {
+    if (ciGoalsPhase === 2) return ciNext();
+    const kept = (ciDraft && ciDraft.goals || []).filter(g => !g.dropped);
+    if (!kept.length) { ciGoalsPhase = 2; ciRender(); return; }
+    const b = document.getElementById("ciStepBody");
+    const nav = b && b.querySelector(".ci-nav .btn-solid");
+    if (nav) { nav.disabled = true; nav.textContent = "reading them back \u2026"; }
+    try {
+      const out = await settleGoals(kept);
+      ciDraft.coverage = out.coverage;
+      ciDraft.flags = out.flags;
+      if (out.capacity) ciCapacity.proposedSplit = out.capacity.proposedSplit || ciCapacity.proposedSplit;
+      if (out.capacity && out.capacity.say) ciCapacity.say = out.capacity.say;
+      ciGoalsPhase = 2;
+      saveDraft();
+      ciRender();
+    } catch (err) {
+      if (nav) { nav.disabled = false; nav.textContent = "next, how long and how much \u2192"; }
+      const slot = b && b.querySelector("#rvCoverage");
+      if (slot) slot.innerHTML = analysisErrorHtml(err);
+    }
+  }
+  window.__ciTune = ciTune;
+  function ciBack() {
+    // Back out of the tuning returns to the edit, not to the page before.
+    if (ciGoalsPhase === 2 && ciSteps[ciStepIdx] && ciSteps[ciStepIdx].id === "goals") {
+      ciGoalsPhase = 1; ciRender(); return;
+    }
+    if (ciStepIdx > 0) { ciStepIdx--; ciRender(); }
+  }
 
   function navRow(nextLabel, opts = {}) {
     return `<div class="ci-nav">
@@ -36839,7 +36885,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                <div id="rvCoverage"></div>
                <div id="rvFocus"></div>
                <div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">\u2190 Back</button>
-                 <button class="btn-solid" onclick="window.__ciNext()">next, draft the quarters \u2192</button></div>`;
+                 ${ciGoalsPhase === 1
+                   ? `<button class="btn-solid" onclick="window.__ciTune()">next, how long and how much \u2192</button>`
+                   : `<button class="btn-solid" onclick="window.__ciNext()">next, draft the quarters \u2192</button>`}</div>`;
           // Which torn-sheet overlay (the ledger / the silences) is open —
           // step-local view state, never written to the draft (items 25/27).
           let covView = null;
@@ -37004,7 +37052,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                      last gate before a plan gets written from these cards,
                      and a question nobody sees is not a gate. What stays in
                      the fold is what a person READS rather than answers. -->
-                  ${horizonBlock(g, i)}
+                  ${ciGoalsPhase === 2 && g.horizon ? horizonBlock(g, i) : ``}
                   <div class="rv-why">
                     <div class="rv-why-q">${escHtml(whyCheckQuestion(g))}</div>
                     <div class="rv-why-btns">
@@ -37390,6 +37438,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // had to add the strength goal by hand — the app knew and had no mouth.)
   function paintCoverage() {
             const mount = b.querySelector("#rvCoverage");
+            // Phase one has not asked for the ledger yet, so it says nothing.
+            // The "didn't come back" line below is for a tuning pass that ran
+            // and returned none, which is a different fact.
+            if (ciGoalsPhase === 1) { if (mount) mount.innerHTML = ""; return; }
             const cov = ciDraft.coverage;
             const ledger = cov === null
               ? `<div class="rv-cov-title">the accounting didn't come back</div>
@@ -39413,6 +39465,45 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     return gs;
   }
 
+  // THE SECOND BREATH (2026-09-10, the owner: "The user can edit those things
+  // and then hits next to continue with more of the tuning aspects"). Handed
+  // the goals as she LEFT them, each under the index it is answered by, so a
+  // retitled goal still matches, plus the profile the quiz built. Returns the
+  // horizon, the reframe, the kind, the share, the forming flag and the
+  // background rationale per goal, and the flags, the coverage ledger and the
+  // capacity split over the finished set. Only the goals she kept are sent,
+  // so nothing is tuned for a goal she deleted.
+  async function settleGoals(kept) {
+    if (!kept.length) return { tuned: [], flags: [], coverage: null, capacity: null };
+    const payload = {
+      goals: kept.map((g, i) => ({ i, category: g.category, title: g.title,
+        description: g.description, status: g.status || "active",
+        unrequested: !!g.unrequested })),
+    };
+    if (ciProfile) payload.profile = ciProfile;
+    else payload.intake = buildIntake();
+    const data = await tryShaped("settle", payload,
+      d => d && Array.isArray(d.tuned) && d.tuned.length === kept.length
+           && d.tuned.every(t => t && typeof t.i === "number"));
+    // Answered by index, and every goal answered exactly once: a duplicate or
+    // a missing one would silently tune the wrong card.
+    const byIndex = {};
+    data.tuned.forEach(t => { if (byIndex[t.i] === undefined) byIndex[t.i] = t; });
+    kept.forEach((g, i) => {
+      const t = byIndex[i];
+      if (!t) return;
+      g.horizon = t.horizon || null;
+      g.control = t.control || null;
+      g.kind = t.kind == null ? null : t.kind;
+      g.share = t.share == null ? null : t.share;
+      g.forming = !!t.forming;
+      g.rationale = clip(t.rationale || "", CAPS.rationale);
+    });
+    return { tuned: data.tuned, flags: data.flags || [],
+             coverage: Array.isArray(data.coverage) ? data.coverage : null,
+             capacity: data.capacity || null };
+  }
+
   function cleanGoals(out) {
     const goals = (out.goals || []).slice(0, 6).map(g => Object.assign({}, g, {
       // Anything outside the six real areas becomes Other rather than
@@ -39420,12 +39511,24 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       category: CATS[g.category] && g.category !== "Other" ? g.category : "Other",
       title: clip(g.title, CAPS.title),
       description: clip(g.description, CAPS.description),
-      rationale: clip(g.rationale, CAPS.rationale),
       // The mark that says the person never asked for this one, and the line
       // that says why. Both survive the clip, because this list is a rebuild
       // and anything not named here is dropped.
       unrequested: !!g.unrequested,
       unrequestedWhy: g.unrequestedWhy || "",
+      // THE TUNING IS NOT IN THIS ANSWER ANY MORE (2026-09-10). The goals
+      // read returns the five things a person edits; the horizon, the
+      // reframe, the kind, the share and the rationale are written by the
+      // settle pass afterwards, over the goals they KEPT. Until that has
+      // run these are absent, and every card and every reader has to cope
+      // with that rather than throw, so they are named here with the empty
+      // value the schema has always allowed.
+      horizon: g.horizon || null,
+      control: g.control || null,
+      kind: g.kind == null ? null : g.kind,
+      share: g.share == null ? null : g.share,
+      forming: g.forming == null ? false : !!g.forming,
+      rationale: clip(g.rationale, CAPS.rationale),
     }));
     return Object.assign({}, out, { goals });
   }
@@ -40344,7 +40447,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // what it holds, and the material each page hands over, so a test can
     // drive one page without walking the whole quiz.
     noteProfile, profileSettled, profileComplete, profile: () => ciProfile,
-    startOverBlank,
+    startOverBlank, settleGoals, ciTune,
+    goalsPhase: () => ciGoalsPhase,
     profilePages: () => Object.keys(PROFILE_PAGES),
     profileMaterial: (page) => (PROFILE_PAGES[page] ? PROFILE_PAGES[page]() : null),
     setProfile(v) { ciProfile = v || null; },
