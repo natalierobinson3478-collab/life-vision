@@ -1244,12 +1244,12 @@
      transform and would overwrite one used for layout. */
   @media (max-width: 1359px) {
     .lv-station-row { position: relative; display: block; height: 0; }
-    .lv-station-row:has(#boardCompanion:not(:empty)) { height: var(--board-comp-lane, 172px); }
+    .lv-station-row:has(#boardCompanion.seated) { height: var(--board-comp-lane, 172px); }
     .lv-station-row #boardCompanion { position: absolute; left: 0; right: 0; bottom: 26px;
       margin: 0 auto; width: 140px; }
   }
   @media (max-width: 640px) {
-    .lv-station-row:has(#boardCompanion:not(:empty)) { --board-comp-lane: 128px; }
+    .lv-station-row:has(#boardCompanion.seated) { --board-comp-lane: 128px; }
     .lv-station-row #boardCompanion { width: 96px; }
   }
   @media (min-width: 1360px) {
@@ -7133,7 +7133,7 @@
      under the figure's feet and never under its chin. */
   .tw-head { padding-right: calc(var(--comp-seat, 140px) + 12px); min-height: calc(var(--comp-seat, 140px) + 36px); }
   /* No companion, no seat: the head is the words' own height (2026-09-08). */
-  #thisWeekMount:not(:has(#twCompanion .companion)) .tw-head { padding-right: 0; min-height: 0; }
+  #thisWeekMount:not(:has(#twCompanion.seated)) .tw-head { padding-right: 0; min-height: 0; }
   @media (max-width: 640px) {
     .tw-head { --comp-seat: 96px; }
     /* At the phone's size the prop tucks under the figure's feet as it
@@ -8795,8 +8795,8 @@
      the left margin beside it where there is room, and OUT OF FLOW at both,
      so nothing the creature does can move a line of the page. The lane is
      reserved only when there is a creature to stand in it. */
-  .wk-wrap:has(.wk-comp .companion),
-  .qr-page:has(.wk-comp .companion) { padding-top: var(--comp-lane, 124px); }
+  .wk-wrap:has(.wk-comp.seated),
+  .qr-page:has(.wk-comp.seated) { padding-top: var(--comp-lane, 124px); }
   .wk-comp { position: absolute; top: 0; left: 0; right: 0; z-index: 3;
     display: flex; justify-content: center; pointer-events: none;
     width: auto; --comp-size: 140px; }
@@ -8805,8 +8805,8 @@
      age, and youth shows in the drawing rather than in a smaller box. */
   .wk-comp .companion.age-young { width: var(--comp-size); height: var(--comp-size); }
   @media (min-width: 1280px) {
-    .wk-wrap:has(.wk-comp .companion),
-    .qr-page:has(.wk-comp .companion) { padding-top: 0; }
+    .wk-wrap:has(.wk-comp.seated),
+    .qr-page:has(.wk-comp.seated) { padding-top: 0; }
     .wk-comp { left: -226px; right: auto; width: 200px; display: block; padding-top: 76px; }
   }
   @media (max-width: 640px) { .wk-comp { --comp-size: 96px; } }
@@ -19885,12 +19885,15 @@
     if (!bc0) return;
     const show = profileCompanion && profileCompanion.enabled !== false;
     if (!show) {
-      bc0.innerHTML = ""; delete bc0.dataset.kind;
-      if (seat) { seat.innerHTML = ""; delete seat.dataset.kind; }
+      bc0.innerHTML = ""; delete bc0.dataset.kind; bc0.classList.remove("seated");
+      if (seat) { seat.innerHTML = ""; delete seat.dataset.kind; seat.classList.remove("seated"); }
       return;
     }
     if (seat) {
-      bc0.innerHTML = ""; delete bc0.dataset.kind;
+      // Seated on the shelf: the old top-of-page slot is not the mount, so it
+      // holds no seat either — the row's lane stays closed, as it was when
+      // the gate read `:not(:empty)`.
+      bc0.innerHTML = ""; delete bc0.dataset.kind; bc0.classList.remove("seated");
       const pos = { cat: "top", sparrow: "top", moth: "top", dog: "base", fox: "base", plant: "pot" }[profileCompanion.kind] || "base";
       seat.classList.remove("sb-seat-top", "sb-seat-base", "sb-seat-pot");
       seat.classList.add("sb-seat-" + pos);
@@ -24304,7 +24307,29 @@
   }
   async function mountCompanion(host, comp, opts) {
     const o = opts || {};
-    if (!host || !comp || comp.enabled === false) { if (host) host.innerHTML = ""; return; }
+    if (!host || !comp || comp.enabled === false) {
+      if (host) { host.innerHTML = ""; host.classList.remove("seated"); }
+      return;
+    }
+    // THE SEAT IS RESERVED BY THE BOARD, NOT BY THE ART (2026-09-10). Three
+    // lanes — This-week's header, the two check-ins' band, and the empty
+    // board's row — were reserved by `:has(<slot> .companion)`, which does
+    // not ask "does this board have a companion". It asks "has the drawing
+    // finished being fetched", and the answer is no for as long as the round
+    // trip takes. So each of those pages laid out once with no lane and then
+    // dropped 69–124px under the reader the moment the SVG landed.
+    // `.seated` is written HERE, before the first await, in the same
+    // synchronous pass as the render that asked for the mount — so the
+    // reservation is in the first painted frame, and it is the same size
+    // whether the creature is a cat, a moth, or art that never arrives.
+    // That is what the ruling on .lv-station-row already asked for
+    // ("the reservation is the same size ... so nothing it does can move
+    // anything"); the `:has` gate was quietly making it untrue.
+    // NOT REMOVED IF THE ART FAILS: an empty reserved lane is the same page
+    // it would have been, and collapsing it would be the very jump this
+    // exists to prevent — just later, and under a reader who is already
+    // looking at the page.
+    host.classList.add("seated");
     const pose = o.pose || "idle";
     const art = await companionArt(comp.kind, companionPoseFile(pose));
     if (!art || !host.isConnected) return;
@@ -28915,6 +28940,12 @@
     (() => {
       const slot = document.getElementById("twCompanion");
       if (!slot || !profileCompanion || profileCompanion.enabled === false) return;
+      // RESERVED AT THE DECISION, not at the mount: the arriving branch below
+      // waits half a second before it calls mountCompanion, and a seat that
+      // appeared then would move the page under a reader who had already
+      // started on it. The page knows a creature is coming the moment it
+      // gets past the guard above, so it says so here.
+      slot.classList.add("seated");
       const pose = companionOpenPose();
       const opts = { pose };
       if (pose === "returning") {
