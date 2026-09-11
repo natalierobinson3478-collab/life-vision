@@ -18383,12 +18383,12 @@
               <div data-type-area="chapters/horizon" class="ch-horizon rm-horizon-line"><span>${g.status === "parked" ? "paused" : "active"}${costLine}</span>
                 ${quarterBubblesHtml(g)}${o.inBook ? `` : `<button class="rm-atlas-door" id="rmAtlasDoor" type="button" title="every goal, quarter by quarter">every goal ${DRAWN_ARROW}</button>
                 <button class="rm-atlas-door" id="rmChaptersDoor" type="button" title="every chapter">all chapters ${DRAWN_ARROW}</button>`}</div>
-              ${(g.description || g.rationale) ? `
+              ${g.description ? `
               <div class="rm-about">
                 <button class="rm-about-toggle" id="rmAboutToggle" type="button">about this goal ${DRAWN_ARROW}</button>
                 <div class="rm-about-body" id="rmAboutBody" hidden>
                   ${g.description ? `<div class="rm-desc">${escHtml(g.description)}</div>` : ``}
-                  ${g.rationale ? `<div class="rm-reason"><span class="rm-reason-label">why this was suggested</span>${escHtml(g.rationale)}</div>` : ``}
+                  <!-- the rationale stays in the background, as above -->
                 </div>
               </div>` : ``}
             </div>
@@ -36773,7 +36773,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
               if (prog.mount) prog.mount.remove();
               prog.mount = null; prog.cards = {}; prog.started = false;
             };
-            const FIELD_SEL = { title: ".rv-title", description: ".rv-desc", rationale: ".rv-reason" };
+            const FIELD_SEL = { title: ".rv-title", description: ".rv-desc" };   // no rationale: background only
             let parser = null;
             const makeParser = () => streamFieldParser((p, val) => {
               if (tok !== ciRenderSeq || p[0] !== "goals" || typeof p[1] !== "number") return;
@@ -36790,7 +36790,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
               let card = prog.cards[p[1]];
               if (!card) {
                 prog.mount.insertAdjacentHTML("beforeend",
-                  `<div class="rv-item rv-item-stream"><div class="rv-cat"></div><div class="rv-title"></div><div class="rv-desc"></div><div class="rv-reason"></div></div>`);
+                  `<div class="rv-item rv-item-stream"><div class="rv-cat"></div><div class="rv-title"></div><div class="rv-desc"></div></div>`);
                 card = prog.cards[p[1]] = prog.mount.lastElementChild;
                 paperify(prog.mount, ".rv-item-stream:not(.surf-torn)");
               }
@@ -37029,7 +37029,13 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                      </div>
                 <div class="rv-tuned" style="display:${tuned ? "block" : "none"}">
                   ${g.description ? `<div class="rv-desc">${escHtml(g.description)}</div>` : ``}
-                  ${g.rationale ? `<div class="rv-reason"><span class="rv-reason-label">why this came up</span>${escHtml(g.rationale)}</div>` : ``}
+                  <!-- THE RATIONALE IS BACKGROUND (2026-09-10, the owner:
+                       "lets not show the user the rationale. Keep that in
+                       the background"). It is still asked for, still saved,
+                       and still read by the quarters and the habits: the
+                       page simply does not show the app explaining itself
+                       back to her. The description stays, because that is
+                       about the goal and not about the drafting. -->
                   ${g.control && g.control.reframed ? `
                     <div class="rv-reframe">
                       <span class="rv-reason-label">the reframe</span>
