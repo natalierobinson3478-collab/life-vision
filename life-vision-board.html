@@ -273,7 +273,22 @@
      card is sized off window height as well as width (see --rule) and this
      padding gives way on short windows rather than pushing content past the
      fold. */
-  body.empty-board .app { min-height: 100vh; box-sizing: border-box;
+  /* THE SMALL VIEWPORT, NOT THE LARGE ONE (2026-09-10). `100vh` on a phone
+     is the height the window has with the browser's toolbar RETRACTED, so
+     this card — which holds nothing below it, and is the one page in the app
+     built to be exactly the window tall — came out exactly the toolbar's
+     height taller than what you can actually see. A page whose only reason
+     to scroll is the toolbar is the page that shakes at the foot of a
+     scroll: reaching the bottom retracts the toolbar, the overflow that was
+     the toolbar's height is gone, the scroll settles back, the toolbar
+     returns, and it overflows again.
+     svh, NOT dvh: dvh tracks the toolbar as it slides, which trades the
+     shake for a card that breathes all the way down. svh is the window at
+     its smallest, so the card fits at every point of the toolbar's travel
+     and never asks to scroll at all. The plain `100vh` stays first as the
+     fallback for anything that does not know svh; there it behaves exactly
+     as it did today. */
+  body.empty-board .app { min-height: 100vh; min-height: 100svh; box-sizing: border-box;
     display: flex; flex-direction: column; justify-content: center;
     padding-top: clamp(56px, 7vh, 80px); padding-bottom: clamp(36px, 8vh, 116px); }
   .account-pill { display: flex; align-items: center; gap: 7px; color: var(--ink-muted); font-size: var(--t-label);
@@ -3022,7 +3037,15 @@
      page. The floor is a minimum, not a height: the spread grows past it as
      the lines land, and it gives way on a short window rather than forcing a
      scroll on a page with three lines on it. */
-  .pt-spread { min-height: min(640px, 68vh); }
+  /* svh, for the reason this note already gives (2026-09-10): "it gives way
+     on a short window rather than forcing a scroll". vh on a phone is the
+     window with the toolbar RETRACTED, so the floor was measured against a
+     window taller than the one in front of the reader and the spread could
+     overflow the real page by a few pixels — a page that scrolls only
+     because of the toolbar, which is the page that shakes when you reach
+     the foot of it. svh is that same window at its smallest. Plain vh stays
+     first as the fallback. */
+  .pt-spread { min-height: min(640px, 68vh); min-height: min(640px, 68svh); }
   /* ---- ONE PAPER, BOTH PAGES, AND THE MARGIN RULE IS BACK ON IT
      (owner, 2026-08-28: "why is the first page missing the vertical
      terracotta line, and same as second") ----

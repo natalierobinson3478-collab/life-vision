@@ -243,6 +243,46 @@ testCase('tour-spotlight-does-not-animate-in-from-0,0', [PHONE, DESK], async (p,
   t.eq(corner.length, 0, `the spotlight must not be shown at the corner it was inserted at (${corner.length} of ${shown.length} shown frames)`);
 });
 
+// 6. NOTHING IS SIZED BY THE LARGE VIEWPORT. `vh` on a phone is the window
+//    with the browser's toolbar RETRACTED, so a page sized in vh is exactly
+//    the toolbar's height taller than what the reader can see — and a page
+//    whose only reason to scroll is the toolbar is the page that shakes at
+//    the foot of a scroll. This one is a SOURCE assertion on purpose: a
+//    headless browser has no toolbar, so vh, svh and dvh all resolve to the
+//    same number and no measurement here can tell them apart. What is being
+//    held is the rule, and it is the rule that was wrong.
+testCase('no-page-is-sized-by-the-large-viewport', [PHONE], async (p, t) => {
+  const src = fs.readFileSync(path.join(ROOT, 'life-vision-board.html'), 'utf8');
+  const css = src.slice(src.indexOf('<style>'), src.indexOf('</style>'));
+  // min-height / height declarations in vh that decide whether a page scrolls.
+  const bad = [];
+  for (const m of css.matchAll(/(^|[;{])\s*(min-height|height)\s*:\s*([^;}]*\d+vh[^;}]*)/gm)) {
+    const decl = `${m[2]}: ${m[3].trim()}`;
+    const line = css.slice(0, m.index).split('\n').length;
+    // A declaration immediately followed by an svh (or dvh) one of the same
+    // property is the fallback pair, which is exactly right.
+    const after = css.slice(m.index + m[0].length, m.index + m[0].length + 60);
+    if (new RegExp(`^\\s*;\\s*${m[2]}\\s*:\\s*[^;}]*\\d+(s|d)vh`).test(after)) continue;
+    bad.push(`${decl} (style line ${line})`);
+  }
+  // .paper-canvas is fixed and paints from window.innerWidth/innerHeight; it
+  // creates no overflow and decides nothing about scrolling.
+  const real = bad.filter(b => !/103vh/.test(b));
+  t.eq(real.length, 0, `a page sized in vh will shake at the foot of a phone scroll — ${real.join(', ')}`);
+  // and the empty board must still fit its window exactly
+  const fits = await p.evaluate(() => {
+    [...document.querySelectorAll('.book-page.open, .overlay.open')].forEach(o => o.classList.remove('open'));
+    const g = window.__pipeline.goalsGet(); g.length = 0;
+    window.__pipeline.renderAll();
+    return new Promise(r => setTimeout(() => r({
+      empty: document.body.classList.contains('empty-board'),
+      over: document.scrollingElement.scrollHeight - window.innerHeight,
+    }), 800));
+  });
+  t.ok(fits.empty, 'the forced board should be the empty one');
+  t.atMost(fits.over, 0, 'the empty board must not overflow its window');
+});
+
 /* ---- runner ---- */
 const only = argv.only ? String(argv.only) : null;
 const srv = await serve();
