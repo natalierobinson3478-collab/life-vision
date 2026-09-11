@@ -253,6 +253,37 @@
     mix-blend-mode: multiply; opacity: 0.6;
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="11"/><feColorMatrix values="0 0 0 0 0.35 0 0 0 0 0.33 0 0 0 0 0.27 0 0 0 0.05 0"/></filter><rect width="240" height="240" filter="url(%23n)"/></svg>'); }
 
+  /* ---- THE OPENING CURTAIN (owner, 2026-09-11: "It should open smoothly.
+     Right now it opens and maybe goes to the quiz page then goes to the this
+     week page and glitches … have a open screen that says 'youre vision board
+     is loading'"). Three pages showed through in order on every open: the bare
+     board (the 29,000 lines below had not parsed yet, so the title sat alone on
+     the paper), whichever page the boot opened next, and the landing page
+     arriving over that. This is the page's FIRST frame — it is written in the
+     HTML, not built by the script, so it is on the paper before the script
+     exists — and it comes down once, on the finished page.
+     It wears the paper and nothing else: one line in the hand, breathing. A
+     spinner would read as UI, and this is a sheet. Under the grain (2000) on
+     purpose, so the sheet's tooth runs over it like everything else. */
+  .lv-curtain { position: fixed; inset: 0; z-index: 1990; display: flex;
+    align-items: center; justify-content: center; padding: 24px;
+    background: var(--bg); text-align: center;
+    transition: opacity 420ms ease, visibility 0s linear 0s;
+    /* THE FAILSAFE IS IN THE CSS, BECAUSE THE SCRIPT IS WHAT IT WAITS FOR.
+       A curtain nothing ever lifts fades on its own rather than holding a
+       person out of their own board for good. */
+    animation: lv-curtain-failsafe 1.2s ease 15s forwards; }
+  .lv-curtain.lifted { opacity: 0; visibility: hidden; pointer-events: none;
+    animation: none; transition: opacity 420ms ease, visibility 0s linear 420ms; }
+  .lv-curtain-line { font-family: var(--voice-hand); font-style: italic;
+    font-weight: 400; font-size: var(--t-read); color: var(--ink);
+    animation: lv-curtain-breath 2.8s ease-in-out infinite; }
+  @keyframes lv-curtain-breath { 0%, 100% { opacity: 0.46 } 50% { opacity: 0.88 } }
+  @keyframes lv-curtain-failsafe { to { opacity: 0; visibility: hidden } }
+  @media (prefers-reduced-motion: reduce) {
+    .lv-curtain-line { animation: none; opacity: 0.72 }
+  }
+
   /* No band, ever (user call, 2026-08-21): the sheet runs full-bleed and the
      top row is just floating pills — the same dissolved treatment the empty
      board always had, now universal. Absolute, not fixed: the pills belong to
@@ -3682,10 +3713,15 @@
      the suggestions you have. Maybe i can pin them somewhere as reminders so
      i can see them"). They already survive to "keeping in mind" and to every
      quarterly review, so what was missing was not memory, it was seeing them
-     and being able to add one. The pin lands a reminder in this week, the
-     road tomorrowLand already travels; a reminder carries no hours and no
-     debt, so law 8 holds. The mark is the app's door, an underline, because
-     that is what it is. */
+     and being able to add one. The mark is the app's door, an underline,
+     because that is what it is.
+     IT NO LONGER LANDS IN THE WEEK (2026-09-11). It used to take the road
+     tomorrowLand travels and arrive as a day-less grey stone, which is what
+     the owner found the morning after: "But it added it as grey pebbles in my
+     weekly page once i pressed done." Law 8 held either way, since the stone
+     carried no hours, but the week is where WORK lives and a direction is not
+     work. It goes to the keepings now, under the chapter whose words these
+     already are: directions, not commitments. */
   /* The app's own wording for this quarter, offered beside theirs. It is
      read, so it is --t-read on the lead; the swap is a door, so it is an
      underline. */
@@ -3818,6 +3854,9 @@
     font-size: var(--t-read); line-height: var(--lead); color: var(--ink); }
   .hb-scrap-sheet .hb-bars { margin: calc(var(--lead) * 0.5) 0 0; max-width: none; }
   .hb-scrap-sheet .hb-total { margin: 6px 0 0; text-align: left; }
+  /* The start line sits with the rest of the scrap's small print, in the
+     muted ink the total already uses. */
+  .hb-starts { margin: 6px 0 0; font-size: var(--t-read); color: var(--ink-muted); }
   /* The companion scrap on the habits step: the chosen creature arriving,
      one line, and the six-picker behind "not this one? →". */
   .hb-comp-slot { max-width: 340px; margin: -6px auto 18px; }
@@ -5093,6 +5132,44 @@
   .book-page.open { display: flex; flex-direction: column; }
   body:has(.book-page.open) .topbar,
   body:has(.book-page.open) .app { visibility: hidden; }
+  /* ONE SCROLLBAR, NEVER TWO (2026-09-11, owner: "it really annoys me to
+     show the double scroll bars on the right side. I dont want to see
+     those"). A book page is a fixed sheet that scrolls inside itself, and
+     the board underneath it is only `visibility: hidden` — still laid out,
+     still as tall as a full board, so the DOCUMENT kept a scrollbar of its
+     own for a page nobody could see. Two tracks, side by side, one of them
+     driving nothing: measured at 1193 with This Week open, the window
+     reported 1178px of usable width and the outer track owned the other
+     fifteen. The board cannot be scrolled while a book is open, so it is
+     not a scroller while a book is open.
+     AND THE GUTTER IS HELD OPEN IN ITS PLACE, on the same rule, because
+     those fifteen pixels are the WIDTH OF THE WINDOW as far as a fixed
+     element is concerned: simply taking the scrollbar away would widen
+     the window under every book page and slide its centred sheet sideways
+     by half of it, once on open and once back on close. `overflow` and
+     `scrollbar-gutter` both propagate from the root to the viewport, so
+     the pair reads as: the board stops scrolling, and keeps its lane.
+     Measured open and closed at 1193: the board is 1178 wide both times.
+     Nothing is declared here for the board on its own, so a page with no
+     book open is exactly the page it was.
+     AND IT IS EVERY FULL PAGE OVER THE BOARD, not just the books (owner,
+     same day: "yes lets fix the double scrollbar everywhere"). The books
+     were only where she happened to be looking: a popup and the review's
+     own sheet are the same shape, a fixed layer over the whole window
+     that scrolls inside itself, and they had the same second track. The
+     board stays VISIBLE under a popup, which is the point of the desk,
+     and that is a different question from whether it scrolls: nothing
+     reaches it while the popup is up, so its track drives nothing there
+     either.
+     THE TEST FOR BEING ON THIS LIST IS HAVING A SCROLLER OF YOUR OWN.
+     `.persist-block` (the boot hold card) and `#introFilmOverlay` are
+     fixed layers too and are deliberately NOT here: neither declares an
+     overflow, so the DOCUMENT is the only thing that can scroll them, and
+     locking it would strand a card taller than a short window with no way
+     down. `#walkOverlay` stays off for a second reason, that the walk
+     points at the board underneath and the board may need to move. */
+  html:has(.book-page.open, .overlay.open, .cov-overlay) {
+    overflow: hidden; scrollbar-gutter: stable; }
   #thisWeekOverlay { z-index: 158; }
   /* THE GARDEN STARTS AT THE TOP (2026-09-08). A book page shorter than the
      window is centred on it by the rule under `.book-page > div`, which is
@@ -5223,7 +5300,22 @@
   .tw-corner-plus svg { display: block; width: 100%; height: 100%; }
   .tw-corner-plus:hover { color: var(--ink); }
   .tw-corner-plus:focus-visible, .tw-corner-tool:focus-visible { outline: none /* A1 */; }
+  /* The firefly takes the +'s recipe exactly: same box, same ink, same
+     thumb target, so the bubble reads as three marks of one hand rather
+     than two drawings and a picture. Its glow is the app's one accent and
+     is the only warm thing in the corner, which is what makes it findable
+     without a label. */
+  .tw-corner-firefly { background: none; border: none; cursor: pointer; padding: 6px;
+    width: 38px; height: 38px; color: var(--ink-muted); line-height: 0;
+    -webkit-tap-highlight-color: transparent; }
+  .tw-corner-firefly svg { display: block; width: 100%; height: 100%; }
+  .tw-corner-firefly:hover { color: var(--ink); }
+  .tw-corner-firefly:focus-visible { outline: none /* A1: the drawn ring */; }
+  /* ALL THREE HIDE TOGETHER. A button left standing over the rake's veil is
+     reachable with nothing under it, and a record week has nothing to add to
+     or keep; the corner's own `hidden` covers a past week as well. */
   #thisWeekOverlay.raking .tw-corner-plus, #twCorner.tw-corner-record .tw-corner-plus,
+  #thisWeekOverlay.raking .tw-corner-firefly, #twCorner.tw-corner-record .tw-corner-firefly,
   #twCorner.tw-corner-record #twRake { display: none; }
   .tw-corner-tools { display: flex; flex-direction: column; gap: 6px; align-items: center; }
   .tw-corner-tools[hidden] { display: none; }
@@ -5264,11 +5356,6 @@
   .tw-corner-go svg { display: block; width: 100%; height: 100%; }
   .tw-corner-go:hover { color: var(--ink); }
   .tw-corner-go:focus-visible { outline: none /* A1 */; }
-  /* THE HOLD, WHEN IT MUST SHOW, IS A LINE ON THE SAND, NOT A PANEL. */
-  #bootHoldOverlay .persist-card { background: none; border: none; box-shadow: none;
-    text-align: center; }
-  #bootHoldOverlay .persist-card h2, #bootHoldOverlay .persist-card p {
-    font-family: var(--voice-hand); font-style: italic; font-weight: 400; }
   #twRake svg { display: block; width: 100%; height: 100%; overflow: visible; }
   /* THE COMB WEARS THE POND'S INK NOW (owner, 2026-09-02: "I prefer a
      grey-blue and blue mixture instead of the pinky terracotta color …
@@ -5295,6 +5382,24 @@
      a few words in handwriting on a torn bit of the board's paper, left
      on the sand for a moment — not a pill with a shadow. Same torn masks
      as every sheet, at scrap size. */
+  /* THIS SITS ABOVE THE BOOK PAGES ON DOCUMENT ORDER, NOT ON A HIGHER NUMBER
+     (2026-09-11). .book-page.book-top carries z-index: 200 too, and at a tie
+     the later element in the DOM wins — which is the whole reason #twUndoPill
+     is declared after every book page in the markup rather than inside This
+     Week's overlay, where it used to live and was display:none whenever that
+     page was shut. Moving it back up the document, or giving a book page a
+     higher number, hides the undo scrap again and silently: a delete still
+     works, it just stops offering the way back. If it must move, give it a
+     number above the books instead of relying on the tie. */
+  /* THE CORNER, WHEN A STONE IS OVER IT (2026-09-11). It is a drop target
+     for the length of one gesture and nothing the rest of the time, so it
+     says so the way the strip's days do, by lifting rather than by growing a
+     bin that would then have to live there. */
+  #twCorner.tw-corner-take .tw-corner-bubble { transform: scale(1.06); }
+  #twCorner.tw-corner-take .tw-corner-bubble::before { opacity: 0.9; }
+  #twCorner.tw-corner-take #twRake, #twCorner.tw-corner-take .tw-corner-plus,
+  #twCorner.tw-corner-take .tw-corner-firefly { opacity: 0.35; }
+  #twCorner .tw-corner-bubble { transition: transform 0.12s ease; }
   #twUndoPill { position: fixed; left: 10px; bottom: 12px; z-index: 200;
     display: none; align-items: baseline; gap: 10px;
     background: var(--paper); border: none; border-radius: 0;
@@ -5480,6 +5585,26 @@
      underneath: same proximity, same total, and it holds at any line count.
      -0.3 rather than -0.4 keeps the caption's ascenders clear of the
      title's descenders. */
+  /* KEEPING IN MIND: the Facts sheet's own parts, plus the three this page
+     needs. A row here is not a control, it is a line with a mark beside it,
+     so it reads as writing on paper rather than as a list of buttons. */
+  .kp-item { display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; margin-top: calc(var(--lead) * 0.5); }
+  .kp-line { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+  .kp-mark { flex: 0 0 auto; width: 26px; height: 20px; align-self: center; }
+  .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
+  /* The way off is quiet until wanted: it is not the point of the row. */
+  .kp-drop { flex: 0 0 auto; background: none; border: none; padding: 0; cursor: pointer;
+    font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
+    color: var(--ink-muted); opacity: 0.55; -webkit-tap-highlight-color: transparent; }
+  .kp-item:hover .kp-drop, .kp-drop:focus-visible { opacity: 1; color: var(--ink); }
+  .kp-note { margin-bottom: calc(var(--lead) * 0.25); }
+  .kp-empty { opacity: 0.7; }
+  /* The foot's line, the corner's own field on the page's paper. */
+  .kp-add { margin-top: calc(var(--lead) * 1.5); }
+  .kp-add-row { display: flex; align-items: center; gap: 8px; }
+  .kp-input { flex: 1 1 auto; min-width: 0; }
+  .kp-kinds { display: flex; gap: 6px; margin-top: calc(var(--lead) * 0.4); }
   .fq-sub { display: block; font-family: var(--voice-hand); font-size: var(--t-label);
     font-style: italic; color: var(--ink-muted);
     line-height: var(--lead);
@@ -6834,8 +6959,6 @@
      quarter, a shade quieter, and the one word that brings it back is always
      readable, since a control that shows on hover is no way back on a phone. */
   .ch-work-off { opacity: 0.62; }
-  /* OFF YOUR BOARD (2026-09-07): the bin, at the foot of the workshop. */
-  .ch-bin { margin-top: calc(var(--lead) * 2); }
   /* A day or a week off sits under its row in the metadata's own voice. */
   .ch-work-abs { display: flex; align-items: baseline; gap: 9px; margin: 0 0 0 33px;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.05em;
@@ -7116,10 +7239,20 @@
      the gesture and the line, below the fold where nobody saw it. The
      HOME is the head row now: the title and the week line keep the left,
      the companion stands on the sand to their right, clear of the ✕'s
-     lane. The foot lane STAYS, but as ground rather than as home: it is
-     the open sand the figure strolls down to once it has said hello (item
-     169 walks it there), and held ground at the foot still costs no
-     reading. Wide screens were never at the foot.
+     lane. Wide screens were never at the foot.
+     AND THE FOOT LANE IS GONE (2026-09-11, owner: "the page is too long.
+     I think because the companion is allowed to go to the bottom it's
+     extra long. Lets not have that bottom area. The companion stays on
+     the page whereever the free areas are but no extra bottom room").
+     The 5 Sep lane was 124px of sand held below the last word so the
+     figure had somewhere to stroll; once the home moved to the head row
+     on 7 Sep it was ground and nothing else, and held ground at the foot
+     turns out to cost plenty: on a 1193px window it was 124 of the 405
+     pixels the page scrolled past the screen, with nothing written in
+     it. The roam takes what the page already leaves it, which at every
+     width above the phone is the whole margin beside the sheet (the
+     world here is the WORDS, not the paper, so both flanks are open
+     sand), and the page ends where the writing ends.
      THE VOICE NEEDS ITS ROOM TOO. At a phone's top-right corner the only
      clear ground beside the figure is above it: left is the title, right
      is the ✕, below is the week. So the figure sits thirty pixels down
@@ -7130,7 +7263,7 @@
      the column begins at 173, the ✕ at 317. The row is about seventy
      pixels taller than the words alone, and no lane sits above them. */
   .tw-stack { position: relative; --rule: 21px; --lead: calc(var(--rule) * 1.5); max-width: var(--bf-w);
-    margin: 0 auto; padding-bottom: var(--comp-lane, 124px); }
+    margin: 0 auto; padding-bottom: 0; }
   .tw-margin { position: absolute; top: 30px; bottom: auto; left: auto; right: 52px; z-index: 3;
     width: calc(var(--comp-size, 96px) + 44px); display: block; pointer-events: none; }
   .tw-margin > * { pointer-events: auto; }
@@ -7159,10 +7292,9 @@
        the companion rides the left margin beside it, the way the board's
        companion always has. */
     .tw-stack { max-width: var(--bf-w); position: relative; }
-    /* Wide: the companion rides the LEFT MARGIN beside the sheet — open
-       sand at every width now — so the foot lane is not needed and the
-       page keeps its full height for the words. */
-    .tw-stack { padding-bottom: 0; }
+    /* Wide: the companion rides the LEFT MARGIN beside the sheet. The
+       foot lane it used to be given here instead was retired at every
+       width on 11 Sep, so there is nothing left for this block to undo. */
     .tw-margin { position: absolute; top: 0; bottom: auto; left: -226px; right: auto; width: 200px;
       display: block; padding-top: 76px; }
     .tw-margin .companion { margin-left: auto; margin-right: auto; }
@@ -10629,6 +10761,12 @@
 </svg>
 <canvas class="paper-canvas" id="paperCanvas" aria-hidden="true"></canvas>
 <div class="grain" aria-hidden="true"></div>
+<!-- THE OPENING CURTAIN. In the page and not in the script, so it is on the
+     paper in the first frame the browser paints; see the CSS above, and the
+     banner beside curtainLift() for what takes it down. -->
+<div class="lv-curtain" id="openCurtain">
+  <div class="lv-curtain-line">your vision board is loading</div>
+</div>
   <div class="topbar">
     <div class="topbar-spacer"></div>
   </div>
@@ -11028,13 +11166,18 @@
           aria-label="add something" title="add something"><svg viewBox="0 0 24 24" aria-hidden="true"
           ><path d="M12 4.6 C12.2 9 12 14 12 19.4 M4.8 12 C9 11.7 14.5 12.2 19.2 12" fill="none"
           stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+        <!-- THE FIREFLY (owner, 2026-09-11: "maybe the affirmation button can
+             be a little heart or actually a firefly next to the comb and add
+             goal button"). Drawn in the wiring beside the two tools, not
+             typed here, so all three marks are made the same way. -->
+        <button id="twFirefly" class="tw-corner-firefly" type="button"
+          aria-label="what you are keeping in mind" title="what you are keeping in mind"></button>
       </div>
     </div>
     <!-- THE UNDO BREATH (owner, 2026-09-01: "for a brief moment in the
          bottom corner have an 'undo' but then go away after a few
          seconds. like tinder basically"). One pill, one action, gone in
          a few seconds; a swipe acts at once and this is the way back. -->
-    <div id="twUndoPill" role="status"></div>
   </div>
 
   <div id="atlasOverlay" class="book-page">
@@ -11068,6 +11211,14 @@
   <div id="faqOverlay" class="book-page">
     <button class="checkin-close" id="faqClose" aria-label="close" title="close"></button>
     <div id="faqMount"></div>
+  </div>
+
+  <!-- WHAT SHE IS KEEPING IN MIND. The Facts page's own build, because it is
+       the page she pointed at: "itll be a cute form like the FAQ part where
+       the books are". Same sheet, same rows, same drawn rules. -->
+  <div id="keepOverlay" class="book-page">
+    <button class="checkin-close" id="keepClose" aria-label="close" title="close"></button>
+    <div id="keepMount"></div>
   </div>
 
   <!-- AN OVERLAY, NOT A BOOK PAGE (2026-08-28, owner: "I need the how this
@@ -11142,6 +11293,15 @@
     <button class="checkin-close" id="checkinClose" aria-label="close" title="close"></button>
     <div id="checkinMount"></div>
   </div>
+
+  <!-- THE UNDO SCRAP BELONGS TO THE WHOLE APP, NOT TO ONE PAGE (2026-09-11).
+       It lived inside #thisWeekOverlay, which is a .book-page, and a closed
+       .book-page is display:none — so a scrap raised from anywhere else fired
+       into a hidden subtree and said nothing. Deleting a chapter from the
+       workshop is exactly that case. It sits at body level now, AFTER every
+       book page in document order, because .book-page.book-top carries the
+       same z-index it does and at a tie the later element wins. -->
+  <div id="twUndoPill" role="status"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
@@ -13846,6 +14006,9 @@
       m.durationMin = mins;
       m.estWeeklyHours = Math.round((mins / 60) * n * 100) / 100;
     }
+    // A REPEAT STARTS THE DAY IT WAS MADE. Written by hand today, so today;
+    // the week before it existed owes nothing.
+    m.startsOn = todayKey();
     goal.mechanisms = goal.mechanisms || [];
     goal.mechanisms.push(m);
     return m;
@@ -14076,7 +14239,7 @@
       // waits there instead of crowding this one. remindersInWeek reads
       // it; a dated or standing capture needs no stamp.
       ...(rep || (spec && spec.date) ? {} : { wk: (spec && spec.wk) || weekKeyOf() }),
-      ...(rep ? { schedule: rep } : {}),
+      ...(rep ? { schedule: rep, startsOn: todayKey() } : {}),
       ...(Number.isFinite(mins) && mins > 0 ? { durationMin: Math.round(mins) } : {}),
       completions: {}, occSchema: 2 };
     reminders.push(r);
@@ -14259,12 +14422,26 @@
     if (spec.durationMin) bits.push(minsText(spec.durationMin));
     return "added to " + bits.join(" · ");
   }
+  // THE WAY BACK IS THE UNDO'S OWN COPY (2026-09-11). This used to file the
+  // record in the bin and hand the caller an id to look up. The bin is gone,
+  // so the record itself is the return: a truthy answer that also happens to
+  // BE the thing removed, which is what the undo closure keeps. Callers that
+  // only asked "did it go" still read it as true.
   function removeReminder(id) {
     const i = reminders.findIndex(r => r.id === id);
     if (i < 0) return false;
-    // OFF THE BOARD, NEVER GONE (2026-09-07): to the bin, with the day it left.
-    binPut("tasks", { id: reminders[i].id, at: appNow().toISOString(), record: JSON.parse(JSON.stringify(reminders[i])) }, 60);
+    const gone = JSON.parse(JSON.stringify(reminders[i]));
     reminders.splice(i, 1);
+    saveState();
+    return gone;
+  }
+  // The other half: put back exactly what was handed over, once.
+  function restoreReminder(rec) {
+    if (!rec || !rec.id) return false;
+    if (!reminders.some(r => r.id === rec.id)) {
+      reminders.push(Object.assign({ kind: "reminder", goalId: null, completions: {}, occSchema: 1 },
+        JSON.parse(JSON.stringify(rec))));
+    }
     saveState();
     return true;
   }
@@ -14304,39 +14481,78 @@
     return { date, done: !was };
   }
 
-  let releaseWishes = [];
-  // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
-  // score. Same name on both sides, column `unstuck` (0013).
-  let unstuck = [];
-  // THE BIN (2026-09-07, owner: "this will happen for anything i delete
-  // right?"). What was taken off the board, never thrown away: a hand-added
-  // task removed from This Week, a whole chapter removed from the workshop,
-  // each with the day it left, and the workshop lists them with one word
-  // that brings each back. Same name on both sides, column `bin` (0019).
-  let bin = { tasks: [], goals: [] };
-  function binPut(kind, entry, cap) {
-    bin[kind] = [entry].concat((bin[kind] || []).filter(x => x.id !== entry.id)).slice(0, cap);
+  // WHAT SHE IS KEEPING IN MIND (2026-09-11, owner: "I think there should be
+  // a seperate area for affirmations or reminders ... a little button on the
+  // week page where i can see my reminders and affirmations of just things to
+  // do"). A kept thought is NOT work. It carries no hours, no day, no pebble,
+  // no tick and no count, which is the whole distinction from a `reminder`
+  // (the code's name for a hand-added TASK, which does become a grey stone).
+  // Law 8 is why: a standing thought the week counts against you is a debt,
+  // and nothing here may ever become one.
+  //
+  // Two kinds, one shape. A `reminder` is a thing to do that has no day yet;
+  // an `affirmation` is a line about herself. They differ only in the words,
+  // so they differ only in `kind` and in which chapter of the page they sit
+  // under, never in what the app does with them.
+  // Same name on both sides, column `keepings` (0021).
+  let keepings = [];
+  function addKeeping(spec) {
+    const text = String((spec && spec.text) || "").trim();
+    if (!text) return null;
+    const k = { id: userId("keep"), text,
+      kind: (spec && spec.kind) === "affirmation" ? "affirmation" : "reminder",
+      source: (spec && spec.source) || "user",
+      at: appNow().toISOString() };
+    if (spec && spec.goalId != null) k.goalId = spec.goalId;
+    keepings.unshift(k);          // newest first, the order the page reads in
+    saveState();
+    return k;
   }
-  function restoreTask(id) {
-    const e = (bin.tasks || []).find(x => x.id === id);
-    if (!e) return false;
-    bin.tasks = bin.tasks.filter(x => x.id !== id);
-    if (!reminders.some(r => r.id === id)) {
-      reminders.push(Object.assign({ kind: "reminder", goalId: null, completions: {}, occSchema: 1 }, JSON.parse(JSON.stringify(e.record || {}))));
+  // Returns the record, the way removeReminder does, so the undo scrap can
+  // hold it: there is no drawer behind this either.
+  function removeKeeping(id) {
+    const i = keepings.findIndex(k => k.id === id);
+    if (i < 0) return false;
+    const gone = JSON.parse(JSON.stringify(keepings[i]));
+    keepings.splice(i, 1);
+    saveState();
+    return gone;
+  }
+  function restoreKeeping(rec, at) {
+    if (!rec || !rec.id) return false;
+    if (!keepings.some(k => k.id === rec.id)) {
+      const pos = Math.max(0, Math.min(Number.isInteger(at) ? at : keepings.length, keepings.length));
+      keepings.splice(pos, 0, JSON.parse(JSON.stringify(rec)));
     }
     saveState();
     return true;
   }
-  function restoreGoal(binId) {
-    const e = (bin.goals || []).find(x => x.id === binId);
-    if (!e) return false;
-    bin.goals = bin.goals.filter(x => x.id !== binId);
-    const copy = JSON.parse(JSON.stringify(e.record || {}));
-    // A GOAL'S NUMBER IS ITS PLACE IN THE ROW (the apply numbers by
-    // position), so a chapter brought back lands in its old place where it
-    // can, and its number is kept unless another chapter took it.
+  const keepingsOf = kind => keepings.filter(k => k && k.kind === kind);
+
+  let releaseWishes = [];
+  // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
+  // score. Same name on both sides, column `unstuck` (0013).
+  let unstuck = [];
+  // THE BIN IS GONE, AND THE WAY BACK IS THE UNDO (2026-09-11, owner: "hide
+  // the day list, cut the bin entirely"). From 7 September everything deleted
+  // was kept forever and listed at the foot of the workshop under "off your
+  // board", and the list grew to forty rows of things she had deliberately
+  // thrown away. Nothing is kept now; instead nothing is lost in a slip,
+  // because both deletes hand their record to a 4.5 second scrap that puts it
+  // back. The `bin` column (0019) stays on the account, unwritten: dropping a
+  // column is a migration that cannot be undone, and an ignored one costs
+  // nothing.
+  //
+  // A GOAL'S NUMBER IS ITS PLACE IN THE ROW (the apply numbers by position),
+  // so a chapter brought back lands in its old place where it can, and its
+  // number is kept unless another chapter took it. This used to look the
+  // record up in the bin by id; it takes the record it is handed now, and the
+  // caller is the undo closure that has been holding it.
+  function restoreGoal(rec, position) {
+    if (!rec) return false;
+    const copy = JSON.parse(JSON.stringify(rec));
     if (copy.id == null || goals.some(x => x.id === copy.id)) copy.id = goals.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
-    const pos = Math.max(0, Math.min(Number.isInteger(e.position) ? e.position : goals.length, goals.length));
+    const pos = Math.max(0, Math.min(Number.isInteger(position) ? position : goals.length, goals.length));
     goals.splice(pos, 0, copy);
     goals.forEach((x, i) => { x.position = i; });
     nextId = goals.reduce((m, x) => Math.max(m, Number(x.id) || 0), 0) + 1;
@@ -14466,6 +14682,14 @@
     //   lines: [["the art of", "s"], ["LETTING", "b"], ["GO", "b"]],
     //   board: "#b3aab6", ink: "#443e48", rule: "#8f8694", dress: "plain", lean: -1.5, gapAfter: 30, hx: 8,
     //   tour: "for the habits you're done with. write them down; the unbuilding is coming." },
+    // TWO DOORS, ONE ROOM (owner, 2026-09-11). The firefly in This Week's
+    // corner is the door she asked for; this is the same page on the shelf,
+    // so the rule that every feature has a book still holds and the page
+    // turns up in the shelf's own catalogue and in the walk.
+    { door: "keep", aria: "what you are keeping in mind", open: () => openKeepings(),
+      lines: [["keeping in", "s"], ["MIND", "b"]],
+      board: "#c3c9b4", ink: "#43492f", rule: "#98a184", dress: "bands", lean: -1.8,
+      tour: "the lines you want to keep, and nothing you owe." },
     { door: "faq", aria: "FAQ, how this works, and more", open: faqBookGo,
       lines: [["facts about", "s"], ["LIFE", "b"]],
       board: "#aab8bd", ink: "#3c4549", rule: "#87979d", dress: "plain", lean: 2.2,
@@ -17332,28 +17556,11 @@
     // the same piece of paper: the hub is not a stack of surfaces, and a
     // chapter that arrived on a slab of its own was the thing that made this
     // page read as two pages badly joined.
-    // OFF YOUR BOARD, AND THE WAY BACK (2026-09-07, owner: "this will
-    // happen for anything i delete right?"). A hand-added task removed from
-    // This Week and a whole chapter removed from here go to the bin, not
-    // away: listed at the foot of the workshop with the day they left and
-    // one word each. The section is absent while the bin is empty.
-    const binDay = iso => { const d = new Date(iso); return isNaN(d) ? "" : ", off " + MONTHS[d.getMonth()].slice(0, 3).toLowerCase() + " " + d.getDate(); };
-    const binSection = () => {
-      const rows = (bin.tasks || []).map(e => `<div class="ch-work-row ch-work-off" data-bin-task="${escHtml(e.id)}" data-type-area="chapters/bin">
-          <span class="ch-work-name ch-work-name-off">${escHtml(appVoice((e.record && e.record.label) || "", true))}</span>
-          <span class="ch-work-meta"><span>a task${binDay(e.at)}</span>
-            <button type="button" class="ch-work-back" data-back-task="${escHtml(e.id)}" aria-label="bring this task back">bring back</button></span></div>`)
-        .concat((bin.goals || []).map(e => `<div class="ch-work-row ch-work-off" data-bin-goal="${escHtml(e.id)}" data-type-area="chapters/bin">
-          <span class="ch-work-name ch-work-name-off">${escHtml(appVoice((e.record && e.record.title) || "", titleIsTheirs(e.record || {})))}</span>
-          <span class="ch-work-meta"><span>a chapter${binDay(e.at)}</span>
-            <button type="button" class="ch-work-back" data-back-goal="${escHtml(e.id)}" aria-label="bring this chapter back">bring back</button></span></div>`));
-      if (!rows.length) return ``;
-      return `<div class="ch-bin" data-type-area="chapters/bin">
-        <div class="ch-q-label rm-qlabel">off your board</div>
-        <div class="ch-rule ch-bin-rule"></div>
-        ${rows.join("")}
-      </div>`;
-    };
+    // "OFF YOUR BOARD" IS GONE (2026-09-11, owner: cut the bin entirely). The
+    // foot of the workshop used to list everything ever deleted with "bring
+    // back" beside it; on her board that was forty rows of things she had
+    // meant to throw away. The slip is caught by the undo scrap now, at the
+    // moment of the delete, which is when a person actually notices one.
     mount.innerHTML = `<div class="at-page ch-page ch-sheet ${openCls}">
       <div class="at-sheet torn-paper"><div class="torn-sheet at-inner">
       <div class="ch-flecks" id="chFlecks" aria-hidden="true"></div>
@@ -17393,7 +17600,6 @@
       </div>
       <div class="ch-rule" id="chStripRule"></div>` : ``}
       ${open ? `<div id="chChapterMount"></div>` : ``}
-      ${binSection()}
       </div></div>
       <!-- A4: help lives in one book; pages carry no help chrome -->
       <div class="at-margin" id="chCompanion"></div></div>`;
@@ -17468,19 +17674,6 @@
       if (strip.scrollLeft > left) strip.scrollLeft = Math.max(0, left);
       else if (strip.scrollLeft < right) strip.scrollLeft = right + 8;
     }
-    // the bin's way back, looked up on the live board at the tap
-    mount.querySelectorAll("[data-back-task]").forEach(btn => btn.addEventListener("click", () => {
-      if (!restoreTask(btn.dataset.backTask)) return;
-      renderChapters();
-      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
-      showToast("it's back on your week.");
-    }));
-    mount.querySelectorAll("[data-back-goal]").forEach(btn => btn.addEventListener("click", () => {
-      if (!restoreGoal(btn.dataset.backGoal)) return;
-      renderAll();
-      renderChapters();
-      showToast("the chapter is back on your board.");
-    }));
     wireHelpDot(mount);
     if (profileCompanion && profileCompanion.enabled !== false) {
       mountCompanion(document.getElementById("chCompanion"), profileCompanion, { pose: "idle", silent: true })
@@ -18430,7 +18623,7 @@
         <div class="ch-foot rm-danger" data-type-area="chapters/danger">
           <button class="rm-pause-link brushed-link" id="rmPause">${g.status === "parked" ? "resume this goal" : "pause this goal"}</button>
           <button class="rm-delete brushed-link" id="rmDelete">delete this goal</button>
-          <span>it goes to the bin, and the workshop keeps the way back. if it just needs to rest, pause keeps it on the board.</span>
+          <span>there is a moment to undo it, and then it is gone. if it just needs to rest, pause keeps it on the board.</span>
         </div>`;
     // IN THE WORKSHOP the chapter is already on the workshop's sheet, so it
     // is content and nothing more. Standing alone it needs a surface of its
@@ -19675,16 +19868,23 @@
   // Removal is the same wherever it is asked for: the goal, its objectives and
   // mechanisms go together, and the category becomes an open room again.
   function deleteGoal(g) {
-    // OFF THE BOARD, NEVER GONE (2026-09-07): the whole chapter goes to the
-    // bin with its place in the row, and the workshop offers the way back.
+    // THE WAY BACK IS A BREATH, NOT A DRAWER (2026-09-11). This used to file
+    // the whole chapter in the bin, which kept it forever and listed it in the
+    // workshop. The undo scrap holds the record and its place instead, so the
+    // slip is catchable and the deliberate delete is actually a delete.
     const at = goals.indexOf(g);
-    binPut("goals", { id: "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at: appNow().toISOString(),
-      position: at < 0 ? goals.length : at, record: JSON.parse(JSON.stringify(g)) }, 20);
+    const gone = JSON.parse(JSON.stringify(g));
+    const pos = at < 0 ? goals.length : at;
     goals = goals.filter(x => x.id !== g.id);
     goals.forEach((x, i) => { x.position = i; });
     renderAll();
     saveState();
-    showToast(`"${g.title.slice(0, 40)}" is off your board. the workshop keeps the way back.`);
+    twShowUndo(`"${g.title.slice(0, 40)}" is off your board.`, () => {
+      restoreGoal(gone, pos);
+    }, () => {
+      renderAll();
+      if (document.getElementById("chaptersOverlay").classList.contains("open")) renderChapters();
+    });
   }
 
   // v3 (DEFINITIONS.md, "life segment"): the board shows only the segments the
@@ -20291,7 +20491,12 @@
     lvFitTimer = setTimeout(fitBoardToWindow, 120);
   });
 
+  // Paints of the board itself, counted for the suite the way the sand's
+  // painter is: "it opens once" is a claim about a number, and a test that
+  // can only see one page's nodes cannot make it.
+  let boardPaints = 0;
   function renderAll() {
+    boardPaints++;
     renderEyebrow();
     syncAppIcon();   // the home-screen icon is the companion, once there is one
     // The empty state offers exactly two actions — the intake test and the
@@ -20744,6 +20949,23 @@
     return x;
   };
   const todayKey = () => localDateKey(dayAnchor());
+  // ONE DAY ON FROM A DATE THE APP ALREADY DECIDED (2026-09-11). Three rules
+  // are load-bearing here and each one has a bug behind it:
+  //   · it takes a KEY, not a moment, and the key comes from todayKey, so it
+  //     rides appNow's dev-clock offset. A bare `new Date()` reads the wall
+  //     clock and the harness could not travel to a Thursday night.
+  //   · it builds the date at MIDDAY. The 27 August lesson: a day-boundary
+  //     anchor applied to a date built at local midnight moves it back a
+  //     whole day, and midday is the hour no boundary runs through.
+  //   · it uses setDate, never `+ 86400000`. Local midnight plus 24 hours is
+  //     11pm of the SAME date on a fall-back day. weekDates already does it
+  //     this way; the millisecond form elsewhere in this file is not a model.
+  const nextDayKey = k => {
+    const d = new Date(String(k || todayKey()) + "T12:00:00");
+    if (isNaN(d)) return null;
+    d.setDate(d.getDate() + 1);
+    return localDateKey(d);
+  };
   // The Monday of a date's week, as an ISO date — the key a week's ticks live under.
   function weekKeyOf(d = appNow()) {
     const a = dayAnchor(d);
@@ -22806,8 +23028,10 @@
   const portraitLines = () => (portrait && Array.isArray(portrait.lines)) ? portrait.lines : [];
   // What every later prompt sees: the text only, struck lines already gone.
   const portraitFor = () => portraitLines().map(l => l.text);
-  const nextDayKey = key => { const d = new Date(key + "T12:00:00");
-    d.setDate(d.getDate() + 1); return localDateKey(d); };
+  // nextDayKey lived here until 2026-09-11, written midday-and-setDate for
+  // the same reasons the clock's copy states at length. It is one function
+  // now, up with the other day helpers: a fact with two homes gets edited in
+  // one, and this file has paid for that twice already.
   // Everything the portrait has not read yet, in the person's own terms.
   // Pure: it writes nothing, calls nothing, and can be read by a test.
   function portraitMaterial() {
@@ -25451,9 +25675,43 @@
       ? Math.max(1, Math.floor(Number(sched.any))) : 1;
   }
 
+  // A REPEAT STARTS THE DAY IT WAS MADE (2026-09-11, owner: "if its
+  // thursday, and i add a 7x tmes a week item today. It should start from the
+  // date i added. Not trace back"). The expansion below lays a schedule
+  // across the whole Mon-to-Sun grid with no notion of today in it at all, so
+  // a daily commitment written on Thursday arrived owing Monday, Tuesday and
+  // Wednesday: three undone pebbles in the past columns for days nobody could
+  // go back and live. `startsOn` is the day the thing began to be true.
+  //
+  // A COMPLETED DAY IS NEVER ERASED BY IT. That is rule 1a of this model
+  // wearing a new hat: a completion outranks whatever the schedule says now,
+  // so a day before the start that was actually done keeps its slot. Without
+  // this, stamping a start on anything with history would delete the history.
+  //
+  // ABSENT `startsOn` MEANS "ALWAYS HAS BEEN", so every board saved before
+  // today reads exactly as it did, and no migration is needed or wanted.
+  function startClamp(m, dates) {
+    const from = m && m.startsOn;
+    if (!from) return dates;
+    return dates.filter(d => d >= from || completionsAt(m, d) > 0);
+  }
+
+  // Is there work that has not begun yet? Read for one line of copy, so the
+  // day a plan is saved says why the page is quiet instead of implying the
+  // person did nothing.
+  function workStartsAhead() {
+    const t = todayKey();
+    const ahead = m => !!(m && m.startsOn && m.startsOn > t);
+    return (goals || []).some(g => (g.mechanisms || []).some(ahead))
+        || (reminders || []).some(ahead);
+  }
+
   // WHAT THE SCHEDULE ALONE ASKS FOR, this week. Dated days, or one null per
   // floating slot. This is the STABLE count — durationOf divides by it, so
   // hours per occurrence cannot drift as completions come and go.
+  // `opts.full` asks for the schedule's whole weekly claim, before the start
+  // clamp: it is what a WEEKLY TOTAL divides by, and a weekly total is about
+  // a full week even in a week the work only half-existed for.
   function scheduledDatesFor(m, goalId, wk, opts) {
     const key = wk || weekKeyOf();
     // Skipped this week asks for nothing this week — checked before the
@@ -25485,8 +25743,12 @@
       return out;
     }
     const dates = weekDates(key);
-    const raw = s === "daily" ? dates.slice()
+    const full = s === "daily" ? dates.slice()
       : s.map(d => TW_DAYS.indexOf(d)).filter(i => i >= 0).sort((a, b) => a - b).map(i => dates[i]);
+    // Clamped BEFORE the raw return, so scheduleOriginsFor's key list and the
+    // dates below stay the same length and index-parallel. They are read side
+    // by side; a clamp on one of them only would silently mispair every slot.
+    const raw = (opts && opts.full) ? full : startClamp(m, full);
     if (opts && opts.raw) return raw;
     // THE PER-OCCURRENCE MOVE, applied last and only here. A null goalId is
     // a reminder, and its moves read from the same record they are written
@@ -25923,7 +26185,9 @@
     }
     if (Number.isFinite(Number(m.durationMin))) return Math.round(Number(m.durationMin));
     if (typeof m.duration === "number") return Math.round(m.duration * 60);
-    const n = scheduledDatesFor(m, goalId, wk).length || 1;
+    // The FULL week's claim: this turns a weekly total into one session, and
+    // a partial first week must not make each session longer (2026-09-11).
+    const n = scheduledDatesFor(m, goalId, wk, { raw: true, full: true }).length || 1;
     const raw = ((Number(m.estWeeklyHours) || 0) / n) * 60;
     // A MODEL-WRITTEN ESTIMATE IS SNAPPED TO THE QUARTER HOUR; A PERSON'S IS
     // NOT. The prompt now asks for sessions that divide into 15 minutes, but
@@ -26348,6 +26612,22 @@
       } else freed.push(o);
     });
     const wanted = chosen.filter(iso => !taken[iso]);
+    // UNTICKING A DAY STILL FLOATS ITS SESSION, AND THAT IS NOT SETTLED
+    // (2026-09-11). The owner asked for the opposite: "when i select the days
+    // it gets rid of it for that day even if its 7x for a week. Right now if
+    // i do that it moves the pebble from that day to any day which doesnt
+    // make sense." Writing "off" here instead of "any" is one word, and it
+    // breaks a gesture she asked for on 7 September: untick the day it leaves,
+    // tick the day it goes to, and one session SWAPS days. The float is the
+    // intermediate that makes that possible, the box counts it in words
+    // ("one session floats"), and its own refusal note teaches it: "a move
+    // moves a session, it doesn't add one. untick the day it leaves first."
+    // With "off" there is nothing left to take the new day.
+    // Dragging the stone to the corner is the gesture she named first and it
+    // does exactly what she asked, so the need is met; what is unresolved is
+    // whether the PICKER should also mean it, and that needs her word plus a
+    // way to tell a day dropped here from a day deliberately skipped, which
+    // the moves map cannot currently say. Logged in IMPROVEMENTS.md.
     freed.forEach((o, i) => {
       const to = wanted[i] || null;
       if (floating(o)) { if (to) moves[o] = to; }
@@ -26884,6 +27164,17 @@
       }
       mech.durationMin = mins;
       mech.hoursSource = "user";
+      // NO `startsOn` IS WRITTEN HERE, deliberately (2026-09-11). This is an
+      // EDIT surface, and a start date is about when a repeat began to exist,
+      // not about when its days were last changed. Stamping it here made
+      // editing a months-old habit on a Thursday clamp that habit's own week
+      // to whatever was left of it, so a four day schedule read as "x4 a week"
+      // in the picker and as one occurrence on the board (test 206 caught it
+      // exactly there). Creation stamps it: addUserWork for work written by
+      // hand, addReminder for a recurring capture, and __ciFinish for a plan
+      // out of the discovery. The week's own moves and skips are untouched by
+      // this popover, which is the whole of what "a change counts from today"
+      // has ever promised in its note below.
       // The weekly total, for the readers that still take it (the draft
       // review, the lightest-goal pick, regen's carry): per session × count.
       mech.estWeeklyHours = Math.round((mins / 60) * n * 100) / 100;
@@ -28636,7 +28927,8 @@
         const addStrip = document.getElementById("twCornerAdd");
         if (addStrip && twIsPast()) addStrip.hidden = true;
       }
-      twSandGroundPaint();
+      // (the ground is painted at the foot of this render, once, when the
+      // pile and the strip have their heights: 2026-09-11)
       // ---- THE STRIP IS THE SCHEDULE, so it takes the schedule's gestures.
       // TAP focuses one commitment. DRAG moves ONE occurrence to another
       // day, this week only — the same semantics as the move-it-this-week
@@ -28711,6 +29003,25 @@
         const bottom = Math.max(r.bottom, r.top + 72);
         return clientX >= r.left && clientX <= r.right && clientY >= r.top - 6 && clientY <= bottom;
       };
+      // AND THE CORNER IS WHERE ONE GOES TO BE DROPPED (2026-09-11, owner:
+      // "I can get rid of rocks and dump it in a trash can or something if i
+      // dont want to do it that week on a particular day"). Until now a stone
+      // let go anywhere off the strip simply went home, so there was no
+      // gesture for "not this day" at all: the row's box skips the NEXT one
+      // and the picker edits the standing plan. The corner is already the one
+      // piece of furniture a thumb can reach on a phone, so it becomes the
+      // place, rather than a drawn bin that would have to live somewhere the
+      // rest of the time.
+      const twOnCorner = (clientX, clientY) => {
+        const c = document.getElementById("twCorner");
+        if (!c || !c.isConnected || c.hidden) return false;
+        const r = c.getBoundingClientRect();
+        // Generous, the way the pile is: a thumb aiming at the corner of a
+        // phone screen is not precise, and the cost of missing is the stone
+        // going home, which is the old behaviour anyway.
+        return clientX >= r.left - 10 && clientX <= r.right + 10
+            && clientY >= r.top - 10 && clientY <= r.bottom + 10;
+      };
       // DRAG MOVES ONE OCCURRENCE TO ANOTHER DAY. The listeners live on the
       // DOCUMENT for the length of the gesture, and the pointer is captured:
       // an SVG path is small, the finger leaves it immediately, and
@@ -28734,6 +29045,13 @@
           // land right up until you let go.
           const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
           drag.twins.forEach(x => x.setAttribute("transform", `translate(${dx} ${dy})`));
+          // THE CORNER SAYS WHEN IT WOULD TAKE IT, the same way the days
+          // light up under a stone. An unfinished stone only: a finished one
+          // is refused on release, and a target that lights and then refuses
+          // is worse than one that never lit.
+          const c = document.getElementById("twCorner");
+          if (c) c.classList.toggle("tw-corner-take",
+            !drag.done && twOnCorner(e.clientX, e.clientY));
         }
       };
       // THE BROWSER CAN TAKE THE POINTER BACK. When a gesture turns into a
@@ -28749,6 +29067,8 @@
         if (!drag) return;
         const d = drag; drag = null;
         stripMount.classList.remove("dragging");
+        const corner0 = document.getElementById("twCorner");
+        if (corner0) corner0.classList.remove("tw-corner-take");
         d.twins.forEach(x => { x.classList.remove("lifted"); x.removeAttribute("transform"); });
       };
       const onUp = e => {
@@ -28758,6 +29078,8 @@
         if (!drag) return;
         const d = drag; drag = null;
         stripMount.classList.remove("dragging");
+        const corner0 = document.getElementById("twCorner");
+        if (corner0) corner0.classList.remove("tw-corner-take");
         d.twins.forEach(x => { x.classList.remove("lifted"); x.removeAttribute("transform"); });
         if (!d.moved) {
           // A PLAIN TAP IS A SELECTION, never a completion: the strip shows
@@ -28778,6 +29100,27 @@
         if (!d.done && twIsNow() && twOnPile(e.clientX, e.clientY)) {
           tickOccurrence(d.gid, d.mid, d.date || null);
           renderThisWeek();
+          return;
+        }
+        // DROPPED ON THE CORNER: NOT THIS DAY. One occurrence, this week
+        // only, written with the same "off" move the row's box writes, so the
+        // week's hours drop with it, the standing schedule is untouched, and
+        // next week the commitment is back where it has always been. A
+        // FINISHED STONE CANNOT GO, for the lane's own reason: what was done
+        // is a fact rather than a plan.
+        if (twOnCorner(e.clientX, e.clientY)) {
+          if (d.done) return;
+          const wkC = twViewWk();
+          const from = d.from || d.date || null;
+          if (!from) return;
+          // THE UNDO PUTS BACK WHAT WAS THERE, not "no move at all". A stone
+          // dragged to Friday and then dropped in the corner had a move
+          // already; clearing it on undo would send it home to its schedule
+          // day instead of back to the Friday the person put it on.
+          const was = (movesFor(d.gid, d.mid, wkC) || {})[String(from)] || null;
+          moveOccurrence(d.gid, d.mid, from, "off", wkC);
+          renderThisWeek();
+          twShowUndo("taken off this day", () => moveOccurrence(d.gid, d.mid, from, was, wkC));
           return;
         }
         const di = dayAt(e.clientX, e.clientY);
@@ -29034,9 +29377,17 @@
     // "nothing scheduled", no zero, and no bare heading over blank space:
     // the heading and its + stand, and the companion says the six words.
     // Once a day, not once a render.
+    // A NEW PLAN STARTS TOMORROW, AND THE PAGE SAYS SO IN THE ONE VOICE IT
+    // HAS FOR AN EMPTY DAY (2026-09-11). The line above is why this is not a
+    // sentence on the sheet: page copy about an empty day is the app
+    // evaluating you. The companion may say it, and on the day a plan is
+    // saved it says the reason rather than the blessing, because "have a
+    // restful day" to somebody who has just finished the discovery and is
+    // looking at nothing reads as the app losing their week.
     if (mount.querySelector(".tw-today-empty") && twRestfulSaidFor !== todayKey()) {
       twRestfulSaidFor = todayKey();
-      setTimeout(() => showScrap("have a restful day"), 450);
+      const line = workStartsAhead() ? "your week starts tomorrow" : "have a restful day";
+      setTimeout(() => showScrap(line), 450);
     }
     // ---- HOURS: A STEPPER, IN PLACE ----
     if (!twRO) {
@@ -29542,7 +29893,11 @@
   // the full item"). Acting first and offering the way back is the
   // capture flow's own UNDO-NOT-CONFIRM ruling, worn by the swipes.
   let twUndoTimer = null;
-  function twShowUndo(label, fn) {
+  // THE SCRAP IS RAISED FROM MORE THAN ONE PAGE (2026-09-11), so the redraw
+  // afterwards is the caller's to name: This Week's swipes still repaint This
+  // Week, and a chapter brought back repaints the board and the workshop.
+  // Defaulted, so every existing caller keeps the redraw it had.
+  function twShowUndo(label, fn, after) {
     const host = document.getElementById("twUndoPill");
     if (!host) return;
     clearTimeout(twUndoTimer);
@@ -29552,7 +29907,7 @@
       clearTimeout(twUndoTimer);
       host.classList.remove("on");
       fn();
-      renderThisWeek();
+      (after || renderThisWeek)();
     });
     twUndoTimer = setTimeout(() => host.classList.remove("on"), 4500);
   }
@@ -29568,8 +29923,8 @@
         skipThisWeek(null, mid, true, wkR);
         return () => skipThisWeek(null, mid, false, wkR);
       }
-      removeReminder(mid);
-      return () => restoreTask(mid);   // through the bin, on the live board
+      const gone = removeReminder(mid);
+      return () => restoreReminder(gone);   // the undo carries its own copy
     }
     const g = goals.find(x => x.id === gid);
     const m = g && (g.mechanisms || []).find(x => x.id === mid);
@@ -29876,12 +30231,40 @@
         done();
       }));
     });
+    // SKIP JUST THIS ONE, AND SAY WHICH ONE (2026-09-11). It has always acted
+    // on nearestOpen, the next one coming, which is a fair reading of "this
+    // one" — but the button never said so, and on a daily commitment opened
+    // on a Monday it silently meant Monday when the person was looking at
+    // Wednesday. THE BOX HAS NO DAY OF ITS OWN to prefer instead: a chosen
+    // day and a chosen commitment are one selection with two shapes
+    // (twProject), so holding the row has already cleared any chosen day.
+    // Rather than invent a second selection the model deliberately does not
+    // have, the box now NAMES the occurrence it is about, and prefers a
+    // chosen day if one somehow survives. Getting rid of a particular day's
+    // stone is the picker's job, or the drag to the corner.
+    const offTarget = () => {
+      if (twDay) {
+        const eff = scheduledDatesFor(m, gid, wk);
+        const raw = scheduleOriginsFor(m, gid, wk);
+        const i = eff.indexOf(twDay);
+        if (i >= 0 && !completionsAt(m, eff[i])) return { date: eff[i], from: raw[i] };
+      }
+      return nearestOpen();
+    };
     const off = pop.querySelector("#rpOffDay");
-    if (off) off.addEventListener("click", () => {
-      const no = nearestOpen();
-      if (no) moveOccurrence(gid, mid, no.from, "off", wk);
-      done();
-    });
+    if (off) {
+      const t = offTarget();
+      const sub = off.querySelector(".mp-b");
+      if (sub && t && t.date) {
+        const i = wd.indexOf(t.date);
+        if (i >= 0) sub.textContent = WK_DAY_WORDS[i] + " only. the rhythm, and next week, are untouched";
+      }
+      off.addEventListener("click", () => {
+        const n2 = offTarget();
+        if (n2) moveOccurrence(gid, mid, n2.from, "off", wk);
+        done();
+      });
+    }
     // DELETE ARMS FIRST — the two-step the discovery menus already use.
     const drop = pop.querySelector("#rpDrop");
     drop.addEventListener("click", () => {
@@ -30028,10 +30411,32 @@
   // render (content height moves) and regenerated only when the size
   // actually changed, so a render that moved nothing repaints nothing.
   let twSandDims = { W: 320, H: 480 };
+  let twGroundPaints = 0, twGroundBuilds = 0;   // runs, and real rebuilds, for the suite
+  // A shrink the page was not ready for is KEPT, never dropped: see the rule
+  // beside it in the painter.
+  let twGroundWaiting = false;
+  // HOW LONG THE PAGE IS, WITHOUT THE GROUND TAKING PART. Everything else in
+  // This Week is out of flow (the ✕, the corner, the rake's veil), so the
+  // page is as long as its children in flow reach, plus the page's own foot
+  // margin. Reads only, writes nothing, so it costs nothing to ask at any
+  // moment, and it can report a page that got SHORTER, which is the thing
+  // the old road could not do without collapsing the ground first.
+  function twPageLength(ov) {
+    const cs = getComputedStyle(ov);
+    const foot = parseFloat(cs.paddingBottom) || 0;
+    let len = foot;
+    for (const el of ov.children) {
+      const c = getComputedStyle(el);
+      if (c.position === "absolute" || c.position === "fixed" || c.display === "none") continue;
+      len = Math.max(len, el.offsetTop + el.offsetHeight + (parseFloat(c.marginBottom) || 0) + foot);
+    }
+    return len;
+  }
   function twSandGroundPaint() {
     const host = document.getElementById("twSandGround");
     const ov = document.getElementById("thisWeekOverlay");
     if (!host || !ov) return;
+    twGroundPaints++;
     const W = Math.max(320, ov.clientWidth || window.innerWidth);
     // CUT IN COURSES (2026-09-05): the ground's height is rounded up to
     // the next 512px, so a page that grows a few pixels — the first tick
@@ -30039,13 +30444,43 @@
     // bed and its field instead of rebuilding all three. overflow: hidden
     // on the host clips the spare course.
     // THE HOST IS EXACTLY AS TALL AS THE PAGE, the bed inside it a course
-    // taller: measured with the host out of the way, or the host's own
-    // height would read back as the page's and the page could never
-    // shrink. A bed taller than its host once added up to 511px of empty
+    // taller. A bed taller than its host once added up to 511px of empty
     // sand to scroll into at the foot — the host's overflow: hidden clips
     // the drawing, and its height is what the scroller believes.
-    host.style.height = "0px";
-    const need = Math.max(480, ov.scrollHeight, ov.clientHeight);
+    //
+    // THE PAGE IS READ, NEVER WRITE-READ-WRITE (2026-09-11, owner: "the
+    // page shakes... not smooth"). The length used to be taken by setting
+    // the ground's height to 0, reading ov.scrollHeight back, and setting
+    // the height again: the ground is absolutely positioned at the page's
+    // top, so left standing it reads its own height back as the page's and
+    // the page could never shrink. Two layout writes around a forced read,
+    // and the scroll handler was one of the three callers, so the page was
+    // collapsed and restored under a moving finger. Asked in two halves
+    // now, both of them reads. Whatever reaches PAST the ground is exactly
+    // what scrollHeight says, which matters because a figure carried below
+    // the foot stretches the page by a transform and no layout measure can
+    // see one; how long the page is when nothing reaches past it is what
+    // its own children in flow say. The larger wins, so the ground still
+    // grows to meet anything at the foot, and now also comes IN to meet a
+    // page that lost a row. Test 200c.
+    const over = ov.scrollHeight > host.offsetHeight ? ov.scrollHeight : 0;
+    const need = Math.max(480, twPageLength(ov), over, ov.clientHeight);
+    // A SHRINK MAY NOT PULL THE GROUND OUT FROM UNDER THE READER. The old
+    // rule was "growth only", written when the length could not be measured
+    // without collapsing the ground, so a shorter page could only be met at
+    // a moment that was never safe. The real invariant is smaller than that:
+    // cutting the ground shorter than where the reader is standing is what
+    // clamps the scroll and jumps the page, so THAT is what waits. A reader
+    // above the new foot, which is everyone who has just opened the book,
+    // gets the shorter sand at once; a reader below it keeps the sand under
+    // their feet until the next render or the scroll that takes them up.
+    // The rake is held out for its own reason: the sand is the surface being
+    // drawn on, and cutting it mid-stroke cuts the drawing.
+    if (need < host.offsetHeight - 1 && (twRaking || ov.scrollTop + ov.clientHeight > need)) {
+      twGroundWaiting = true;
+      return;
+    }
+    twGroundWaiting = false;
     const H = Math.ceil(need / 512) * 512;
     host.style.height = need + "px";
     if (twSandDims.W === W && twSandDims.H === H && host.firstElementChild) {
@@ -30053,6 +30488,7 @@
       return;
     }
     twSandDims = { W, H };
+    twGroundBuilds++;                               // the expensive half, counted
     twBaseHF = null;                                // a new size is a new bed
     // The watercolour weather (washes, grain, pebbles) stays below; the BED
     // is a canvas above it — the height field's one drawing surface,
@@ -30143,10 +30579,20 @@
     }
     return out;
   }
-  window.addEventListener("resize", () => {
-    const ov = document.getElementById("thisWeekOverlay");
-    if (ov && ov.classList.contains("open")) twSandGroundPaint();
-  });
+  // One run a frame, whoever asks and however often.
+  const twGroundSoon = (() => {
+    let queued = false;
+    return () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        const ov = document.getElementById("thisWeekOverlay");
+        if (ov && ov.classList.contains("open")) twSandGroundPaint();
+      });
+    };
+  })();
+  window.addEventListener("resize", twGroundSoon);
   // THE GROUND FOLLOWS THE PAGE (2026-09-07): whatever stretches the page
   // after the sand was measured, a stone carried low, a figure landing at
   // the foot, is caught at the next scroll and the sand is measured again
@@ -30157,8 +30603,23 @@
     if (!ov) return;
     ov.addEventListener("scroll", () => {
       const host = document.getElementById("twSandGround");
-      if (host && ov.classList.contains("open") && ov.scrollHeight > host.offsetHeight + 1) twSandGroundPaint();
+      if (!host || !ov.classList.contains("open")) return;
+      // growth, as it always did; and a shrink that was waiting for the
+      // reader to come back up off the ground it wanted to cut away
+      if (ov.scrollHeight > host.offsetHeight + 1 || twGroundWaiting) twSandGroundPaint();
     }, { passive: true });
+    // THE GROUND FOLLOWS THE PAGE WITHOUT WAITING FOR A SCROLL (2026-09-11).
+    // Things land on this page after its render: the companion mounts about
+    // a second later and takes the head row's height with it, and the sand
+    // was left that much short of the foot until a scroll happened to catch
+    // it, 69px of bare paper at the foot at 390 on the sample board,
+    // measured. The mount's own size is the signal. This cannot feed
+    // itself: the ground is out of flow, so its height can never change the
+    // mount's. Coalesced to one run a frame, like every other measure here.
+    if (window.ResizeObserver) {
+      const mount = document.getElementById("thisWeekMount");
+      if (mount) new ResizeObserver(twGroundSoon).observe(mount);
+    }
   })();
   // ---- THE RAKE (session B; DECISIONS: the rake is a page-level mode) ----
   // THE WEEK-TURN READER IS weekKeyOf AND NOTHING ELSE. There is no "the
@@ -30448,18 +30909,27 @@
   // every saved garden and the suite's fixtures read as they always did.
   const twStrokePts = s => Array.isArray(s) ? s : (s && Array.isArray(s.p) ? s.p : []);
   const twStrokeIsHand = s => !!(s && !Array.isArray(s) && s.k === "h");
+  // WHAT THE CANVAS IS ALREADY SHOWING, AS ONE STRING: the bed's size,
+  // which page it is, and the strokes' count and last point. Read from
+  // here by the painter below and written from here by the lift, because
+  // a signature spelt in two places is a signature that drifts.
+  function twSandSig() {
+    const { W, H } = twSandDims;
+    const now = typeof twIsNow !== "function" || twIsNow();
+    const strokes = now ? twSandStrokesNow() : [];
+    const last = strokes.length ? twStrokePts(strokes[strokes.length - 1]) : null;
+    const tail = last && last.length ? last[last.length - 1].join(",") : "";
+    return `${W}x${H}|${now ? "now" : "then"}|${strokes.length}|${tail}`;
+  }
   function twSandPaintDrawn(force) {
     if (!twCtx) return;
     const { W, H } = twSandDims;
     const now = typeof twIsNow !== "function" || twIsNow();
     const strokes = now ? twSandStrokesNow() : [];
     // NOTHING CHANGED, NOTHING REPAINTS. The canvas already shows this
-    // exact sand; the signature is the size, the page, and the strokes'
-    // count and last point (the record only ever grows at its end, or is
-    // replaced whole, and both move the signature).
-    const last = strokes.length ? twStrokePts(strokes[strokes.length - 1]) : null;
-    const tail = last && last.length ? last[last.length - 1].join(",") : "";
-    const sig = `${W}x${H}|${now ? "now" : "then"}|${strokes.length}|${tail}`;
+    // exact sand; the record only ever grows at its end, or is replaced
+    // whole, and both move the signature.
+    const sig = twSandSig();
     if (!force && sig === twSandPaintSig) return;
     twSandPaintSig = sig;
     twSandPaints++;
@@ -30599,6 +31069,12 @@
     // never once per stroke, so a wheel scroll mid-groove on a desktop
     // still lands every point on the sand the finger was over.
     let strokePid = null, panPid = null, panLastY = 0, live = null, restXY = null;
+    // The pointers this veil actually holds. A synthetic event cannot be
+    // captured (setPointerCapture throws on one), so this stays empty
+    // under the suite and the staleness test falls through to isPrimary,
+    // which the suite's own events do not set either: the harness's
+    // two-finger pan reads exactly as it always did.
+    const captured = new Set();
     // Strokes rolled over at the storage cap, not yet saved.
     let pending = [];
     const ovOf = () => document.getElementById("thisWeekOverlay");
@@ -30624,7 +31100,18 @@
         ema = [ema[0] + (raw[0] - ema[0]) * a, ema[1] + (raw[1] - ema[1]) * a];
         ema2 = [ema2[0] + (ema[0] - ema2[0]) * a, ema2[1] + (ema[1] - ema2[1]) * a];
       }
-      return [ema2[0] / twSandDims.W, ema2[1]];
+      // LAID AT THE PRECISION SAND HAS, NOT THE PRECISION A DOUBLE HAS.
+      // A point was written out whole — [0.11649382680000002,
+      // 151.8765597307903], forty characters spent on ten-thousandths of
+      // a pixel no comb can cut — and a full record came to 138KB against
+      // the 15KB the rest of her board weighs. Every lift writes the
+      // device's copy and pushes the board to the account, so that was
+      // 138KB going up from a phone per stroke. Four places across the
+      // width and one down the page is a tenth of a pixel either way, far
+      // under the 4px gate a point must clear and under the 1.6px step the
+      // stamps walk; and it is what gets STAMPED as well as what gets
+      // stored, so the bed and the record hold the same stroke.
+      return [Math.round(ema2[0] / twSandDims.W * 1e4) / 1e4, Math.round(ema2[1] * 10) / 10];
     };
     // NO LEGS, NO TURN-CUTTING ANY MORE: the height field converges to
     // the comb's profile under every stamp, so a back-and-forth erases
@@ -30646,25 +31133,37 @@
     const stampOne = (a, b) => twTool === "hand"
       ? twSmoothSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1)
       : twStampSeg(a[0] * twSandDims.W, a[1], b[0] * twSandDims.W, b[1], 1, dirRef);
-    const frameFlush = () => {
+    // Stamp every segment captured since the last frame and shade the
+    // strip of bed those stamps touched — constant work per frame
+    // whatever the drawing already holds.
+    // ONE SHADING PASS PER FRAME, NOT ONE PER SEGMENT. A finger reports
+    // several segments between two paints, and each one used to open its
+    // own image off the canvas, shade it and push it back, so the strip
+    // where they overlap was shaded again for every segment across it.
+    // The frame's rects are gathered into one box instead, put down
+    // whenever the box grows past a stamp's own neighbourhood, so a
+    // finger that crosses the page in a single frame still cannot ask for
+    // an image the size of the garden.
+    const flushStamps = () => {
       if (!live) return;
+      let box = null;
+      const put = () => { if (box) twRenderRect(box[0], box[1], box[2], box[3]); box = null; };
       while (stamped < live.length - 1) {
         const r = stampOne(live[stamped], live[stamped + 1]);
-        if (r) twRenderRect(r[0], r[1], r[2], r[3]);
         stamped++;
+        if (!r) continue;
+        if (!box) { box = r.slice(); continue; }
+        const n = [Math.min(box[0], r[0]), Math.min(box[1], r[1]),
+                   Math.max(box[2], r[2]), Math.max(box[3], r[3])];
+        if ((n[2] - n[0]) * (n[3] - n[1]) > 40000) { put(); box = r.slice(); }
+        else box = n;
       }
+      put();
     };
     const frame = () => {
       raf = null;
       if (!live || !lastEv || !restXY) return;
-      // Stamp every segment captured since the last frame, render only
-      // the strip of bed those stamps touched — constant work per frame
-      // whatever the drawing already holds.
-      while (stamped < live.length - 1) {
-        const r = stampOne(live[stamped], live[stamped + 1]);
-        if (r) twRenderRect(r[0], r[1], r[2], r[3]);
-        stamped++;
-      }
+      flushStamps();
       let rot = "";
       if (live.length > 1) {
         const a = live[live.length - 2], b = live[live.length - 1];
@@ -30698,7 +31197,7 @@
     const settle = () => {
       btn.style.transform = "";                    // back to the frame
       if (raf != null) { cancelAnimationFrame(raf); raf = null; }
-      frameFlush();                                // any stamps still queued
+      flushStamps();                               // any stamps still queued
       lastEv = null; rakeAng = null;
       if (live && live.length > 1) {
         pending.push(live);
@@ -30715,9 +31214,20 @@
         if (twSand.wk !== weekKeyOf()) twSand = { wk: weekKeyOf(), strokes: [] };
         const recs = twTool === "hand" ? pending.map(p => ({ k: "h", p })) : pending;
         twSand.strokes = twSand.strokes.concat(recs).slice(-40);
-        // the bed already holds every stamp of this stroke; the record just
-        // caught up with it, so the signature moves without a repaint
-        twSandPaintSig = null;
+        // THE LIFT MOVES THE SIGNATURE, IT DOES NOT UNSET IT (owner,
+        // 2026-09-11: "This area here where i draw sand is sooo glitchy").
+        // The bed already holds every stamp of this stroke, so the record
+        // catching up with it is not a change and nothing needs repainting
+        // — which is what this line has always claimed. It set the
+        // signature to null instead, and null is what no signature can
+        // ever equal, so the very next render rebuilt the whole garden
+        // from scratch: re-noise the bed, replay every stroke on it,
+        // re-shade the page-tall canvas. Measured at 270ms on a desktop
+        // with the record full, several times that on a phone, once per
+        // lift and growing with the drawing already under it. That was the
+        // freeze at the moment she let go. The signature is WRITTEN now,
+        // by the same reader the painter uses.
+        twSandPaintSig = twSandSig();
         saveState();                               // written on the LIFT, not every stamp
       }
       pending = []; live = null; stamped = 0;
@@ -30725,7 +31235,30 @@
     veil.addEventListener("pointerdown", e => {
       if (!twRaking) return;
       e.preventDefault();
-      try { veil.setPointerCapture(e.pointerId); } catch (err) {}
+      // A LIFT THAT NEVER ARRIVES MUST NOT WEDGE THE TOOL (owner,
+      // 2026-09-11: "If i hold onto theh combe for two long it doesnt let
+      // me release it and it gets stuck. The eraser similar thing"). These
+      // two ids were cleared by one thing only, a pointerup or a
+      // pointercancel on this veil, and a lift goes missing for reasons
+      // the page does not author: the veil stops owning the finger the
+      // moment anything hides it, and a phone held through a long freeze
+      // drops the event outright. One lost lift and strokePid stood for
+      // good — every finger after it fell to the pan branch below, so the
+      // sand could not be drawn on again until the app was reopened, the
+      // tool dead in the hand exactly as she describes. Two ways back now.
+      // A PRIMARY pointer arriving proves nothing else is down, so
+      // whatever is recorded is stale; and a pointer this veil captured
+      // and no longer holds is not down either. The third is the
+      // lostpointercapture listener at the foot, which the browser fires
+      // the moment the finger stops being the veil's, whatever took it.
+      const gone = id => id != null
+        && (e.isPrimary || (captured.has(id) && !veil.hasPointerCapture(id)));
+      if (gone(panPid)) { captured.delete(panPid); panPid = null; }
+      if (gone(strokePid)) {
+        captured.delete(strokePid); strokePid = null;
+        settle();                          // its sand is carved, so it commits
+      }
+      try { veil.setPointerCapture(e.pointerId); captured.add(e.pointerId); } catch (err) {}
       if (strokePid == null && panPid == null) {
         strokePid = e.pointerId;
         const rest = btn.getBoundingClientRect();   // untransformed: the frame seat
@@ -30770,6 +31303,7 @@
       schedule();
     });
     const lift = e => {
+      captured.delete(e.pointerId);
       if (e.pointerId === panPid) { panPid = null; return; }
       if (e.pointerId !== strokePid) return;
       strokePid = null;
@@ -30777,6 +31311,12 @@
     };
     veil.addEventListener("pointerup", lift);
     veil.addEventListener("pointercancel", lift);
+    // THE FINGER STOPPED BEING THE VEIL'S, AND THAT IS A LIFT. Whatever
+    // took it — the veil hidden under a render, the phone's own gesture,
+    // an up the browser dropped — the stroke ends here rather than
+    // standing for good. A release that already ran leaves nothing for
+    // this to match, so the ordinary road pays it one comparison.
+    veil.addEventListener("lostpointercapture", lift);
   })();
   // ---- THE CORNER'S WIRING (2026-09-05) ----
   // The +, the hand and the clean slate live in static markup beside the
@@ -30851,6 +31391,39 @@
     if (go) go.addEventListener("click", () => { file(); input.focus(); });
     hand.addEventListener("click", () => twToolSet(twTool === "hand" ? "comb" : "hand"));
     clean.addEventListener("click", () => twSandClean());
+    // THE FIREFLY, looked up AFTER the guard above: adding it there would
+    // kill the whole corner on any page that somehow lacks the node, and the
+    // rake, the + and the tools are not worth a third button's absence.
+    const fly = document.getElementById("twFirefly");
+    if (fly) {
+      // A FIREFLY AND NOT THE MOTH THIS APP ALREADY DRAWS (the warning at the
+      // seventh specimen: some silhouettes cannot be argued out of what they
+      // resemble). Drawn on the page at eight times its size and looked at,
+      // which is the only way this was ever going to be settled. THE LIGHT IS
+      // THE SUBJECT and the insect is a few strokes beside it: a wing-and-body
+      // pair small enough that it cannot resolve into a moth's spread wings,
+      // and a dotted flight path that WANDERS, which is what separates a
+      // firefly from a comet (a comet's trail is straight).
+      // THE CORE IS PALER THAN THE PAPER, not darker. Three earlier attempts
+      // put the accent at full strength in the middle and every one read as a
+      // green bead on a stick; light on cream has to be lit from inside, so
+      // the core is near-white with the accent as its rim and two haloes. The
+      // accent is also, conveniently, the colour a firefly actually is, so
+      // being the one warm thing in the corner costs the palette nothing.
+      fly.innerHTML = `<svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="26" cy="25.5" r="11.5" style="fill: rgba(var(--accent), 0.09)"/>
+        <circle cx="26" cy="25.5" r="7" style="fill: rgba(var(--accent), 0.2)"/>
+        <circle cx="26" cy="25.5" r="3.8" fill="#fdf8e6" opacity="0.95"/>
+        <circle cx="26" cy="25.5" r="3.8" fill="none" style="stroke: rgba(var(--accent), 0.7)" stroke-width="1.1"/>
+        <path d="M21.4 20.8 C22.6 21.8 23.6 22.8 24.4 23.8" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M20.8 20.2 C18.4 18.6 16.6 19.4 17.8 21.2" fill="none"
+          stroke="currentColor" stroke-width="1.05" stroke-linecap="round" opacity="0.5"/>
+        <path d="M5 30 C8 22 12 30 15 23.5" fill="none" stroke="currentColor"
+          stroke-width="1.15" stroke-linecap="round" stroke-dasharray="1.1 3.2" opacity="0.38"/>
+      </svg>`;
+      fly.addEventListener("click", () => openKeepings());
+    }
   })();
   function openThisWeek() {
     // Boards from before this page existed have no discovery date; the
@@ -30871,7 +31444,11 @@
     // so a page flipped to next week and closed reopened on next week,
     // where nothing records. Every open lands on this week.
     twWeek = null;
-    twSandGroundPaint();
+    // THE GROUND IS NOT PAINTED HERE. It used to be, one line above the
+    // open, which is the one moment it cannot be measured: a closed page is
+    // display:none and every length it is asked for comes back 0, so the
+    // ground was cut 480px long and then cut again twice during the render.
+    // renderThisWeek paints it once, at the end, when the whole page stands.
     openBookPage(document.getElementById("thisWeekOverlay"));
     renderThisWeek();
   }
@@ -33383,8 +33960,11 @@
         twSand: (profile.data && profile.data.tw_sand) || null,
         // TOMORROW, AND TOMORROW's pages (0013): the same name both sides.
         unstuck: (profile.data && profile.data.unstuck) || [],
+        // WHAT SHE IS KEEPING IN MIND (0021): undefined while the account has
+        // never carried any, so the apply keeps this device's rather than
+        // emptying the page from an older account.
+        keepings: (profile.data && profile.data.keepings) || undefined,
         // THE BIN (0019): absent while the account has none, so the apply keeps this device's.
-        bin: (profile.data && profile.data.bin) || undefined,
         // THE RECORDS (0016): closed weeks, sealed plans, quarters and the
         // portrait, which lived on one device until 2026-09-07. Absent while
         // the account has none, so the apply keeps this device's.
@@ -33999,7 +34579,7 @@
         ? { wk: twCollect.wk, pos: twCollect.pos }
         : null,
       unstuck: unstuck.slice(),
-      bin: { tasks: (bin.tasks || []).slice(), goals: (bin.goals || []).slice() },
+      keepings: keepings.map(k => Object.assign({}, k)),
     };
   }
 
@@ -34088,12 +34668,14 @@
       ? { wk: state.twCollect.wk, pos: state.twCollect.pos }
       : { wk: null, pos: {} };
     unstuck = Array.isArray(state.unstuck) ? state.unstuck.slice() : [];
-    // THE BIN (2026-09-07): kept when the account has never carried it,
-    // like the records; a fixture or a mirror says what it says.
-    bin = (state.bin && typeof state.bin === "object")
-      ? { tasks: Array.isArray(state.bin.tasks) ? state.bin.tasks.slice() : [],
-          goals: Array.isArray(state.bin.goals) ? state.bin.goals.slice() : [] }
-      : (state.fromAccount ? bin : { tasks: [], goals: [] });
+    // KEPT WHEN THE ACCOUNT HAS NEVER CARRIED IT, like the records: a board
+    // saved before 0021 has no `keepings` at all, and reading that as "none"
+    // would empty the page on the first sync from an older device.
+    if (Array.isArray(state.keepings)) keepings = state.keepings.slice();
+    else if (!state.fromAccount) keepings = [];
+    // `state.bin` is ignored (2026-09-11): the bin is gone, and a board saved
+    // before today may still carry one. It is read by nothing and written by
+    // nothing, so an old one simply falls away at the next save.
     recentCheckins = (state.checkins || []).slice();
     deriveGates();
     visionQuote = state.profile.vision || "";
@@ -34341,7 +34923,7 @@
       if (m1 && m1.state && applyState(m1.state)) {
         renderAll();
         hideLoadFailure();
-        bootHoldHide();
+        bootHoldDisarm();   // …and the curtain stays up until boot() has opened a page
         try { await localStore.save(serializeState()); } catch (e) {}
         return true;
       }
@@ -34663,6 +35245,24 @@
   // The account's board comes in, under whatever this device has not sent.
   // Returns null when it could not be applied; else whether the board on
   // the page now differs from the account's and so must go up.
+  // WHETHER THE BOARD ACTUALLY MOVED IS PART OF THE ANSWER (2026-09-11,
+  // owner: "the old version and new version appearing then disappearing when
+  // i click on books"). Every caller below repainted the board and rebuilt
+  // every open book the moment the account answered, whatever it answered
+  // with. Most answers change nothing: a forced ask (coming back to the tab
+  // after half a minute) never looks at the stamp at all, it just takes, and
+  // an account that has moved because THIS device saved returns the board
+  // already on screen. So a reader watching a book had it torn down to the
+  // last node and built again, for nothing, every few seconds.
+  //
+  // WHAT DECIDES IS THE BOARD ITSELF. `changed` is the app's own comparator
+  // (boardSame) over the app's own whole-board snapshot, taken before the
+  // answer landed and after: not a list of fields somebody has to keep in
+  // step, so nothing can be missed by omission and a change to anything at
+  // all still redraws. The breadth is the cost and it is the right way
+  // round: this over-redraws (a change on another screen redraws this one)
+  // and can never under-redraw, which is the failure that would look like
+  // lost work. Test 194b.
   function takeAccount(remote) {
     const base = baseRead();
     const m = mirrorRead();
@@ -34670,10 +35270,11 @@
     const unsent = !!(m && m.dirty) || offlineDirty || (!!base && !boardSame(local, base));
     if (!applyState(remote)) return null;
     const theirs = boardSnapshot();
-    if (!unsent && base) { baseWrite(theirs); return { needSave: false }; }
+    const moved = who => !boardSame(local, who);
+    if (!unsent && base) { baseWrite(theirs); return { needSave: false, changed: moved(theirs) }; }
     const merged = mergeBoards(base, local, theirs);
-    if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return { needSave: false }; }
-    return { needSave: true };
+    if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return { needSave: false, changed: moved(theirs) }; }
+    return { needSave: true, changed: moved(merged) };
   }
   // WHAT IS OPEN IS REDRAWN (2026-09-07). A page holds the board's objects
   // as they were when it opened; once the account's board has come in
@@ -34733,7 +35334,7 @@
     if (boardBlank(state)) return false;
     const took = takeAccount(state);
     if (!took) return false;
-    if (!syncBusy()) { renderAll(); refreshOpenPages(); }
+    if (took.changed && !syncBusy()) { renderAll(); refreshOpenPages(); }
     return true;
   }
   const MIRROR_KEY = "lifevision.mirror.v1";
@@ -34798,7 +35399,7 @@
     if (!(m && m.state && (!m.uid || m.uid === uid))) return false;
     if (!applyState(m.state)) return false;
     renderAll();
-    bootHoldHide();
+    bootHoldDisarm();   // the curtain stays up: boot() has a landing page to open
     // THE ACCOUNT IS ASKED BEFORE ANYTHING GOES UP (2026-09-07). The copy is
     // on screen; the account is asked what it holds, and until it answers
     // (or six seconds pass) every save waits behind the question: the
@@ -34833,10 +35434,15 @@
       }
       const took = takeAccount(state);
       if (!took) return "failed";
-      renderAll();
-      // renderAll paints the board; a page the landing already opened is
-      // its own page and takes the newer board itself.
-      refreshOpenPages();
+      // NOTHING MOVED, NOTHING REPAINTS. The copy is already on screen; an
+      // account that agrees with it has nothing to show, and repainting
+      // anyway is the second half of the open flashing in front of her.
+      if (took.changed) {
+        renderAll();
+        // renderAll paints the board; a page the landing already opened is
+        // its own page and takes the newer board itself.
+        refreshOpenPages();
+      }
       if (!took.needSave) mirrorWrite(uid);
       return took.needSave ? "merged" : "taken";
     })();
@@ -34846,6 +35452,13 @@
     saveInFlight = hold;
     hold.then(() => { if (saveInFlight === hold) saveInFlight = null; });
     boot();
+    // THE CURTAIN COMES DOWN ON THE FINISHED PAGE (2026-09-11), not on the
+    // board with its landing page still to open over it. The account gets the
+    // settle window under it as well, so the common morning — an account that
+    // agrees with the copy, or answers quickly — opens on one page that never
+    // moves again. An account that is slow does not hold the door: the grace
+    // runs out and the copy is what opens, the 5 September rule untouched.
+    await curtainSettle(consult);
     const result = await consult;
     if (result !== "pushed" && (m.dirty || result === "merged")) {
       // the ordinary save, so the offline road and its bar are the same as
@@ -34864,7 +35477,7 @@
     }
     renderAll();
     hideLoadFailure();
-    bootHoldHide();
+    bootHoldDisarm();   // the caller's boot() opens the page the curtain lifts on
     offlineBoard = true;
     offlineDirty = !!m.dirty;   // unsent changes on the copy go up at the reconnect
     offlineBar();
@@ -34928,14 +35541,55 @@
   const SYNC_FLOWS = ["checkinOverlay", "weekOverlay", "quarterOverlay", "addOverlay", "goalTitleOverlay",
     "visionOverlay", "nameOverlay", "companionIntroOverlay", "companionOverlay", "tensionOverlay",
     "rcSheetOverlay", "authOverlay", "welcomeOverlay", "walkOverlay", "covOverlay", "booksSheetOverlay"];
+  // A HAND ON THE PAGE (2026-09-11, the stability round). The list below
+  // knew a cursor in a line, a drag and an open box. A plain finger, the one
+  // that scrolls a book or rests on a row, carries none of those marks: it
+  // was not a busy hand at all, so the board could be replaced and every
+  // open page rebuilt under it mid-scroll.
+  //
+  // CLEARED BY FOUR DIFFERENT THINGS, because a stuck flag here turns the
+  // sync off for the rest of the session and that is far worse than the
+  // fault it prevents. A real browser always delivers a lift, but lifts do
+  // go missing, to a gesture the browser takes over or a capture dropped on
+  // an element that went away, so a move with no button held and the window
+  // losing focus clear it too. A TIME WINDOW was tried instead and is not
+  // usable: the suite runs on a virtual clock where hundreds of milliseconds
+  // pass between two lines, so any quiet period spans whole tests.
+  let handDown = false;
+  const handClear = () => { handDown = false; };
+  const handUp = () => { if (!handDown) return; handDown = false; syncResume(); };
   const syncBusy = () => {
+    if (handDown) return true;
     const a = document.activeElement;
     if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return true;
     if (document.querySelector(".dragging, .when-pop, .move-pop, .tw-row-pop")) return true;
     return SYNC_FLOWS.some(id => { const el = document.getElementById(id); return !!(el && el.classList.contains("open")); });
   };
+  // A SYNC REFUSED BY A BUSY HAND IS KEPT, NOT DROPPED (2026-09-11). It used
+  // to be dropped and left to the next poll, up to eight seconds later, and
+  // on the forced road, coming back to the tab after half a minute, there
+  // was no next poll behind it at all. The ask is remembered and made again
+  // the moment the hand is free: the finger lifts, or the cursor leaves the
+  // line. A forced ask resumes forced, an ordinary one ordinary. Nothing
+  // here can fire a pull that was not already asked for: syncResume does
+  // nothing at all unless an ask was refused.
+  let syncWanted = false, syncWantedForce = false;
+  function syncHold(force) { syncWanted = true; syncWantedForce = syncWantedForce || !!force; return false; }
+  function syncResume() {
+    if (!syncWanted || syncBusy()) return;
+    const f = syncWantedForce;
+    syncWanted = false; syncWantedForce = false;
+    pullFromAccount(f).catch(() => {});
+  }
+  document.addEventListener("pointerdown", () => { handDown = true; }, true);
+  ["pointerup", "pointercancel", "click"].forEach(t => document.addEventListener(t, handUp, true));
+  document.addEventListener("pointermove", (e) => { if (!e.buttons) handUp(); }, true);
+  window.addEventListener("blur", handUp);
+  // ...and the cursor leaving a line is the same moment for the same reason.
+  document.addEventListener("focusout", () => setTimeout(syncResume, 0), true);
   async function pullFromAccount(force) {
-    if (store === localStore || offlineBoard || saveInFlight || syncBusy()) return false;
+    if (store === localStore || offlineBoard || saveInFlight) return false;
+    if (syncBusy()) return syncHold(force);
     const m = mirrorRead();
     const unsent = !!(m && m.dirty);
     let at = null;
@@ -34961,13 +35615,13 @@
     const seq0 = saveSeq;
     let state;
     try { state = await store.load(); } catch (e) { return false; }
-    if (saveSeq !== seq0 || !state || syncBusy()) return false;
+    if (saveSeq !== seq0 || !state) return false;
+    if (syncBusy()) return syncHold(force);   // a hand arrived while the account was answering
     if (boardBlank(state)) return false;
     const took = takeAccount(state);
     if (!took) return false;
     if (at != null) cloudSeen = at;
-    renderAll();
-    refreshOpenPages();
+    if (took.changed) { renderAll(); refreshOpenPages(); }
     if (took.needSave) await saveState(); else mirrorWrite();
     return true;
   }
@@ -35035,37 +35689,103 @@
     const el = document.getElementById("loadFailOverlay");
     if (el) closeBookPage(el);
   }
-  // ---------- the boot hold ----------
+  // ---------- THE OPENING CURTAIN (2026-09-11) ----------
+  // THE APP OPENS ONCE, NOT IN THREE STEPS. The owner: "It should open
+  // smoothly. Right now it opens and maybe goes to the quiz page then goes to
+  // the this week page and glitches … have a open screen that says 'youre
+  // vision board is loading'". She was watching the boot's own working-out.
+  // The page paints its markup before the script below has parsed, so the
+  // board's title sat alone on the paper for as long as that took; then the
+  // front door, on a session it could not read yet, put the sign-in sheet up
+  // over a board that was about to open; then the board drew; then This Week
+  // came over the board. Four pages, in order, none of them the one she asked
+  // for. The curtain is in the HTML (see the markup above), so it is the first
+  // frame; everything below assembles behind it; it comes down once.
+  //
+  // THIS IS NOT THE 2 SEPTEMBER HOLD IN A NEW COAT. That card waited on the
+  // ACCOUNT, which is what she threw out on 5 September ("i hate the loading
+  // page"); the curtain waits on the copy this device already keeps, which is
+  // a few hundred milliseconds, and gives the account only a short grace under
+  // it before lifting regardless. Both rulings hold: an opening screen,
+  // and never a wait behind one. The hold's own card is gone — two loading
+  // screens on one open is the glitch, not the cure — and bootHoldShow and
+  // bootHoldHide keep their names and their callers as its door.
+  const CURTAIN_CEILING_MS = 12000;   // nothing holds the door longer than this
+  const CURTAIN_SETTLE_MS = 1400;     // …and the account gets only this under it
+  let curtainLifted = false;
+  let curtainCeiling = setTimeout(() => curtainLift(), CURTAIN_CEILING_MS);
+  const curtainEl = () => document.getElementById("openCurtain");
+  function curtainLift() {
+    if (curtainLifted) return;
+    curtainLifted = true;
+    clearTimeout(curtainCeiling);
+    const el = curtainEl();
+    if (!el) return;
+    // ONE FRAME FOR THE PAGE UNDERNEATH, so the fade reveals a page that is
+    // already painted rather than one still arriving. A hidden tab is never
+    // given that frame (the harness runs in one), so a timer carries it
+    // instead and nothing here is ever awaited.
+    // …and a raise that lands inside that frame CANCELS this lift rather than
+    // being stomped by it a moment later: curtainLifted is the decision, the
+    // class only carries it out.
+    let went = false;
+    const go = () => { if (!went && curtainLifted) { went = true; el.classList.add("lifted"); } };
+    try { requestAnimationFrame(() => requestAnimationFrame(go)); } catch (e) {}
+    setTimeout(go, 150);
+  }
+  // The curtain stays in the page once it has gone up: raising it again is a
+  // class, and a signed-out board that signs back in gets its opening screen.
+  function curtainRaise() {
+    const el = curtainEl();
+    if (!el) return;
+    curtainLifted = false;
+    el.classList.remove("lifted");
+    clearTimeout(curtainCeiling);
+    curtainCeiling = setTimeout(() => curtainLift(), CURTAIN_CEILING_MS);
+  }
+  // The account's answer, given a moment to arrive UNDER the curtain, so the
+  // board that appears is the board the account holds and nothing shifts a
+  // second later. Never longer than the grace: a slow morning radio opens on
+  // this device's copy, which is the whole reason for keeping one.
+  function curtainSettle(p) {
+    if (curtainLifted) return Promise.resolve();
+    return Promise.race([
+      Promise.resolve(p).then(() => {}, () => {}),
+      new Promise(res => setTimeout(res, CURTAIN_SETTLE_MS)),
+    ]).then(() => { curtainLift(); });
+  }
+  // ---------- the boot hold: the curtain's door, and the clock behind it ----------
   // THE WALL MUST NEVER SPEAK FIRST (2026-09-02, owner's phone at 6am: "It
   // doesnt recognize it's me again :/"). The page paints before the account
   // answers, so every slow morning radio put the empty welcome wall over a
   // real board — no error, no lie anyone told, just the one state that
-  // renders while nothing has resolved. While the front door is still
-  // asking, this quiet card holds the page instead; every road out of the
-  // boot (board rendered, account page opened, failure card shown, mirror
-  // boot) takes it down. If NOTHING answers in 12 seconds and this device
-  // keeps a copy, the copy boots — a held door is not a home.
+  // renders while nothing has resolved. The curtain is what holds the page
+  // now; this is the clock that sits behind it. If NOTHING answers in 12
+  // seconds and this device keeps a copy, the copy boots — a held door is
+  // not a home.
   let bootHoldTimer = null;
   function bootHoldShow() {
-    const el = persistOverlay("bootHoldOverlay");
-    el.innerHTML = `<div class="persist-card">
-        <h2>opening your board</h2>
-        <p>one moment, checking in with your account.</p>
-      </div>`;
-    openBookPage(el);
+    curtainRaise();
     clearTimeout(bootHoldTimer);
     bootHoldTimer = setTimeout(() => {
-      if (!document.getElementById("bootHoldOverlay")) return;
+      bootHoldTimer = null;
       bootHoldHide();
       const m = mirrorRead();
       if (m && m.state && !hasOnboarded && !goals.length) bootOffline();
-    }, 12000);
+    }, CURTAIN_CEILING_MS);
   }
-  function bootHoldHide() {
+  // The clock stops, and the curtain stays up: for the roads that have more to
+  // do before the page is the one a person should be looking at (the copy
+  // renders, then its landing page opens over it, and THEN the curtain lifts).
+  function bootHoldDisarm() {
     clearTimeout(bootHoldTimer);
     bootHoldTimer = null;
-    const el = document.getElementById("bootHoldOverlay");
-    if (el) { closeBookPage(el); setTimeout(() => el.remove(), 400); }
+  }
+  // The clock stops and the curtain comes down: the roads that end where they
+  // stand — the account page, the failure card, the emergency copy.
+  function bootHoldHide() {
+    bootHoldDisarm();
+    curtainLift();
   }
   // Shown when a save is refused because nobody is signed in. Once per
   // dismissal, not once per keystroke \u2014 but never silent: the old behaviour
@@ -37803,8 +38523,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                         <div class="qv-block-label">loose directions, not commitments</div>
                         <ul class="qv-loose-list">${loose.map(x => `<li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span>${escHtml(appVoice(x.label, wroteIt(x)))}${
                           x.pinned
-                            ? `<span class="qv-pinned">pinned to this week</span>`
-                            : `<button class="qv-pin" data-gid="${g.draftId}" data-oid="${escHtml(x.id || "")}">pin to this week</button>`}</li>`).join("")}
+                            ? `<span class="qv-pinned">keeping this in mind</span>`
+                            : `<button class="qv-pin" data-gid="${g.draftId}" data-oid="${escHtml(x.id || "")}">keep this in mind</button>`}</li>`).join("")}
                           <li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span><span
                             class="qv-loose-new edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}"
                             role="textbox" aria-label="a loose direction of your own"
@@ -37952,10 +38672,27 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                 const g = keptById(btn.dataset.gid);
                 const t = ((g || {}).objectives || []).find(x => x.id === btn.dataset.oid);
                 if (!t || t.pinned) return;
-                if (!addReminder({ label: t.label, date: null, wk: weekKeyOf() })) return;
+                // TO THE KEEPINGS, NOT TO THE WEEK (2026-09-11). The field is
+                // `text`, where addReminder took `label`: pass the wrong one
+                // and addKeeping returns null on empty text, the guard below
+                // swallows it, and the pin does nothing at all without a word
+                // said. Test 231 asks for the record itself for that reason.
+                // `kind` is stated rather than left to the default, because
+                // the default is the only thing standing between a direction
+                // and the wrong chapter of that page.
+                // `goalId` is the DRAFT's id, which the board goal keeps
+                // (__ciFinish copies the draft whole), so it resolves for this
+                // run. It is numbered per run, so a later re-run's "d2" is a
+                // different goal: provenance for a door back, never an
+                // identity to match a goal by.
+                if (!addKeeping({ text: t.label, kind: "reminder", goalId: g.draftId })) return;
                 t.pinned = true;
                 saveDraft();
                 paintB();
+                // The destination is no longer the page she is looking at, so
+                // it is named. The old pin needed no receipt because "this
+                // week" was the page it said it was going to.
+                showToast("kept. it is in the firefly on your week page, under keeping in mind.");
               });
             });
             saveDraft();
@@ -38049,6 +38786,11 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
               "Here's the week I drafted. Save it and it becomes your list.")
               + `<div class="hb-scrap-slot"><div class="hb-scrap torn-paper"><div class="torn-sheet hb-scrap-sheet">
                   ${say ? `<div>${escHtml(say)}</div>` : ``}
+                  <!-- SAID BEFORE IT HAPPENS, not discovered afterwards
+                       (2026-09-11). The plan begins on the next whole day
+                       whatever time this is finished, so the page that hands
+                       it over is where that belongs. -->
+                  <div class="hb-starts">your week starts tomorrow, so today stays as it is.</div>
                   <div class="hb-bars">${actives.map(barFor).join("")}</div>
                   ${anyLoad ? `<div class="hb-total">${anyLoad.spent} of ${anyLoad.budget.hours} hrs a week${
                     // THE ONE TIME THE PLAN ASKS FOR LESS THAN THEY OFFERED,
@@ -40253,6 +40995,28 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // field arrives a reload late, and the work most likely to need a day is
     // the work that has just been generated.
     migrateOccurrences();
+    // A NEW PLAN ALWAYS STARTS TOMORROW (2026-09-11, the owner's ruling after
+    // finishing the discovery at about eleven at night and being handed five
+    // things to do "today"). Nothing in the app reads the hour, and the day
+    // turns at 04:00, so at 23:00 it is confidently still Thursday with five
+    // hours left in it. Rather than argue a cutoff hour, the plan begins on
+    // the next whole day, whatever time the discovery ended.
+    //
+    // NOT IN migrateOccurrences, though it runs on the line above and would
+    // have been the tidier home. That function also runs inside applyState on
+    // every load, so a blanket stamp there would give an EXISTING board a
+    // start date of today and quietly delete this week's earlier pebbles on
+    // the first open after this shipped. The stamp belongs where new work is
+    // actually committed, which is here.
+    //
+    // Only where the field is absent and nothing has been done yet, so a
+    // re-run cannot move the start of work the person has already begun.
+    const planStart = nextDayKey(todayKey());
+    if (planStart) {
+      goals.forEach(g => (g.mechanisms || []).forEach(m => {
+        if (m && !m.startsOn && !Object.keys(completionsOf(m)).length) m.startsOn = planStart;
+      }));
+    }
     deriveGates();
     checkinOverlay.classList.remove("open", "ci-journal-mode");
     renderEyebrow();
@@ -40373,7 +41137,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     repairStaleWeekRecords, scheduleFloats,
     reminderList, addReminder, removeReminder, remindersInWeek, remindersOn, tickReminder,
     // THE BIN, the unsent line, and the days (2026-09-07)
-    restoreTask, restoreGoal, deleteGoal, binGet: () => bin, unsentCheck, restoreDay, dayWords,
+    restoreReminder, restoreGoal, deleteGoal, unsentCheck, restoreDay, dayWords,
     parseCapture, captureNote, minsText, minutesOf, roundStep, MIN_STEP, twDayMarks, twSank,
     isUnplaced, isSettledAny, placeCommitment, settleAnyDay, markPlacement,
     twEditingGet: () => twEditing, twSetEditing(v) { twEditing = v || null; },
@@ -40445,6 +41209,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // night before 04:00 — todayKey turns at DAY_TURN_HOUR, not midnight,
     // and no expectation built outside it can know that.
     arrivalDecision, speechState, pickArrivalLine, quarterCatchUp, setClockOffset, appNow, todayKey,
+    nextDayKey, workStartsAhead,
+    keepingsGet: () => keepings, addKeeping, removeKeeping, restoreKeeping, openKeepings, closeKeepings,
     // UT1d seams: the dial-born dig sheet, drivable without the discovery.
     digDialHtml, wireDigDial,
     // UT1.5 seams: the capture's tone read (hard by default), the week's
@@ -40526,10 +41292,17 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     mirrorRead, mirrorWrite, mirrorClear, reconnectBoard, looksOffline,
     // The merge (2026-09-07): the base, the pure merge, and the take.
     mergeBoards, boardSame, baseRead, baseWrite, baseClear, takeAccount,
-    bootHoldShow, bootHoldHide, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount, weekLearnings, acceptLearning,
+    bootHoldShow, bootHoldHide, bootHoldDisarm, bootFromMirror, saveSeqGet: () => saveSeq, bootOffline, refreshOnReturn, pullFromAccount, weekLearnings, acceptLearning,
+    curtainLift, curtainRaise, curtainUp: () => !curtainLifted,
+    curtainRules: () => ({ CURTAIN_CEILING_MS, CURTAIN_SETTLE_MS, DOOR_GRACE_MS }),
     shelfOn, shelfSet, shelfPrefs: () => profileShelf, mgSplash,
     cloudSeenGet: () => cloudSeen, syncRules: () => ({ SYNC_POLL_MS, RETURN_REFRESH_MS }),
+    // syncBusy and the hand, so the suite can drive the held-and-resumed road
+    // and clear a synthetic finger that no test ever lifted.
+    syncBusy: () => syncBusy(), syncHeld: () => syncWanted, handClear,
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
+    twGroundPaintCount: () => twGroundPaints, twGroundBuildCount: () => twGroundBuilds, twPageLength: () => twPageLength(document.getElementById("thisWeekOverlay")),
+    boardPaintCount: () => boardPaints,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn, twDeleteForSwipe,
     offlineGet: () => ({ board: offlineBoard, dirty: offlineDirty }),
     analyzeThemes, detectPatterns, prioritizeAreas, generateGoals, draftPlan, detectTensions,
@@ -40663,6 +41436,104 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     if (fq && fq.classList.contains("open")) openFaqPage();
     return true;
   }
+  // ---- WHAT SHE IS KEEPING IN MIND (2026-09-11) ----
+  // Owner: "I think there should be a seperate area for affirmations or
+  // reminders ... And itll be a cute form like the FAQ part where the books
+  // are and use the watercolor mark for each different reminder."
+  //
+  // So it is the Facts page's own build: the same sheet, the same row and
+  // chapter helpers, the same drawn rules. What it is NOT is a list of work.
+  // Nothing here has hours, a day, a pebble, a tick or a count, and it never
+  // may: a standing thought the week counts against you is a debt, and law 8
+  // forbids the app holding one.
+  let keepKind = "reminder";          // which kind the foot's line will file
+  function openKeepings() {
+    const mount = document.getElementById("keepMount");
+    if (!mount) return;
+    const row = (k) => {
+      // THE MARK IS THE ONE THE BOOKS WEAR, seeded off this line's own id, so
+      // every kept thing has a dab nobody chose and nothing repeats.
+      const sw = paintSwatch(k.id, "#c3c9b4", "#5d6647", "kp-mark");
+      return `<div data-type-area="keep/row" class="fq-item kp-item">
+        <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
+        <button class="kp-drop" type="button" data-drop="${escHtml(k.id)}"
+          aria-label="take this off the page">take it off</button>
+      </div>`;
+    };
+    const ch = (name, note, rows, empty) => `<div data-type-area="keep/chapter" class="fq-ch"
+      ><div data-type-area="keep/chapter" class="fq-ch-h">${name}</div>
+      <div class="fq-ch-rule"></div>
+      <span class="fq-sub kp-note">${note}</span>
+      ${rows.length ? rows.join("") : `<span class="fq-sub kp-empty">${empty}</span>`}</div>`;
+    const mine = keepingsOf("reminder").map(row);
+    const said = keepingsOf("affirmation").map(row);
+    mount.innerHTML = `<div class="fq-page kp-page">
+      <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
+        <div data-type-area="keep/header"><h1 class="fq-h1">keeping in mind.</h1>
+          <p class="fq-sub-line">nothing here is owed. it is what you wanted to keep where you could see it.</p></div>
+        ${ch("keeping in mind",
+             "directions, not commitments. looked at when you want them, never graded.",
+             mine, "nothing yet. anything you pin from a plan lands here.")}
+        ${ch("in my own words",
+             "lines about you, in your words, for the days you need reading back to yourself.",
+             said, "nothing yet. write one below.")}
+        <div data-type-area="keep/add" class="kp-add">
+          <div class="kp-add-row">
+            <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
+              placeholder="${keepKind === "affirmation" ? "i am someone who…" : "something to keep in mind"}"
+              aria-label="write something to keep">
+            <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
+          </div>
+          <div class="kp-kinds">
+            <button type="button" class="ci-chip kp-kind${keepKind === "reminder" ? " on" : ""}" data-kind="reminder">to keep in mind</button>
+            <button type="button" class="ci-chip kp-kind${keepKind === "affirmation" ? " on" : ""}" data-kind="affirmation">in my own words</button>
+          </div>
+        </div>
+      </div></div>
+      <div class="at-margin" id="keepCompanion" data-type-area="keep/margin"></div></div>`;
+    const input = mount.querySelector("#keepInput");
+    const file = () => {
+      const t = (input.value || "").trim();
+      if (!t) return;
+      addKeeping({ text: t, kind: keepKind });
+      input.value = "";
+      openKeepings();
+      const again = document.getElementById("keepInput");
+      if (again) again.focus();
+    };
+    mount.querySelector("#keepGo").addEventListener("click", file);
+    input.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      file();
+    });
+    mount.querySelectorAll(".kp-kind").forEach(b => b.addEventListener("click", () => {
+      keepKind = b.dataset.kind === "affirmation" ? "affirmation" : "reminder";
+      const held = input.value;
+      openKeepings();
+      const again = document.getElementById("keepInput");
+      if (again) { again.value = held; again.focus(); }
+    }));
+    // THE WAY BACK IS THE BREATH, the same one the board's deletes use, and
+    // the same scrap: it lives at body level since 11 September precisely so
+    // a page like this one can raise it.
+    mount.querySelectorAll("[data-drop]").forEach(b => b.addEventListener("click", () => {
+      const id = b.dataset.drop;
+      const at = keepings.findIndex(k => k.id === id);
+      const gone = removeKeeping(id);
+      if (!gone) return;
+      openKeepings();
+      twShowUndo("taken off the page", () => restoreKeeping(gone, at), () => openKeepings());
+    }));
+    openBookPage(document.getElementById("keepOverlay"));
+    // AFTER THE PAGE IS OPEN, NEVER BEFORE: a closed book page is
+    // display:none and every width it reports is zero.
+    buildQuarterRules(mount, ".fq-ch-rule");
+  }
+  function closeKeepings() {
+    closeBookPage(document.getElementById("keepOverlay"));
+  }
+
   function openFaqPage() {
     let hasRun = false;
     try { hasRun = !!localStorage.getItem(LASTRUN_KEY); } catch (err) {}
@@ -40728,8 +41599,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
             ? row("companion", "your companion", "swap it, name it, pick its voice, or turn it off.")
             : row("companion", "choose a companion", "a small creature that sits with you while you work, or none at all.")}
           ${accountLabel ? row("account", escHtml(accountLabel), "sync across your phone and laptop.") : ``}`)}
-        ${store !== localStore && typeof store.snapshots === "function" ? ch("your board, day by day", `
-          <div id="fqDays"><span class="fq-sub">looking for the days your account kept…</span></div>`) : ``}
         ${ch("begin again", `
           ${canRetest ? row("retest", "run the discovery again", "your answers come back prefilled, change any, get fresh goals." + retestNote()) : ``}
           ${row("fresh", "start over blank", "the full discovery from an empty page.")}`, "fq-quiet")}
@@ -40749,51 +41618,21 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
            Declared as a type area so anything it says lands in a counted
            region instead of arriving as unclaimed type. -->
       <div class="at-margin" id="fqCompanion" data-type-area="faq/margin"></div></div>`;
-    // YOUR BOARD, DAY BY DAY (2026-09-07, the owner's first suggestion:
-    // "if a merge ever went wrong, a goal got deleted, or an old page wrote
-    // over things, there is nothing to go back to"). The account keeps the
-    // board as it stood at the end of each day, for five weeks; this lists
-    // those days, newest first, and going back to one keeps today's board
-    // first, under "before you went back", in the same list.
-    const daysHost = mount.querySelector("#fqDays");
-    if (daysHost) {
-      store.snapshots().then(list => {
-        if (!daysHost.isConnected) return;
-        const days = (list || []).slice(0, 40);
-        if (!days.length) {
-          daysHost.innerHTML = `<span class="fq-sub">nothing kept yet. from today, the account keeps the board as it stood at the end of each day, for five weeks.</span>`;
-          return;
-        }
-        daysHost.innerHTML = days.map(d => {
-          const before = d.kind === "before";
-          return row("day", escHtml(dayWords(d.day)) + (before ? ", before you went back" : ""),
-            before ? "the board as it was just before you went back to an earlier day. tap to return to it."
-                   : "the board as it stood at the end of that day. tap to go back to it.")
-            .replace('data-act="day"', `data-act="day" data-day="${escHtml(d.day)}" data-kind="${escHtml(d.kind || "day")}"`);
-        }).join("");
-      }).catch(() => {});
-    }
+    // "YOUR BOARD, DAY BY DAY" IS NOT A LIST ANY MORE (2026-09-11, owner:
+    // "i dont think we should have a long list of every deay in the FAQ
+    // section... maybe we need a different way to safeguard the app").
+    // Thirty-five rows all reading "the board as it stood at the end of that
+    // day" is a filing cabinet, not a page. THE NET IS UNTOUCHED: the account
+    // still keeps the last board of each day for five weeks, because that
+    // insert lives in the SQL save function (0019/0020) and fires on every
+    // save with a 35 day prune, not here. Only the door is gone. restoreDay
+    // stays, reachable through __pipeline, so a rescue can still be driven;
+    // it is named in CLAUDE.md's list of what is deliberately left standing.
     mount.querySelector(".fq-page").addEventListener("click", (ev) => {
       const item = ev.target.closest(".fq-row");
       if (!item) return;
       const act = item.dataset.act;
       const close = closeFaqPage;
-      if (act === "day") {
-        // GOING BACK ARMS FIRST, the two-step every quiet destructive wears.
-        const b = item.querySelector("b");
-        if (!item.classList.contains("arm")) {
-          item.classList.add("arm");
-          if (b) b.textContent = "tap again to go back to this day";
-          setTimeout(() => {
-            if (!item.isConnected) return;
-            item.classList.remove("arm");
-            if (b) b.textContent = dayWords(item.dataset.day) + (item.dataset.kind === "before" ? ", before you went back" : "");
-          }, 4000);
-          return;
-        }
-        restoreDay(item.dataset.day, item.dataset.kind);
-        return;
-      }
       if (act === "books") { openBooksSheet(); return; }
       if (act === "tour") { close(); replayShelfTour(); return; }
       if (act === "intro") { close(); if (window.__introFilm) window.__introFilm.replay(); return; }
@@ -40899,6 +41738,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     closeBookPage(document.getElementById("faqOverlay"));
   }
   document.getElementById("faqClose").addEventListener("click", closeFaqPage);
+  document.getElementById("keepClose").addEventListener("click", closeKeepings);
   wireHelpDot(document);
   document.getElementById("helpClose").addEventListener("click", () => closeBookPage(helpOverlay));
 
@@ -41416,6 +42256,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // every ?demo boot died in the temporal dead zone and took the rest of the
   // top level (?fresh, the account row) with it.
   const JUMP = new URLSearchParams(location.search).get("jump");
+  // How long the sign-in door waits, on a device that has a board, for a
+  // session that is still being refreshed. See the front door below.
+  const DOOR_GRACE_MS = 2000;
+  let doorAsked = false;
 
   if (sb && !DEMO && !lsNamespace) {
     // THE FRONT DOOR (owner ruling, 2026-09-01). Sign-in happens exactly once
@@ -41427,28 +42271,64 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // cloud's keys were blank.
     // THE HOLD GOES UP BEFORE THE QUESTION IS ASKED (2026-09-02): between
     // this line and the first event, the page is otherwise the empty wall.
-    // …BUT ONLY ON A DEVICE WITH NOTHING (2026-09-05, owner: "i hate the
-    // loading page"). A device that keeps a copy opens from it the moment
-    // the session is known (bootFromMirror); only a first-ever open waits.
-    if (!(mirrorRead() && mirrorRead().state)) bootHoldShow();
+    // …AND ON EVERY DEVICE NOW (2026-09-11), because the curtain is not the
+    // 5 September loading page she threw out: it does not wait on the
+    // account, it waits on this device's own copy, and a device that keeps
+    // one is behind it for a few hundred milliseconds. What the clock below
+    // still does is the 2 September job — if nothing at all answers, the
+    // copy boots rather than the door staying shut.
+    bootHoldShow();
+    // The road a session takes, shared by the event that carries one and by
+    // the grace below that goes looking for one.
+    let opening = false;
+    const openBoard = async (session) => {
+      opening = true;
+      const uid = session && session.user ? session.user.id : null;
+      // The mirror belongs to ONE account. A different person signing in
+      // on this device must not be offered the last one's board.
+      const m = mirrorRead();
+      if (m && m.uid && uid && m.uid !== uid) { mirrorClear(); baseClear(); }
+      if (uid && await bootFromMirror(uid)) return;
+      bootHoldShow();
+      await restoreState();
+      // The clock stops BEFORE the landing opens a page, and the curtain
+      // comes down AFTER it, so the page that appears is the finished one.
+      bootHoldDisarm();
+      boot();
+      curtainLift();
+      if (uid && !offlineBoard) mirrorWrite(uid);
+    };
     sb.auth.onAuthStateChange(async (event, session) => {
       renderAccount();
       if (event === "SIGNED_IN" || (event === "INITIAL_SESSION" && session)) {
-        const uid = session && session.user ? session.user.id : null;
-        // The mirror belongs to ONE account. A different person signing in
-        // on this device must not be offered the last one's board.
-        const m = mirrorRead();
-        if (m && m.uid && uid && m.uid !== uid) { mirrorClear(); baseClear(); bootHoldShow(); }
-        if (uid && await bootFromMirror(uid)) return;
-        if (!document.getElementById("bootHoldOverlay")) bootHoldShow();
-        await restoreState();
-        // The hold comes down BEFORE the landing opens a page, so the page
-        // that opens is the only thing on top of the board.
-        bootHoldHide();
-        boot();
-        if (uid && !offlineBoard) mirrorWrite(uid);
+        if (opening) return;   // the grace below got there first
+        await openBoard(session);
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
         if (event === "SIGNED_OUT") { mirrorClear(); baseClear(); }
+        // THE DOOR WAITS A BEAT ON A DEVICE THAT HAS A BOARD (2026-09-11,
+        // owner: "it opens and maybe goes to the quiz page then goes to the
+        // this week page"). The sheet that flashed past was the sign-in
+        // sheet, and nothing was wrong with the sign-in: an INITIAL_SESSION
+        // carrying no session is not only a signed-out person, it is also
+        // what a token that needs refreshing reports while the refresh is
+        // still out. The door went up on that, and the board came in a
+        // moment later and took it down again. A device whose copy is
+        // stamped with an account has been signed in and never signed out
+        // (a sign-out clears the copy, two lines above), so THERE, and only
+        // there, the door asks once more under the curtain before opening.
+        // Two seconds, once per open; a session that does arrive opens the
+        // board on this road rather than waiting for a second event that
+        // a refresh does not always send.
+        const m = mirrorRead();
+        if (event === "INITIAL_SESSION" && !doorAsked && m && m.uid) {
+          doorAsked = true;
+          const late = await Promise.race([
+            currentSession().catch(() => null),
+            new Promise(res => setTimeout(() => res(null), DOOR_GRACE_MS)),
+          ]);
+          if (opening) return;
+          if (late) { await openBoard(late); return; }
+        }
         bootHoldHide();
         openAuth(true);
       }
@@ -41464,10 +42344,14 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // correct — goalsGet() returned all six — and nothing had painted the
     // board, so the page rendered as the watercolour and the title alone.
     // A state check is not a render check; it said yes to the wrong question.
-    if (DEMO_WHICH === "full") { applyState(demoFullState()); renderAll(); boot(); }
+    if (DEMO_WHICH === "full") { applyState(demoFullState()); renderAll(); boot(); curtainLift(); }
     // Not signed in: the board still comes back from this device's storage, so a
     // refresh no longer wipes everything.
-    else restoreState().then(boot);
+    // The curtain comes down whatever the restore decided: a board, a local
+    // board, or the failure card that showed instead of one. It is the page's
+    // first frame, and nothing may be left standing behind it.
+    else restoreState().then(boot, e => console.warn("boot failed:", e && e.message))
+      .then(() => curtainLift());
   }
   renderAccount();
 
@@ -41631,6 +42515,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       ["portraitOverlay", "portraitClose"],
       ["tomorrowOverlay", "tomorrowClose"],
       ["faqOverlay", "faqClose"],
+      ["keepOverlay", "keepClose"],
       ["weekOverlay", "weekClose"],
       ["quarterOverlay", "quarterClose"],
       ["checkinOverlay", "checkinClose"],
