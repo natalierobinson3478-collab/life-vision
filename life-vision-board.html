@@ -304,7 +304,14 @@
      card is sized off window height as well as width (see --rule) and this
      padding gives way on short windows rather than pushing content past the
      fold. */
-  body.empty-board .app { min-height: 100vh; box-sizing: border-box;
+  /* 100svh, NOT 100vh (2026-09-11). On a phone `vh` is the LARGE viewport
+     height, the screen with the browser's own bars collapsed, so a box
+     100vh tall is taller than what you can actually see and centring
+     inside it pushes the foot off the bottom. `svh` is the small one, the
+     visible screen with the bars showing, and unlike `dvh` it does not
+     change as they collapse, so nothing reflows under a scrolling finger.
+     The plain rule stays first as the fallback. */
+  body.empty-board .app { min-height: 100vh; min-height: 100svh; box-sizing: border-box;
     display: flex; flex-direction: column; justify-content: center;
     padding-top: clamp(56px, 7vh, 80px); padding-bottom: clamp(36px, 8vh, 116px); }
   .account-pill { display: flex; align-items: center; gap: 7px; color: var(--ink-muted); font-size: var(--t-label);
@@ -2309,6 +2316,29 @@
   .ci-raw-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-start; }
   .ci-raw-line { margin: 0 0 calc(var(--rule) * 0.35); }
   .ci-raw-write { font-size: max(var(--t-label), calc(var(--rule) * 1.0)); }
+  /* ---- what you already do: the rows (2026-09-12) ----
+     The name line and the mark that takes the row back off share one line, so
+     the crossing out sits where the thing it removes is written, not in a
+     column of its own down the side. The line keeps every pixel it had: the
+     mark is the only thing added to the row's width. */
+  .ci-rt-head { display: flex; align-items: flex-start; gap: 6px; }
+  .ci-rt-head .pm-line { flex: 1 1 auto; min-width: 0; }
+  .ci-rt-head .pm-ghost { overflow: hidden; text-overflow: ellipsis; }
+  /* A HAND CROSSES A THING OUT, IT DOES NOT PRESS A CONTROL: the same drawn ×
+     a hand-added goal wears on the review page, at the line's own size. Never
+     hover-only, there is no hover on her phone and this is the mark she has
+     to be able to find by looking. */
+  .ci-rt-x { flex: 0 0 auto; width: calc(var(--rule) * 1.15); height: calc(var(--rule) * 1.15);
+    margin-top: calc(var(--rule) * 0.12); padding: 0; background: none; border: none;
+    cursor: pointer; color: var(--ink); opacity: 0.75; }
+  .ci-rt-x:hover { opacity: 1; }
+  .ci-rt-x svg { width: 100%; height: 100%; overflow: visible; display: block; }
+  /* A BLOCK, so the align pass can put it on a rule: a vertical margin on an
+     inline box is folded into the line box instead of moving the box, which
+     left "add another" two pixels short of its line however precisely it was
+     measured. Its width still stops at its words, so the tap target does not
+     quietly become the whole sheet. */
+  .ci-rt-add { display: block; width: fit-content; }
   .ci-raw-note { position: relative; }
   /* The note has NO ruling of its own (item 21) — it inherits the sheet's
      lines and its text sits on them: line-height is the sheet's lead and the
@@ -17324,6 +17354,11 @@
   // unique. The pond's rule stands wherever a function that can run twice
   // emits an id; this is just no longer one of those.
 
+  // How many times running the water has refused a measurement it could not
+  // believe. Bounded, so a page that genuinely never lays out (a closed book,
+  // a hidden tab) stops asking rather than retrying for ever.
+  let atlasWaterTries = 0;
+
   // Builds the water behind an already-laid-out page. Everything it needs it
   // MEASURES: each quarter's heading, each row, each destination. Nothing here
   // knows how many quarters there are or how tall a sentence wrapped to.
@@ -17346,6 +17381,35 @@
     // other by a few pixels on every render. twPageLength walks the overlay's
     // IN-FLOW children only, which is the page's real length and cannot feed
     // back. This-week hit this first and the function is its answer.
+    // ---- A MEASUREMENT THAT CANNOT BE TRUE IS NOT DRAWN FROM (2026-09-12) ----
+    // Caught on the PUBLISHED copy, intermittently, and it is the worst shape
+    // of bug this page can have: the drawing is built from the page as laid
+    // out, so a build that runs before the page has a width produces a
+    // perfectly valid picture of nothing. Measured in the bad case: the
+    // content column came back 32px wide — the overlay's own left and right
+    // padding and nothing between them — every sentence wrapped to one word,
+    // twPageLength reported 4439px, and the water was drawn 32 by 4439 as a
+    // grey column down the middle of the sea with the stones nowhere near
+    // their rows. It corrected on any later render, which is exactly what
+    // makes it ship: it is right every time you go looking for it.
+    // THE FUNCTION ALREADY MEASURES EVERYTHING, so it can also say whether
+    // what it measured is possible. The narrowest this page is ever laid out
+    // at is a 320px phone, where the column is ~284px; anything under 200 is
+    // not a narrow page, it is a page that is not there yet. On that reading
+    // it draws NOTHING and asks again on the next turn of the loop rather
+    // than leaving a wrong picture up.
+    // A TIMEOUT, NOT requestAnimationFrame: rAF never fires in a
+    // de-prioritised tab and the headless suite runs in one, so a rAF here
+    // would hang a run rather than delay a repaint.
+    const colW = inner.getBoundingClientRect().width;
+    if (colW < 200) {
+      if (atlasWaterTries < 12) {
+        atlasWaterTries++;
+        setTimeout(() => { if (ov.classList.contains("open")) buildAtlasWater(mount); }, 60);
+      }
+      return;
+    }
+    atlasWaterTries = 0;
     const H = Math.max(200, Math.round(twPageLength(ov)));
     ground.style.height = H + "px";
     const gr = ground.getBoundingClientRect();
@@ -34743,6 +34807,13 @@
       userEdited: ciUserEdited,
       drivers: ciDrivers,
       capacity: ciCapacity,
+      // WHAT SHE ALREADY DOES RIDES TOO (2026-09-12). The routines page calls
+      // saveDraft on every keystroke and every chip and the rows were in none
+      // of what that draft carried, so the page that writes the most per tap
+      // was the one a reload emptied. Its floor was never at risk, being a
+      // journal key; the rhythms were, and resetDiscovery had already been
+      // taught to clear them, which is what made this an oversight.
+      routines: ciRoutines,
       focus: ciFocusKey,
       // 16b's root cause: the drafted GOALS never rode the payload, so a
       // mid-flow reload silently dropped hand-added cards, title edits and
@@ -34815,6 +34886,9 @@
       Object.assign(ciUserEdited, d.userEdited || {});
       Object.assign(ciDrivers, d.drivers || {});
       Object.assign(ciCapacity, d.capacity || {});
+      // Replaced, never merged, by the same rule the journal follows: a row
+      // she deleted before the reload must not come back with the rest.
+      ciRoutines = Array.isArray(d.routines) ? d.routines : [];
       ciFocusKey = d.focus || null;
       // The draft's goals come back whole (16b): the goals step sees a
       // non-null ciDraft and paints it instead of re-generating over the
@@ -37858,7 +37932,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                     placeholder="The apartment, the town, the shift schedule, the ankle that clicks…" aria-label="your situation"></textarea>
                 </div>
               </div></div></div>`
-            + navRow("Dig in →");
+            + navRow("Next →");
           // ---- capacity: claim, grounded ----
           // The line under the time chips shows the number the chip implies —
           // adjusted for who's counting on them — and the number itself is
@@ -38035,10 +38109,39 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           const DAYS = TW_DAYS;
           const blank = () => ({ what: "", timesPerWeek: 0, when: [] });
           if (!ciRoutines.length) ciRoutines.push(blank());
+          // THE PROMPT LIVES IN THE FIELD, and it has to look like a prompt
+          // (2026-09-12, owner: "its hard to understand where to type the
+          // goal, it doesnt have any indication of where, like i can click a
+          // few times on the automade words and then delete and type but
+          // thats so hard to see"). A plain placeholder in the hand face at
+          // full weight is indistinguishable from something already written,
+          // so the row read as filled in and the way in was to select words
+          // and delete them. This is the welcome note's own ghost instead,
+          // the one the name line and the location line already wear: faint,
+          // with OUR caret blinking at its head exactly where the first
+          // letter lands, and gone the moment there is ink. The lone-space
+          // placeholder is load bearing, it keeps the native caret
+          // transparent while the ghost is showing.
+          //
+          // A ROW CAN BE TAKEN BACK OFF (same report: "if i add a weekly
+          // thing i should also be able to remove it... if a user accidently
+          // adds one then its hard to understand what to do"). "add another"
+          // had no answer, so an accidental row was permanent and an empty
+          // one rode into the plan's transcript as a blank. The mark is
+          // withheld only where there is nothing to undo: one row, still
+          // empty, is the page's invitation and not something she added.
           const row = (r, i) => `<div class="ci-rt-row" data-i="${i}">
-              <span class="pm-line ci-raw-line"><input class="pm-write ci-raw-write ci-rt-what"
-                data-i="${i}" value="${escHtml(r.what || "")}" placeholder="the gym, a class, a walk…"
-                aria-label="something you already do"></span>
+              <div class="ci-rt-head">
+              <span class="pm-line ci-raw-line${String(r.what || "").trim() ? " has-ink" : ""}"><input
+                class="pm-write ci-raw-write ci-rt-what"
+                data-i="${i}" value="${escHtml(r.what || "")}" placeholder=" "
+                aria-label="something you already do"><span class="pm-ghost" aria-hidden="true"><i
+                class="pm-caret"></i>write one here</span></span>
+              ${ciRoutines.length > 1 || String(r.what || "").trim()
+                ? `<button type="button" class="ci-rt-x" data-i="${i}" title="take this one off"
+                    aria-label="${escHtml(String(r.what || "").trim() ? "remove " + String(r.what).trim() : "remove this line")}"><svg
+                    viewBox="0 0 44 44" aria-hidden="true">${DRAWN_X[1]}</svg></button>` : ``}
+              </div>
               <div class="ci-review-actions ci-rt-count" data-i="${i}">
                 ${[1,2,3,4,5,6,7].map(n => `<button type="button" class="ci-chip ci-rt-n${
                   Number(r.timesPerWeek) === n ? " on" : ""}" data-n="${n}">x${n}</button>`).join("")}
@@ -38059,8 +38162,38 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                     placeholder="${escHtml(FLOOR_Q.ph || "")}"
                     aria-label="${escHtml(FLOOR_Q.q)}"></textarea>
                 </div>
-              </div></div></div>`;
+              </div></div></div>`
+            + navRow("Dig in →");
           const rowsHost = b.querySelector("#ciRtRows");
+          // THE SHEET IS RULED AND THE WRITING SITS ON THE RULES (2026-09-12).
+          // Item 21 gave the capacity page's note this rule and it was never
+          // carried here: only the FIRST row landed on a line. Every row after
+          // it, the add link, the floor's question and the floor's answer were
+          // written across the ruling with a line struck through the middle of
+          // each, which is most of what "thats so hard to see" was. The prompt
+          // this round adds would have been struck through with them.
+          //
+          // Measured, never computed: the chips wrap differently at every
+          // width, so no arithmetic knows where a row ends. In document order,
+          // because each correction moves everything below it and a later one
+          // has to be measured after the earlier ones have landed.
+          const snapToRule = (el, sheetEl, lead, ruleTop) => {
+            if (!el || !el.isConnected) return;
+            el.style.marginTop = "0px";
+            const rel = el.getBoundingClientRect().top - sheetEl.getBoundingClientRect().top - ruleTop;
+            const rem = ((rel % lead) + lead) % lead;
+            if (rem > 0.5 && rem < lead - 0.5) el.style.marginTop = (lead - rem) + "px";
+          };
+          const alignSheet = () => {
+            const sheetEl = b.querySelector(".ci-raw-sheet");
+            if (!sheetEl || !sheetEl.isConnected) return;
+            const cs = getComputedStyle(sheetEl);
+            const lead = parseFloat(cs.lineHeight) || 28.5;
+            const ruleTop = parseFloat(cs.paddingTop) || 0;
+            Array.from(rowsHost.querySelectorAll(".ci-rt-row"))
+              .concat([b.querySelector("#ciRtAdd"), b.querySelector(".ci-rt-floor"), b.querySelector("#ciFloor")])
+              .forEach(el => snapToRule(el, sheetEl, lead, ruleTop));
+          };
           const commit = () => {
             // A row with no words is not an answer, and an empty last row is
             // just the invitation to add one, so neither is stored. The array
@@ -38070,12 +38203,29 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           const repaint = () => {
             rowsHost.innerHTML = ciRoutines.map(row).join("");
             wire();
+            alignSheet();
           };
           function wire() {
             rowsHost.querySelectorAll(".ci-rt-what").forEach(inp => {
               inp.addEventListener("input", () => {
                 const r = ciRoutines[Number(inp.dataset.i)];
                 if (r) { r.what = inp.value; commit(); }
+                // The ghost goes on the first keystroke and comes back if she
+                // clears the line. Typing never repaints the rows, so the
+                // class cannot be left to the template alone.
+                const ln = inp.closest(".pm-line");
+                if (ln) ln.classList.toggle("has-ink", !!inp.value.trim());
+              });
+            });
+            rowsHost.querySelectorAll(".ci-rt-x").forEach(x => {
+              x.addEventListener("click", () => {
+                const i = Number(x.dataset.i);
+                if (!(i >= 0 && i < ciRoutines.length)) return;
+                ciRoutines.splice(i, 1);
+                // The page always offers one line to write on: taking the last
+                // row off leaves the invitation, never an empty sheet.
+                if (!ciRoutines.length) ciRoutines.push(blank());
+                commit(); repaint();
               });
             });
             rowsHost.querySelectorAll(".ci-rt-count .ci-rt-n").forEach(chip => {
@@ -38114,6 +38264,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           floorEl.addEventListener("paste", () => setTimeout(grow, 0));
           attachDictation(b.querySelector('.ci-talk[data-talk-for="floor"]'), floorEl);
           grow();
+          alignSheet();
+          window.addEventListener("resize", alignSheet);
         }},
 
       // Stage call 2 of 3 — the dig: questions chosen from the three picks and
