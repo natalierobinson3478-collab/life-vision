@@ -5170,6 +5170,20 @@
      points at the board underneath and the board may need to move. */
   html:has(.book-page.open, .overlay.open, .cov-overlay) {
     overflow: hidden; scrollbar-gutter: stable; }
+  /* ---- AND THE STRIP THAT GUTTER LEAVES IS PAINTED (2026-09-11) ----
+     The rule above reserves 15px at the window's edge so the page does not
+     jump sideways when the document's own scrollbar is locked away. The
+     reserved strip is OUTSIDE every fixed layer — `scrollbar-gutter: stable`
+     on the root narrows the initial containing block, so a `position: fixed;
+     inset: 0` book page is 15px short of the window and the canvas shows
+     through beside it.
+     What shows through is the board's own cream, which is invisible against
+     twelve books made of paper and against This-week's sand, and is a sand
+     coloured stripe down the side of an ocean. So while THIS page is open the
+     canvas takes the sea. The gutter stays: without it the board jumps
+     sideways every time a book opens or closes, which is what it was added
+     to stop. */
+  html:has(#atlasOverlay.open) { background-color: var(--sea); }
   #thisWeekOverlay { z-index: 158; }
   /* THE GARDEN STARTS AT THE TOP (2026-09-08). A book page shorter than the
      window is centred on it by the rule under `.book-page > div`, which is
@@ -5416,7 +5430,79 @@
     font-family: inherit; font-size: inherit; font-weight: 600; color: var(--ink);
     text-decoration: underline; text-underline-offset: 3px; }
   /* ---- wave 3: the atlas — a page, the This-week pattern ---- */
+  /* ---- THE PAGE IS THE WATER (2026-09-11, owner) ----
+     "i dont want the page anymore. i want this to be like the this week book
+     where instead of the sand it's water. The water is the page. like the
+     quarterly roadmap is in the ocean with the little fish. no more page just
+     the water, the compas, the rocks."
+     So the Atlas leaves the sheet behind and joins This-week on its OWN
+     GROUND, and every line below is that page's, lifted rather than invented:
+     the ground is the overlay's own background (not a torn sheet lying on the
+     shared wash), the drawn relief is an absolute layer under the words at
+     the page's full scroll height, the content starts at the top rather than
+     floating to the middle of a short page, and the overscroll is contained.
+     There were two surfaces in this app off the shared wash and there are
+     three now: paper, sand, and water. Test 134's OWN_GROUND names them.
+     THE SEA IS THE COLOUR THE PAGE ALREADY WAS. Not picked: computed. The
+     water used to be rgb(91,134,168) washed over cream at about a third, and
+     that composites to rgb(191,194,177) — the colour this page has been for a
+     day. It is the ground now, so nothing about the page's value changed when
+     the paper went out from under it; what changed is that there is no edge.
+     THE SHALLOWS AND THE DEEP are the two soft breaths This-week's sand has,
+     in water's own direction: light where it is shallow, a colder settle in
+     the far corner. */
   #atlasOverlay { z-index: 157; }
+  #atlasOverlay > #atlasMount { margin-top: 0; }
+  /* THE SEA IS ONE TOKEN, so choosing it is one edit and a candidate can be
+     shown on the real page rather than described. review/atlas-river-v1.html
+     set the four options side by side on the real page for the choice.
+     OPEN WATER, #a8bcc0 (owner's pick, 2026-09-11: "i like the open water sea
+     the best"). Bluer and a step deeper than the computed composite it
+     replaces — the computed one was the colour the page already was, which
+     made it the safe choice rather than the right one, and it read as sage
+     rather than as sea. This is the darkest of the four to read on and it
+     still clears the floor with room: ink on it is 5.8:1 before the washes,
+     and 232 composites the washes over it and checks what is left. */
+  /* ON :root, NOT ON THE OVERLAY, and that is not tidiness. The strip of
+     reserved scrollbar gutter that has to be painted with this colour belongs
+     to the ROOT element, which cannot read a variable declared on a div
+     inside it. One declaration, two users. */
+  :root { --sea: #a8bcc0; }
+  #atlasOverlay { --x-in-top: 8px; --x-in-right: 4px; padding-top: 12px;
+    background-color: var(--sea);
+    background-image:
+      radial-gradient(circle at 22% 8%, rgba(246,248,238,0.55), transparent 60%),
+      radial-gradient(circle at 86% 88%, rgba(58,86,104,0.14), transparent 58%);
+    backdrop-filter: none;
+    /* THE SCROLL STAYS IN THE WATER. This-week's own note: a finger that runs
+       past the end of a nested scroller hands the rest of the gesture to the
+       document behind it, and on iOS the page then answers to nothing until
+       the finger lifts. */
+    overscroll-behavior: contain; }
+  /* THE GROUND IS THE WHOLE OCEAN, NOT THE GLASS. Absolute inside the
+     scrolling overlay and as tall as the page's own content, so every wash,
+     every rock and every fish lives at a PLACE on the page and the screen is
+     a window moving over them. Negative z-index keeps it under the words
+     inside the overlay's own stacking context. */
+  #atWaterGround { position: absolute; top: 0; left: 0; right: 0; z-index: -1;
+    pointer-events: none; overflow: hidden; }
+  #atWaterGround svg { display: block; width: 100%; height: 100%; }
+  /* ---- WATER HAS NO EDGE, SO IT HAS NO TRACK EITHER (2026-09-11) ----
+     Owner, shown the sea: "why is there the scroll and then some sand in the
+     back? i dont want either of those."
+     Both were always there and neither was ever visible. A book page reserves
+     a scrollbar gutter on BOTH edges (see .book-page) so its column does not
+     jump sideways when a thumb appears, and the thumb rides the right one.
+     On cream paper a grey track at the edge of a sheet reads as part of the
+     window. On open water it is a bar laid down the sea.
+     THE TRACK GOES, AND THE GUTTER GOES WITH IT. `scrollbar-width: none`
+     leaves the page scrolling exactly as it did — wheel, trackpad, keys,
+     touch — and takes the thumb off it; with no scrollbar there is no gutter
+     to reserve, so the 30px the two edges were holding comes back to the
+     water. Nothing on this page was ever operated with that thumb: the ✕ is
+     the way out and the page is a picture you scroll through. */
+  #atlasOverlay { scrollbar-width: none; scrollbar-gutter: auto; }
+  #atlasOverlay::-webkit-scrollbar { width: 0; height: 0; display: none; }
   /* The chapters book — same page pattern as the atlas: a table of
      contents of life goals, each opening into its own roadmap chapter. */
   #chaptersOverlay { z-index: 157; }
@@ -6293,6 +6379,41 @@
      rgba(90,110,140,0.14) — a pale cool blue on cream. The ripples are that
      same ruling, loosened; nothing new entered the palette for this page. */
   .at-water { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; z-index: 0; }
+  /* ---- THE SHEET IS THE WATER (2026-09-11) ----
+     The river's own three layers, at the strengths a WHOLE SHEET can take.
+     A wash is strong because it is narrow: 0.30 down a 150px ribbon is a
+     river, and the same 0.30 over 820 by 1700 is a grey field with writing on
+     it. The body goes to a third of that and the depth comes back as several
+     overlapping pools, each its own irregular shape — which is how the pond
+     builds its water and why the pond does not read as a coloured oval.
+     STILL ON MULTIPLY, still in the ruling's own blue, still grain over the
+     top and ink last. Nothing new entered the palette for any of this. */
+  /* ---- THE VALUES CAME DOWN AGAIN WHEN THE PAPER WENT (2026-09-11) ----
+     Over CREAM these were a wash: the paper was the light, the wash was the
+     water, and the page's colour was the two of them together. The ground IS
+     the water now — #atlasOverlay's own background is the composite those
+     layers used to make — so anything drawn on top of it is no longer the
+     colour of the page, it is UNEVENNESS IN the colour of the page, and
+     unevenness at a wash's strength reads as a stain. Measured by looking:
+     the pools at 0.07 over a flat ground were grey patches with visible
+     edges, which is the third time this round that a shape has been too
+     strong for the size it is drawn at.
+     This-week's sand is the model here too. Its ground carries the soft
+     light and shade as two CSS gradients and the SVG carries the MARKS. So:
+     the body barely deepens, the pools are a breath, and the grain is the
+     only one that stayed — it is the tooth of the paper and it is what stops
+     a flat colour being flat. */
+  .at-wash { mix-blend-mode: multiply; stroke: none; pointer-events: none; }
+  .at-wash.body { fill: rgb(var(--riv)); opacity: 0.05; }
+  .at-wash.pool { fill: rgb(var(--riv)); opacity: 0.03; }
+  .at-wash.grain { fill: rgb(var(--riv)); opacity: 0.07; }
+  /* THE TRAIL: the little stones just under the surface between one rock and
+     the next. Paler than a sunk rock and smaller, because it is the way
+     BETWEEN the marks and must never compete with them. It is not a line and
+     must not become one: a line here is a road, which is the picture this
+     page replaced. */
+  .at-trail { fill: rgb(var(--riv)); opacity: 0.3; mix-blend-mode: multiply;
+    stroke: none; pointer-events: none; }
   .at-ripple { fill: none; stroke: rgba(90,110,140,0.52); stroke-width: 1; }
   /* The printed ruling's own colour and its own 28px rhythm — this IS
      that ruling, only wandering. */
@@ -6320,10 +6441,46 @@
     stroke: none; pointer-events: none; }
   .at-riv-pool { fill: rgb(var(--riv)); opacity: 0.18; mix-blend-mode: multiply;
     stroke: none; pointer-events: none; }
+  .at-riv-pool.bay { opacity: 0.1; }
   /* THE PEN, and it is drawn over the paint on purpose. */
+  /* THE BAY IS THE SAME WATER. It takes .at-walk's own value rather than a
+     deeper one on purpose: a wider body painted stronger reads as a second,
+     darker thing the river runs into, and the whole point of the mouth is
+     that nothing arrives there — the river opens. What makes the bay read as
+     deeper is that there is MORE of it, which is how water works on paper. */
+  /* HALF THE RIVER'S STRENGTH, and the deeper pass on top of it brings the
+     middle back to about the river's own value so the mouth does not change
+     colour. At the river's full 0.30 a single pass over this much paper was
+     a grey slab, and at three nested passes it was a contour map. */
+  .at-riv-bay { fill: rgb(var(--riv)); opacity: 0.15; mix-blend-mode: multiply;
+    stroke: none; pointer-events: none; }
+  .at-riv-bay.deep { opacity: 0.085; }
+  /* The bleed and the grain are each a share of the wash they sit under, and
+     that wash is now half what the river's is. */
+  .at-riv-bleed.bay { opacity: 0.06; }
+  .at-riv-bay-grain { fill: rgb(var(--riv)); opacity: 0.1;
+    mix-blend-mode: multiply; stroke: none; pointer-events: none; }
   .at-riv-ink { fill: none; stroke: var(--ink); opacity: 0.5;
     stroke-linecap: round; stroke-linejoin: round; stroke-width: 1; }
   .at-riv-bank { stroke-width: 1.4; }
+  .at-riv-bank.bay { stroke-width: 1; stroke-opacity: 0.62; }
+  /* ---- THE KOI (2026-09-11) ----
+     The lap itself is written by riverKoiLanes into a stylesheet at render
+     time, because the bay's size is measured rather than fixed. These are the
+     two lines that cannot be: the transform box, which has to be the view box
+     for absolute keyframe values to mean anything, and the animation itself.
+     Same pair .fq-koi-lane and .hp-koi carry, for the same reason.
+     THE REDUCED-MOTION RULE IS WRITTEN WITH THE LAP, not here: a resting
+     position is a coordinate in the bay, and this stylesheet does not know
+     where the bay is. */
+  .at-riv-koi { transform-box: view-box; transform-origin: 0 0;
+    animation: var(--lap, atRivSwimA) var(--sw, 34s) linear infinite; }
+  .at-riv-koi.koi-a { --lap: atRivSwimA; --sw: 33s; }
+  .at-riv-koi.koi-b { --lap: atRivSwimB; --sw: 47s; }
+  /* PALER THAN THE POND'S. The pond is a small drawing a person looks AT;
+     this bay sits under the page's closing section and the koi must not
+     become the thing the eye lands on. Two fish, quietly. */
+  .at-riv-school { opacity: 0.74; }
   /* THE ROCK. A warm stone side under an area-coloured top: the side is what
      it is made of, the top is which goal it belongs to. */
   .at-rock-side { fill: rgb(var(--rock)); opacity: 0.5; mix-blend-mode: multiply;
@@ -6392,6 +6549,23 @@
   .at-row.at-dim .at-step, .at-row.at-dim .at-tail,
 
   /* ---------- THE PAGE ---------- */
+  /* ---- THE COMPASS SITS ON THE WATER, IN THE MIDDLE (2026-09-11) ----
+     Owner: "the compass would be sitting on top in the middle upper part of
+     the screen." It used to be slid sideways by buildAtlasWater until its
+     pivot found the river's middle, which was arithmetic in service of a
+     river that ran down one side. There is no side any more: the sheet is
+     water, so the middle of the sheet IS the middle of the water and the
+     rose is simply centred. Nothing measures it.
+     z-index for the same reason .at-head and .at-flow carry one: .at-water is
+     absolutely positioned and anything without a stacking context of its own
+     loses the tie and ends up UNDER the water rather than on it.
+     THE ROSE IS DRAWN AT ITS OWN SIZE and must not be stretched to the
+     column: width: max-content holds it to the svg's own attribute width. */
+  /* RETIRED 2026-09-11: `.at-compass`, the block that held the Atlas's
+     compass rose. It went with the compass itself the day it arrived, on the
+     owner's word that it was not doing anything. Named here rather than
+     deleted in silence so the class does not get reinvented for something
+     else — and note `.at-rose` remains taken by dead `buildRose`. */
   .at-flow { position: relative; z-index: 1; }
   /* ON the water, not under it. .at-water is absolutely positioned, so
      without a stacking context of its own the heading loses the tie and the
@@ -6443,15 +6617,56 @@
      horizon gets a full field of paper before it. Small text that is quieter
      AND further from everything reads as an aside rather than as a smaller
      sentence. */
-  .at-q { margin: 0 0 22px; padding-top: 38px; }
+  /* ---- THE BLOCK STEPS, AND KEEPS ITS WIDTH (2026-09-11) ----
+     margin-left moves the quarter along the route; the width is held at the
+     sheet minus the ROOM TO STEP, so every quarter is the same measure and
+     only its position changes. Sized the other way round — letting the block
+     run to the right edge — a quarter that steps further in is a quarter with
+     a shorter line, and the page re-wraps as it descends. */
+  /* TWO MARGINS, NEVER A PERCENTAGE WIDTH, and the reason is a real bug.
+     `width: calc(100% - var(--step-max))` reads as "the sheet, less the room
+     to step", and on this sheet it is CIRCULAR: the book page is shrink to
+     fit, so the sheet's width comes from its content and a percentage width
+     in the content comes from the sheet. The browser resolves that by
+     treating the percentage as auto while it works out the preferred width,
+     and the whole page collapsed — measured on the first build, .at-inner
+     came back 36px wide and 4373px tall, so the water was drawn 36px across
+     with every sentence wrapped to one word. It recovered on any later
+     render, which is exactly what makes it the kind of bug that ships.
+     The margins say the same thing without asking the parent anything: the
+     two always sum to --step-max, so every block is the same width and only
+     its position moves. */
+  .at-q { margin: 0 0 22px; padding-top: 38px;
+    margin-left: var(--step-x, 0px);
+    margin-right: calc(var(--step-max, 0px) - var(--step-x, 0px)); }
+  .at-horizon { margin-left: var(--step-x, 0px);
+    margin-right: calc(var(--step-max, 0px) - var(--step-x, 0px)); }
+  /* THE ROOM A ROCK NEEDS. There is no gutter any more, so the stone stands
+     in the row's own left inset, at the head of its sentence. The quarter's
+     label takes the same inset so a folded quarter's cairn has somewhere to
+     sit that is not on top of the words. */
+  /* 44, AND THE NUMBER IS THE STONE'S. A rock is drawn 1.6 radii wide and
+     its outline wobbles out to about 1.3 of that, so at r=9.6 it reaches ~20px
+     either side of a centre that sits at half the inset. 38 cleared its
+     bounding box by a pixel and still touched the first letter. */
+  .at-q, .at-horizon { --stone-inset: 44px; }
+  /* 30, NOT 26. A stone is drawn 1.6 radii wide, so at r=7.8 it spans 25px
+     about its own centre at half the inset, and 26 left it touching the
+     first letter of the sentence on the rows that wrapped. Measured, not
+     nudged: the inset has to clear the widest the stone is drawn. */
+  @media (max-width: 640px) { .at-q, .at-horizon { --stone-inset: 36px; } }
   .at-q-label + .at-row, .at-q-fold + .at-row { margin-top: 10px; }
   /* A FOLDED QUARTER IS ITS OWN DOOR. The heading you already read is the
      control — no chip beside it, no second target. The drawn arrow is the
      app's own mark for "this opens"; it points down when the quarter is
      shut and turns when it is open, which is the only animation on the
      page and the one place it says something. */
+  /* THE FOLD BUTTON IS A LABEL TOO, and it has to take the inset the same
+     way — it is the heading of a folded quarter, and a folded quarter's
+     stones are piled exactly where that inset is. Stated on its own because
+     the button resets padding wholesale. */
   .at-q-fold { display: inline-flex; align-items: center; gap: 7px;
-    background: none; border: none; padding: 0 0 2px; cursor: pointer;
+    background: none; border: none; padding: 0 0 2px var(--stone-inset, 0px); cursor: pointer;
     font: inherit; font-size: var(--t-label); font-weight: 400;
     letter-spacing: 0.05em; color: var(--ink); text-align: left; }
   .at-q-fold:focus-visible { outline: none /* A1: the drawn ring */; }
@@ -6494,7 +6709,8 @@
      mark a label, on any surface. Eased as far as the rule allows; if it
      should go entirely, the rule is what has to move first. */
   .at-q-label { font-size: var(--t-label); letter-spacing: 0.05em;
-    color: var(--ink); font-weight: 400; margin-bottom: 2px; }
+    color: var(--ink); font-weight: 400; margin-bottom: 2px;
+    padding-left: var(--stone-inset, 0px); }
   /* The same voice as "you are here" and deliberately quieter: one is where
      you are standing, the other is a note about a quarter you have not
      reached. No underline — the brushed rule is the current quarter's mark
@@ -6523,7 +6739,7 @@
   /* A LINE, NOT A CONTROL. It was a <button> and a door to its goal's road
      until 2026-08-28; nothing on this page is pressable now but the quarter
      label and a caption's "got it". */
-  .at-row { display: block; padding: 5px 0; line-height: 1.85; width: 100%;
+  .at-row { display: block; padding: 5px 0 5px var(--stone-inset, 0px); line-height: 1.85; width: 100%;
     text-align: left; color: var(--ink); }
   /* THE SENTENCE DOES NOT STRETCH. At `flex: 1 1 auto` it grew to the full
      column and threw the tail and the reality check against the far margin,
@@ -6582,6 +6798,22 @@
   .at-dest-wash { fill: rgb(var(--cat, var(--accent))); opacity: 0.17; }
   .at-dest-edge { fill: none; stroke: rgb(var(--cat, var(--accent)));
     stroke-width: 1.6; opacity: 0.9; }
+  /* ---- PAUSED, IN THE DRAWING (2026-09-11) ----
+     The dash moves from the spur onto the stone. A paused goal used to be
+     marked by its CHANNEL, drawn dry: `.at-chan.dry`, 2 on 5. The spurs went
+     when the arrivals came into the bay, and that took the ONLY mark the
+     picture made for a paused goal with it — the word "paused" on the row was
+     all that was left, and on this page the quiet ink is the same ink (see
+     #atlasMount's own --at-quiet), so the name could not carry it either.
+     SAME MEANING, SAME VOCABULARY, ON THE THING IT IS ABOUT. An unbroken line
+     is something that is under way; a broken one is something drawn and not
+     yet running. It is the stone's own edge now, at the dash the dry channel
+     used, so nothing new entered the page's language and the mark sits on the
+     goal rather than on a line pointing at it.
+     REAL AND KEPT, NEVER FAINT: the stone stands at its full size in its own
+     colour, in the water with the others. Paused is not smaller and not
+     further away, it is not-now. */
+  .at-dest.paused .at-dest-edge { stroke-dasharray: 2 5; }
   .at-dest-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .at-dest-when { font-family: var(--voice-body); font-size: var(--t-label);
     letter-spacing: 0.05em; font-weight: 400; color: var(--at-quiet); }
@@ -11183,6 +11415,14 @@
   <div id="atlasOverlay" class="book-page">
     <button class="checkin-close" id="atlasClose" aria-label="close" title="close"></button>
     <div id="atlasMount"></div>
+    <!-- THE OCEAN'S GROUND (2026-09-11, owner: "the water is the page"). The
+         washes, the rocks, the trail between them and the fish, under the
+         whole page, drawn from measured layout on every render. It comes
+         AFTER the mount so pageSheetOf's ":scope > div" fallback still finds
+         the mount and the ✕ seats against the page's content rather than
+         against the ground — This-week's sand is placed here for the same
+         reason and it is the same rule. -->
+    <div id="atWaterGround" aria-hidden="true"></div>
   </div>
 
   <div id="portraitOverlay" class="book-page">
@@ -15246,7 +15486,28 @@
       const rest = active.filter(g => !rows.some(r => r.goalId === g.id));
       return { q, now: q === cu, past: qi < back, future: qi > back,
                allSketch: rows.length > 0 && rows.every(r => r.sketch), rows, rest, restCount: rest.length };
-    });
+    })
+    // ---- A QUIET STRETCH IS QUIET (2026-09-11) ----
+    // A quarter with nothing in it is not an entry. The window above runs
+    // from the earliest quarter that holds work to the furthest one, and
+    // every quarter BETWEEN them came back whether or not anything had been
+    // put in it — so a board with a gap in the middle drew a row that said
+    // a quarter name, an arrow, and nothing else, and the river bent at it
+    // as if there were something there to bend around.
+    //
+    // This is This-week's own rule arriving on this page: a stretch with
+    // nothing asked of you is drawn as a stretch with nothing asked of you,
+    // not as a list of absences. There is no placeholder, no "nothing
+    // planned" row and no folded entry to open onto an empty section — the
+    // quarter simply is not on the page, and the water runs straight and
+    // unlabelled through where it would have been.
+    //
+    // THE CURRENT QUARTER IS THE ONE EXCEPTION, and it is the only one:
+    // where you are standing always renders, even at rest, because "you are
+    // here" is the page's anchor and a resting quarter says so in its own
+    // words (.at-rest). Everything else earns its place by holding
+    // something — an objective, a step, a sketch, anything generated.
+      .filter(sec => sec.rows.length > 0 || sec.now);
   }
 
   // ---- the rose: six petals, one per life area, where a compass rose
@@ -16404,6 +16665,13 @@
   // that. 40 is a session a day for six weeks, or three a week for the whole
   // quarter - the point past which a longer petal stops meaning anything.
   const ROSE_RING = 76, ROSE_MIN = 26, ROSE_MAX = 97, ROSE_ATMAX = 40, ROSE_CORE = 9;
+  // RETIRED 2026-09-11, with the Atlas's compass and on the same day: the
+  // rose's INERT mode. One flag on roseAsCapacity turned it into a drawing —
+  // no hit paths, no pivot door, no counts, no reality-check crossbar, one
+  // length for every live bearing, and a dashed GHOST where This-week draws a
+  // bud. It existed for exactly one caller and that caller is gone, so the
+  // branches come out rather than sitting in a shared function nothing takes.
+  // ROSE_INERT_LEN was ROSE_MAX * 0.78. DECISIONS carries the rest.
   // A minimum visible length means a 30-minute area does not vanish — and
   // means length alone can no longer separate a 1-hr petal from a 2-hr one,
   // so WIDTH carries some of it too: a short petal is also a narrow one.
@@ -16764,12 +17032,60 @@
   // one <svg> laid behind them, built AFTER layout from where those elements
   // actually landed. That is the road's own arrangement; only the picture
   // changed.
+  // ---- THE SHEET IS THE WATER (2026-09-11) ----
+  // Owner, shown the river in its gutter: "i was thinking the whole screen
+  // would be water, with little fishes swimming. Then the compass would be
+  // sitting on top in the middle upper part of the screen. And then the rocks
+  // would somehow paint the picture of the roadmap."
+  //
+  // So the water stops being a THING ON the page and becomes the page. Three
+  // consequences, and each one undoes a rule the river needed:
+  //   · THE GUTTER GOES. It existed to keep the writing out of the water;
+  //     there is nowhere on this sheet that is not water now, so the words sit
+  //     on it the way a name sits on a map. .at-flow no longer carries a left
+  //     margin and the text has the sheet's full measure back.
+  //   · THE BANK GOES. The sheet is torn, and the tear is the shoreline: the
+  //     water runs off all four edges and the paper's own ragged edge is what
+  //     stops it. A drawn bank inside that would be a second edge.
+  //   · THE ROCKS BECOME THE ROADMAP. In a gutter they were a column beside
+  //     the writing, which is a list. Each quarter STEPS across the water now
+  //     and its stones step with it, so the eye reads a route down the page
+  //     rather than a stack of rows. See atlasStepX.
+  //
+  // WHAT IS UNCHANGED, and it is most of the drawing: the paint. Three washes
+  // on multiply, grain over them, ink last. Every number is still the pond's.
+  // What changed is that a wash over a whole sheet cannot be as strong as a
+  // wash down a ribbon — the same pigment over twenty times the paper is not
+  // the same mark — so the strengths come down and the DEPTH comes from
+  // several passes of different shapes rather than from one flat one.
   const WATER_SEED = 7.31;
-  // The walk's gutter. Wide enough on a desk that the cairns are a picture,
-  // narrow enough on a phone that the sentence keeps the width — which is the
-  // whole of the phone ruling (review/atlas-water-v3.html, P3): the drawing
-  // gets thinner, because the sentence is what the page is for.
-  const waterGutter = () => matchMedia("(max-width: 640px)").matches ? 58 : 150;
+  // HOW FAR A QUARTER STEPS ACROSS THE WATER. On a phone it is nearly
+  // nothing: 300px of sheet has no room to wander in, and the sentence is
+  // what the page is for.
+  const atlasStepMax = () => matchMedia("(max-width: 640px)").matches ? 16 : 128;
+  // ---- A GOLDEN WALK, NOT A SINE (2026-09-11) ----
+  // This began as the river's own wander, `sin(i * 1.1 + seed)`, on the
+  // reasoning that the blocks and the stones should agree about where the
+  // path goes. They did agree, and the path went nowhere: a sine at that
+  // frequency has a period of about six quarters, so NEIGHBOURS sit almost on
+  // top of each other. Measured on a two-quarter board the first two steps
+  // came out 119px and 118px — one pixel of difference, which is a column
+  // with extra arithmetic. It was the suite that said so, on a fixture with
+  // exactly two quarters in it.
+  // The golden ratio's fractional walk is the standard answer to "spread N
+  // values over a range with no two adjacent ones close": it never repeats,
+  // it fills the range evenly however many quarters there are, and CONSECUTIVE
+  // values are always at least 0.236 of it apart — 30px here, which is a step
+  // you can see. Still pure, still deterministic, still the same board drawing
+  // the same page every time.
+  const PHI_FRAC = 0.6180339887;
+  const atlasStepX = i => {
+    const u = ((i + 0.5) * PHI_FRAC) % 1;
+    return Math.round(u * atlasStepMax());
+  };
+  // The stone's own inset at the head of a row: the room a rock needs beside
+  // its sentence now that there is no gutter to stand in.
+  const stoneInset = () => matchMedia("(max-width: 640px)").matches ? 36 : 44;
   const pebbleR = () => matchMedia("(max-width: 640px)").matches ? 6.5 : 8;
   // A PEBBLE THAT LOOKS LIKE ONE. twStonePath's wobble is tuned for the week
   // strip, where a stone is 11px and sits in a row of its own; borrowed here
@@ -16940,273 +17256,361 @@
   }
   // A ripple: the sheet's own ruling, loosened. Same pale blue the paper is
   // already ruled in — no new colour enters the app for any of this.
-  function waterRipple(w, y, amp, seed, cls) {
-    let d = `M 0 ${y.toFixed(1)}`;
+  // `x0` is where the ripple starts. It used to always be the sheet's left
+  // edge, which was right while the only ripple ran the full width; the mouth
+  // now runs across the bay alone, so it has to be told where the bay is.
+  function waterRipple(w, y, amp, seed, cls, x0) {
+    const ox = x0 || 0;
+    let d = `M ${ox.toFixed(1)} ${y.toFixed(1)}`;
     for (let x = 0; x <= w; x += 14) {
       const t = x / (w || 1);
-      d += ` L ${x} ${(y + Math.sin(t * 9 + seed) * amp + Math.sin(t * 21 + seed * 2) * amp * 0.4).toFixed(1)}`;
+      d += ` L ${(ox + x).toFixed(1)} ${(y + Math.sin(t * 9 + seed) * amp + Math.sin(t * 21 + seed * 2) * amp * 0.4).toFixed(1)}`;
     }
     return `<path class="at-ripple ${cls || ""}" d="${d}"/>`;
   }
+  // ---- THE KOI'S LAP, GENERATED FROM THE BAY (2026-09-11) ----
+  // The pond's fish and the moon gate's fish both swim laps written by hand,
+  // because both live in a drawing whose size is fixed. The bay's is not: it
+  // is measured off wherever the horizon's rows landed, so its fish cannot
+  // have their lap typed out. Same shape of thing, computed.
+  //
+  // A FISH FACES WHERE IT IS GOING, and that is the only reason the rotation
+  // is here at all: it is the ellipse's own tangent at each stop, not a
+  // number chosen to look right. An ellipse really does turn fastest at the
+  // ends of its short axis, which is why the eight stops are unevenly spaced
+  // in angle and evenly spaced in time.
+  //
+  // THE ANGLE IS UNWRAPPED, never allowed to cross back through zero. The
+  // pond's own comment says what happens otherwise: a rotation that wraps
+  // makes the fish spin the wrong way round, once a lap, for one frame.
+  function riverKoiStops(cx, cy, rx, ry, dir) {
+    const out = [];
+    let prev = null;
+    for (let k = 0; k <= 8; k++) {
+      const a = dir * (k / 8) * Math.PI * 2;
+      const x = cx + Math.cos(a) * rx, y = cy + Math.sin(a) * ry;
+      let h = Math.atan2(dir * ry * Math.cos(a), -dir * rx * Math.sin(a)) * 180 / Math.PI;
+      if (prev !== null) { while (h - prev > 180) h -= 360; while (prev - h > 180) h += 360; }
+      prev = h;
+      out.push({ pct: k / 8 * 100, x, y, h });
+    }
+    return out;
+  }
+  // ONE LAP PER FISH, AND THEY DO NOT SHARE ONE. Each swims its own ellipse,
+  // alternate ways round, at its own period, so the school never locks into a
+  // formation — which is the tell that a drawing is animated rather than
+  // alive. The periods are near-coprime for the same reason the pond's are.
+  function riverKoiLanes(lanes) {
+    const at = s => `translate(${s.x.toFixed(1)}px, ${s.y.toFixed(1)}px) rotate(${s.h.toFixed(1)}deg)`;
+    let out = "", rest = "";
+    lanes.forEach((L, k) => {
+      const st = riverKoiStops(L.cx, L.cy, L.rx, L.ry, L.dir);
+      out += `@keyframes atRivSwim${k} { `
+        + st.map(s => `${s.pct.toFixed(1)}% { transform: ${at(s)}; }`).join(" ") + ` }\n`;
+      out += `.at-riv-koi.koi-${k} { animation-name: atRivSwim${k};`
+        + ` animation-duration: ${29 + k * 9}s; }\n`;
+      // A RESTING POSITION, NOT A DISAPPEARANCE. Reduced motion means the fish
+      // stop swimming; it does not mean the water is empty. Without a
+      // transform here they would all pile on the view box's own origin,
+      // which is the top-left corner of the sheet.
+      rest += `  .at-riv-koi.koi-${k} { transform: ${at(st[(k * 2 + 2) % 8])}; }\n`;
+    });
+    return out + `@media (prefers-reduced-motion: reduce) {\n`
+      + `  .at-riv-koi { animation: none; }\n` + rest + `}`;
+  }
+  // RETIRED 2026-09-11 with the bay: `atlasRiverSeq`, the per-render counter
+  // that made the bay's clip-path id unique. The fish swim in the whole sheet
+  // now and there is nothing to clip them to, so there is no id to keep
+  // unique. The pond's rule stands wherever a function that can run twice
+  // emits an id; this is just no longer one of those.
+
   // Builds the water behind an already-laid-out page. Everything it needs it
-  // MEASURES: each quarter's heading, each destination's row. Nothing here
+  // MEASURES: each quarter's heading, each row, each destination. Nothing here
   // knows how many quarters there are or how tall a sentence wrapped to.
   function buildAtlasWater(mount) {
     const inner = mount.querySelector(".at-inner");
     const flow = mount.querySelector(".at-flow");
-    const old = mount.querySelector(".at-water");
-    if (old) old.remove();
-    if (!inner || !flow) return;
-    const G = waterGutter(), R = pebbleR();
-    flow.style.marginLeft = G + "px";
-    const ir = inner.getBoundingClientRect();
-    // ABSOLUTE POSITIONING IGNORES THE PADDING. The svg sits at the inner's
-    // padding-box origin, but .at-flow's margin starts INSIDE the padding —
-    // so the walk has to add the pad itself or it draws 38px left of the
-    // gutter it is supposed to be the middle of. Read from the element, not
-    // from the token, so a breakpoint change carries.
-    const padX = parseFloat(getComputedStyle(inner).paddingLeft) || 0;
-    const W = Math.round(ir.width), mid = padX + G / 2;
-    // WHERE THE WALK BENDS: the middle of each quarter's own heading. A
-    // resting quarter is a fraction of a loaded one, so this can only come
-    // from the rendered element — the same reasoning the road carried.
+    const ov = document.getElementById("atlasOverlay");
+    const ground = document.getElementById("atWaterGround");
+    if (!inner || !flow || !ov || !ground) return;
+    const R = pebbleR(), INSET = stoneInset();
+    // ---- THE GROUND IS THE PAGE, AND IT IS THE COORDINATE BASE ----
+    // Everything used to be measured against the sheet, because the sheet was
+    // the drawing's frame. There is no sheet: the water is an absolute layer
+    // the height of the whole scrolling page, so a rock lives at a PLACE on
+    // the page and the screen is a window moving over it. This-week's sand
+    // works exactly this way and for exactly this reason.
+    // twPageLength IS THE HEIGHT, not scrollHeight. The ground is absolutely
+    // positioned inside the thing it is measuring, so asking the overlay how
+    // tall its scroll is includes the ground itself and the two grow each
+    // other by a few pixels on every render. twPageLength walks the overlay's
+    // IN-FLOW children only, which is the page's real length and cannot feed
+    // back. This-week hit this first and the function is its answer.
+    const H = Math.max(200, Math.round(twPageLength(ov)));
+    ground.style.height = H + "px";
+    const gr = ground.getBoundingClientRect();
+    const W = Math.round(gr.width) || Math.round(ov.clientWidth);
+    const ir = gr;
+    // ---- WHERE THE QUARTERS LANDED ----
+    // The route bends at the middle of each quarter's own heading, measured
+    // from the rendered element. A resting quarter is a fraction of a loaded
+    // one, so this can only come from the page as laid out; the road carried
+    // the same reasoning and it did not stop being true when the road did.
     const qEls = [...inner.querySelectorAll(".at-q")];
     const stops = qEls.map((el, i) => {
       const h = el.querySelector(".at-q-label").getBoundingClientRect();
+      const b = el.getBoundingClientRect();
       return { y: h.top - ir.top + h.height / 2, el, i,
+               x: b.left - ir.left + INSET / 2,
                past: el.classList.contains("past"), now: el.classList.contains("now") };
     });
     if (!stops.length) return;
     const dEls = [...inner.querySelectorAll(".at-dest")];
-    const dests = dEls.map(el => {
+    // SIZE IS DISTANCE. The rows arrive sorted nearest-first, so the index IS
+    // the distance order. The furthest stone is a little over half the
+    // nearest: far enough to read at a glance, near enough that the last one
+    // is still a stone rather than a speck.
+    const destBaseR = matchMedia("(max-width: 640px)").matches ? 9 : 12;
+    const destR = i => destBaseR * (1 - 0.44 * (dEls.length > 1 ? i / (dEls.length - 1) : 0));
+    const dests = dEls.map((el, i) => {
       const r = el.getBoundingClientRect();
       const m = el.querySelector(".at-dest-mark").getBoundingClientRect();
+      const rr = destR(i);
+      // THE MARK'S LEFT EDGE, NEVER ITS CENTRE. The span is empty on a first
+      // render and carries the PREVIOUS render's drawing on every one after,
+      // so a centre read off it is a centre that moves when nothing moved.
       return { y: r.top - ir.top + Math.min(r.height / 2, 22),
-               x: m.left - ir.left + m.width / 2, el,
+               x: m.left - ir.left + rr * 2, rr, el,
                cat: el.dataset.cat, gid: el.dataset.goal,
                paused: el.dataset.paused === "1" };
     });
     const hzEl = inner.querySelector(".at-horizon");
-    const mouthY = hzEl ? hzEl.getBoundingClientRect().top - ir.top - 14 : stops[stops.length - 1].y + 90;
-    const H = Math.max(inner.offsetHeight,
-      (dests.length ? dests[dests.length - 1].y + 60 : mouthY + 60));
+    const hzY = hzEl ? hzEl.getBoundingClientRect().top - ir.top - 14 : stops[stops.length - 1].y + 90;
     let out = "";
-    // ---- THE RIVER, DRAWN THE WAY THE POND IS DRAWN (2026-08-28) ----
-    // It was a hairline and a pale bed — a LINE. The app already owns a body
-    // of water, and it is built the other way round: wash first at 0.30 /
-    // 0.22 / 0.18 ALL ON MULTIPLY, grain over that at 0.20, surface strokes
-    // lying flat on it, and THE PEN LINE LAST at half strength so it shows
-    // through the colour the way it does on paper. The pond's own code says
-    // why in as many words — without the ink it "is a coloured shape rather
-    // than a drawing", and the ink "is the layer that joins them".
-    // Every value here is .fq-pond-*'s, lifted rather than matched by eye.
-    //
-    // IT RECEDES. Wide where you are standing and narrowing as it runs down
-    // the page, because down the page is further into the future and the
-    // horizon lives at the bottom. Drawn the other way — which is how it was
-    // first built — the water said "this is nearest you" about the five-year
-    // goals, and nobody could see it until the horizon came back onto the
-    // page beneath them.
-    //
-    // AND IT RUNS OFF BOTH EDGES, so it reads as painted onto the sheet
-    // rather than drawn inside it: off the top as the part already walked,
-    // off the bottom as the distance not yet reached.
-    //
-    // EVERY WIDTH IS A SHARE OF THE GUTTER, so the river cannot reach the
-    // writing at any breakpoint by construction — the widest layer, at its
-    // widest point, with the wander at full throw, still lands inside G.
-    // THE TAPER IS THE WHOLE READING, so it is worth being generous with:
-    // near is nearly half the gutter, far is a fourteenth of it. The widest
-    // layer at its widest point plus the wander at full throw still lands
-    // inside G — 0.46/2*1.6 + 0.10 = 0.468 of the gutter — so the river can
-    // never reach the writing at any breakpoint, by arithmetic rather than
-    // by luck.
-    const RIV_NEAR = G * 0.46, RIV_FAR = G * 0.07, RIV_BLEED = 1.6;
-    const wanderAmp = Math.min(26, G * 0.10);
-    const wander = i => Math.sin(i * 1.1 + WATER_SEED) * wanderAmp;
-    const topY = -40, endY = H + 40;
-    const spineY = t => topY + (endY - topY) * t;
-    // The spine follows the QUARTERS where there are quarters, and its own
-    // sine above and below them, so the water is continuous off both edges.
-    const spineX = (t) => {
-      const y = spineY(t);
-      if (stops.length > 1) {
-        for (let i = 0; i < stops.length - 1; i++) {
-          const a2 = stops[i], b2 = stops[i + 1];
-          if (y >= a2.y && y <= b2.y) {
-            const u = (y - a2.y) / ((b2.y - a2.y) || 1);
-            const e = u * u * (3 - 2 * u);          // smoothstep, no kinks
-            return mid + wander(a2.i) * (1 - e) + wander(b2.i) * e;
-          }
-        }
-      }
-      const first = stops[0], last = stops[stops.length - 1];
-      if (y < first.y) return mid + wander(first.i - 1) * 0.6
-        + (wander(first.i) - wander(first.i - 1) * 0.6) * Math.max(0, (y - topY) / ((first.y - topY) || 1));
-      const run = Math.max(1, endY - last.y);
-      return mid + wander(last.i) * (1 - (y - last.y) / run) * 0.8;
-    };
-    // Narrow as it goes: t is position down the drawn range, not down a list.
-    const widthAt = t => RIV_NEAR + (RIV_FAR - RIV_NEAR) * Math.pow(Math.max(0, Math.min(1, t)), 1.2);
-    const ribbonEdges = (mul) => {
-      const N = 96, L = [], Rr = [];
-      for (let i = 0; i <= N; i++) {
-        const t = i / N, y = spineY(t), x = spineX(t);
-        const y2 = spineY(Math.min(1, t + 0.006)), x2 = spineX(Math.min(1, t + 0.006));
-        const dx = x2 - x, dy = y2 - y, len = Math.hypot(dx, dy) || 1;
-        const nx = -dy / len, ny = dx / len;
-        // THE BANK WANDERS IN AND OUT. A constant offset is a road; a wash
-        // has an edge that pulled where the water found the paper.
-        const w = widthAt(t) * mul / 2
-          * (1 + 0.09 * Math.sin(t * 11 + WATER_SEED * 3) + 0.05 * Math.sin(t * 23));
-        L.push([x + nx * w, y + ny * w]); Rr.push([x - nx * w, y - ny * w]);
-      }
-      return { L, R: Rr };
-    };
-    const asPts = arr => arr.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" L ");
-    const ribbon = mul => { const { L, R: Rr } = ribbonEdges(mul);
-      return "M " + asPts(L) + " L " + asPts(Rr.slice().reverse()) + " Z"; };
-    // 1 · the bleed, 2 · the body, 3 · the body again as grain
-    out += `<path class="at-riv-bleed" d="${ribbon(RIV_BLEED)}"/>`;
-    out += `<path class="at-walk" d="${ribbon(1)}"/>`;
-    out += `<path class="at-riv-grain" d="${ribbon(1)}"/>`;
-    // 4 · pigment settling, at the inside of each bend
-    for (let k = 1; k <= 7; k++) {
-      const t = k / 8, x = spineX(t), y = spineY(t), w = widthAt(t);
-      out += `<ellipse class="at-riv-pool" cx="${(x + Math.sin(k * 2.1) * w * 0.16).toFixed(1)}"`
-        + ` cy="${y.toFixed(1)}" rx="${(w * 0.30).toFixed(1)}" ry="${(w * 0.55).toFixed(1)}"/>`;
+
+    // ================= 1 · THE WATER, EDGE TO EDGE =====================
+    // It runs past all four edges on purpose. The torn mask cuts it, so the
+    // paper's own ragged edge is the shoreline and there is no drawn bank to
+    // disagree with it. Bleeding past the box is also what stops the wash
+    // reading as a rectangle: you never see where it stops.
+    const OVER = 30;                      // how far past the sheet it runs
+    out += `<rect class="at-wash body" x="${-OVER}" y="${-OVER}"`
+      + ` width="${W + OVER * 2}" height="${H + OVER * 2}"/>`;
+    // ---- WHERE IT IS DEEPER ----
+    // A single flat wash over a sheet this size is a grey field, which is the
+    // thing the bay was tried as and lost as. Depth comes from SEVERAL passes
+    // of DIFFERENT shapes, the way the pond's does: irregular blobs, big,
+    // overlapping, each its own outline rather than a copy of the last one.
+    // Seeded off the sheet's own height so a long board gets more of them and
+    // a short one does not get the same three stretched.
+    // THROUGH THE FILTER, AND SMALLER. Unfiltered, a handful of big blobs at
+    // this strength read as CLOUDS on the page: you can see each one's edge,
+    // so they are objects rather than unevenness. #washTight is the popup's
+    // filter, the one for boxes this size (#wash displaces by 15 units and
+    // smears at anything over a few dozen across), and it breaks every edge
+    // into something wet. More of them and smaller, so no single one is
+    // large enough to be read as a shape.
+    const pools = Math.max(3, Math.min(9, Math.round(H / 320)));
+    out += `<g class="at-wash-pools" filter="url(#washTight)">`;
+    for (let k = 0; k < pools; k++) {
+      const t = (k + 0.5) / pools;
+      const cx = W * (0.5 + 0.4 * Math.sin(k * 2.3 + WATER_SEED));
+      const cy = H * t + Math.sin(k * 1.7) * 30;
+      const rx = W * (0.3 + 0.2 * Math.abs(Math.sin(k * 1.3 + 2)));
+      const ry = H / pools * (0.8 + 0.5 * Math.abs(Math.sin(k * 2.9)));
+      out += `<path class="at-wash pool" d="${specBlob(Array.from({ length: 13 }, (_, i) => {
+        const a = (i / 13) * 6.283, w = 0.7 + 0.4 * Math.abs(Math.sin(i * 1.9 + k));
+        return [cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w];
+      }), k * 7 + 3, 6)}"/>`;
     }
-    // 5 · the surface strokes, lying flat — most of what says "a surface,
-    //     not a shape". The pond draws four; this draws six down a page.
-    for (let k = 1; k <= 6; k++) {
-      const t = k / 7, x = spineX(t), y = spineY(t) + Math.sin(k * 3.1) * 6;
-      const w = widthAt(t) * 0.44, x0 = x - w / 2;
-      out += `<path class="at-riv-ink" stroke-width="${(0.85 - k * 0.06).toFixed(2)}"`
-        + ` stroke-opacity="${(0.55 - k * 0.05).toFixed(2)}"`
-        + ` d="M ${x0.toFixed(1)} ${y.toFixed(1)} C ${(x0 + w * 0.3).toFixed(1)} ${(y - 1.8).toFixed(1)},`
-        + ` ${(x0 + w * 0.7).toFixed(1)} ${(y + 1.8).toFixed(1)}, ${(x0 + w).toFixed(1)} ${y.toFixed(1)}"/>`;
+    out += `</g>`;
+    // ---- THE TOOTH OF THE PAPER ----
+    out += `<rect class="at-wash grain" x="${-OVER}" y="${-OVER}"`
+      + ` width="${W + OVER * 2}" height="${H + OVER * 2}" filter="url(#granulate)"/>`;
+    // ---- THE SURFACE ----
+    // SHORT MARKS, SCATTERED. The first go at this drew a wandering line all
+    // the way across the sheet every 42px, which is a RULED PAGE: evenly
+    // spaced, full width, parallel. It is the exact thing the printed ruling
+    // was removed from this page for being. The pond draws four short strokes
+    // on a pond, and that is the right idea at any size — a surface is read
+    // from a few marks lying flat on it, never from a grid.
+    // So: a handful per screenful, each a fraction of the width, at its own
+    // depth and its own length, and none of them starting where the last one
+    // did. Deterministic, like everything else here.
+    const marks = Math.max(6, Math.round(H / 95));
+    for (let k = 0; k < marks; k++) {
+      const y = (H + 80) * ((k + 0.5) / marks) - 40 + Math.sin(k * 3.7) * 16;
+      const len = W * (0.08 + 0.14 * Math.abs(Math.sin(k * 1.7 + 1)));
+      const x0 = (W - len) * (0.5 + 0.46 * Math.sin(k * 2.3 + WATER_SEED));
+      const dip = 1.4 + Math.abs(Math.sin(k * 1.1)) * 1.6;
+      out += `<path class="at-ripple${k % 3 ? " faint" : ""}"`
+        + ` d="M ${x0.toFixed(1)} ${y.toFixed(1)}`
+        + ` C ${(x0 + len * 0.3).toFixed(1)} ${(y - dip).toFixed(1)},`
+        + ` ${(x0 + len * 0.7).toFixed(1)} ${(y + dip).toFixed(1)},`
+        + ` ${(x0 + len).toFixed(1)} ${y.toFixed(1)}"/>`;
     }
-    // 6 · THE BANK, LAST AND IN INK. The dash is the pond's own lift — long
-    //     runs, short gaps, never regular, so it reads as a hand that ran out
-    //     of ink and carried on rather than as a shape's border.
-    const banks = ribbonEdges(1);
-    out += `<path class="at-riv-ink at-riv-bank" d="M ${asPts(banks.L)}" stroke-dasharray="46 9 78 6 34 11"/>`;
-    out += `<path class="at-riv-ink at-riv-bank" d="M ${asPts(banks.R)}" stroke-dasharray="62 7 40 10 90 6"/>`;
-    // THE PILE, AND WHERE IT OPENS.
-    // Every quarter is a little pile of rocks on the water. The quarter you
-    // are STANDING IN is the exception: there the pile comes apart and each
-    // stone steps out beside its own line, larger, in its goal's colour.
-    // That single difference does three jobs at once — it marks the current
-    // quarter without a highlight, it colour-codes the lines you are actually
-    // working on, and it says WHICH stone is which sentence exactly where
-    // that matters. See cairnSpots for the ruling this amends.
-    //
-    // NO FILL BEHIND THE WRITING, anywhere. Colour-coding the current
-    // quarter's rows was asked for as a highlight; a fill behind text is the
-    // pill treatment in another costume, which is why "you are here" lost
-    // its swash and why 161 asserts it stays gone. The opened pile puts the
-    // colour BESIDE the line instead, which says the same thing in ink the
-    // page already allows.
-    // OPEN IS "ARE ITS ROWS SHOWING", not "is it now". A folded quarter has no
-    // rows in the DOM at all, so its pile is built from the categories the
-    // section carries on data-cats — the only place the water is told
-    // anything rather than measuring it, and it is told the minimum.
+
+    // ================= 2 · THE ROUTE THE ROCKS PAINT ====================
+    // Every stone on this page stands on one path, and the path is what the
+    // page is about: it starts where you are, steps across the water quarter
+    // by quarter, and runs out past the last planned one into the distance.
+    // It is drawn UNDER the stones as a line of drowned pebbles rather than as
+    // a stroke — a stroke is a road, and this page spent August learning that
+    // the difference matters.
+    const route = [];
     stops.forEach(st => {
       const rows = [...st.el.querySelectorAll(".at-row")];
-      const cxq = mid + wander(st.i);
-      const mark = (row, k, px, py, rr) => {
-        const sk = row.dataset.sketch === "1";
-        return waterStone(px, py, rr, k * 1.7 + st.i,
-          st.past ? "done" : sk ? "hollow" : "wash",
-          (CATS[row.dataset.cat] || CATS.Other).cls,
-          ` data-goal="${escHtml(row.dataset.goal)}" data-oid="${escHtml(row.dataset.oid)}"`
-          + ` aria-hidden="true"`);
-      };
       if (rows.length) {
-        // OPENED. One stone per line, beside its own line, a shade larger so
-        // the colour reads as identification rather than decoration.
         rows.forEach((row, k) => {
           const rb = row.getBoundingClientRect();
-          const py = rb.top - ir.top + rb.height / 2;
-          const px = cxq + Math.sin(k * 1.7 + st.i) * Math.min(7, G * 0.06);
-          out += mark(row, k, px, py, R * 1.2);
+          route.push({ x: rb.left - ir.left + INSET / 2, y: rb.top - ir.top + rb.height / 2,
+                       r: R * 1.2, row, st, k });
         });
       } else {
-        // PILED — a folded quarter. Tight if it is behind you, loose and
-        // hollow if it is ahead. Inert: the LABEL is the control that opens
-        // the quarter, so the stones say how much is in it and nothing else.
-        const cats = (st.el.dataset.cats || "").split(",").filter(Boolean)
-          .map(x => x.split(":"));
-        const spots = cairnSpots(cats.length, cxq, st.y, R, !st.past);
+        // A FOLDED QUARTER IS ONE CAIRN ON THE PATH. Its stones are all there
+        // — the page gets shorter, the plan does not get smaller — but they
+        // are piled rather than laid out, because there are no lines beside
+        // them to stand next to.
+        const cats = (st.el.dataset.cats || "").split(",").filter(Boolean).map(x => x.split(":"));
+        const spots = cairnSpots(cats.length, st.x, st.y, R, !st.past);
+        // ---- A PILE IS WIDER THAN A STONE, SO IT IS FITTED, NOT CENTRED ----
+        // A single rock sits at the middle of the row's inset and clears the
+        // first letter by arithmetic. A CAIRN does not: three across at a
+        // quarter with five areas in it spreads well past that middle, and on
+        // a phone it ran into the quarter's own name. So the pile is walked
+        // back until its rightmost stone clears the inset, and forward if
+        // that would take it off the page. Measured from the spots the pile
+        // actually produced rather than from a guess at how wide it is,
+        // because cairnSpots grows a row as the quarter fills.
+        const half = R * 0.92 * 1.6 * 1.35;          // waterSunk's rx, wobble and all
+        const bl = st.el.getBoundingClientRect().left - ir.left;
+        const over = Math.max(...spots.map(s => s.x)) + half - (bl + INSET - 2);
+        const under = (bl + 2) - (Math.min(...spots.map(s => s.x)) - half);
+        const shift = over > 0 ? -over : under > 0 ? under : 0;
         cats.forEach(([cat, sk], k) => {
-          const sp = spots[k] || { x: cxq, y: st.y };
-          out += waterSunk(sp.x, sp.y, R * 0.92, k * 1.7 + st.i,
-            (CATS[cat] || CATS.Other).cls, ` aria-hidden="true"`);
+          const sp = spots[k] || { x: st.x, y: st.y };
+          route.push({ x: sp.x + shift, y: sp.y, r: R * 0.92, sunk: true, cat, sk, st, k });
         });
       }
-      // RETIRED 2026-08-28: the strip of water beside each line, which was
-      // the row's real hit target and the largest honest one the layout could
-      // give. Nothing on this page is a door now, so there is nothing for it
-      // to be the target OF.
     });
-    // THE HORIZON. One channel per goal, from the mouth out to its own
-    // arrival — the distance is that goal's horizonYearsOf and nothing else.
-    // A PAUSED goal's channel is dry: dashed, unstarted, and its destination
-    // still stands. Paused is real, kept, and deliberately not-now.
-    out += waterRipple(W, mouthY, 2.6, 5.5, "shore");
-    // ---- THE RIVER RUNS ON, AND YOU STEP OFF IT ----
-    // Six channels fanning out of one mouth is a spray, not water: they left
-    // together, stayed nearly straight, crossed each other and arrived at
-    // their stones from odd angles (owner, 2026-08-27: "the lines to the
-    // horizon look weird"). The picture that was chosen in review/
-    // atlas-water-v2.html was never really a fan — it was ONE river carrying
-    // on into the distance with the arrivals set off it, each at its own
-    // depth. That is what this draws.
-    // The river past the mouth is the horizon stretch: the same water, drawn
-    // as the part not yet travelled, thinning as it goes.
-    if (dests.length) {
-      const lastY = dests[dests.length - 1].y + 34;
-      const river = [{ x: mid, y: mouthY }];
-      for (let t = 0.2; t <= 1.001; t += 0.2)
-        river.push({ x: mid + Math.sin(t * 3.1 + WATER_SEED) * Math.min(16, G * 0.16),
-                     y: mouthY + (lastY - mouthY) * t });
-      // RETIRED 2026-08-28: this drew the horizon stretch as a SECOND river
-      // laid over the first. The ribbon now runs off the bottom edge of the
-      // sheet on its own, so the water past the mouth is already there — and
-      // the leftover path, whose .at-walk-bed rule went with the hairline it
-      // used to stroke, was filling BLACK down the whole horizon. The spine
-      // is still computed, because the spurs below leave from it.
-      void river;
-      // AND THE SPUR: a short, flat curve from the river to the stone, level
-      // with it. It leaves the river sideways and arrives horizontally, so
-      // every arrival is approached the same way and no two spurs can cross —
-      // they are at different heights by construction, because the
-      // destinations are sorted by distance.
-      dests.forEach(dt => {
-        const rx = mid + Math.sin(((dt.y - mouthY) / Math.max(1, lastY - mouthY)) * 3.1 + WATER_SEED)
-                          * Math.min(16, G * 0.16);
-        const cd = `M ${rx.toFixed(1)} ${dt.y.toFixed(1)}`
-          + ` C ${(rx + (dt.x - rx) * 0.42).toFixed(1)} ${dt.y.toFixed(1)},`
-          + ` ${(dt.x - (dt.x - rx) * 0.3).toFixed(1)} ${dt.y.toFixed(1)},`
-          + ` ${dt.x.toFixed(1)} ${dt.y.toFixed(1)}`;
-        out += `<path class="at-chan ${(CATS[dt.cat] || CATS.Other).cls}${dt.paused ? " dry" : ""}"`
-          + ` data-goal="${escHtml(dt.gid)}" d="${cd}"/>`;
-      });
+    dests.forEach((d, i) => route.push({ x: d.x, y: d.y, r: d.rr, dest: d, k: i }));
+    // ---- THE STEPPING TRAIL ----
+    // Between one stone and the next, three or four small stones just under
+    // the surface. They are the only thing joining the rocks, and they are
+    // deliberately not a line: a path of stepping stones is read as a route
+    // without ever being drawn as one.
+    const byY = route.slice().sort((a, b) => a.y - b.y);
+    for (let i = 0; i < byY.length - 1; i++) {
+      const a = byY[i], b = byY[i + 1];
+      const gap = Math.hypot(b.x - a.x, b.y - a.y);
+      const n = Math.max(1, Math.min(5, Math.round(gap / 34)));
+      for (let s = 1; s < n; s++) {
+        const u = s / n;
+        // A trail bows toward the side the path is heading, so two stones on
+        // the same line are joined by a curve rather than by a ruler.
+        const bow = Math.sin(u * Math.PI) * (b.x - a.x) * 0.12;
+        const x = a.x + (b.x - a.x) * u + bow;
+        const y = a.y + (b.y - a.y) * u;
+        out += `<path class="at-trail" d="${atlasPebbleXY(x, y, R * 0.42, R * 0.26,
+          i * 2.1 + s * 1.3)}"/>`;
+      }
     }
+
+    // ================= 3 · THE STONES =================================
+    route.forEach(p => {
+      if (p.dest) return;                                   // drawn into its own row
+      if (p.sunk) {
+        out += waterSunk(p.x, p.y, p.r, p.k * 1.7 + p.st.i,
+          (CATS[p.cat] || CATS.Other).cls, ` aria-hidden="true"`);
+      } else {
+        const sk = p.row.dataset.sketch === "1";
+        out += waterStone(p.x, p.y, p.r, p.k * 1.7 + p.st.i,
+          p.st.past ? "done" : sk ? "hollow" : "wash",
+          (CATS[p.row.dataset.cat] || CATS.Other).cls,
+          ` data-goal="${escHtml(p.row.dataset.goal)}"`
+          + ` data-oid="${escHtml(p.row.dataset.oid)}" aria-hidden="true"`);
+      }
+    });
+
+    // ================= 4 · WHERE THE PLANNING STOPS ====================
+    // The only mark that says "past here the page is about distance rather
+    // than about quarters". BROKEN INTO THREE RUNS, and not because three
+    // looks better: run edge to edge it is a horizontal rule across a sheet,
+    // which is the card treatment this page has refused since August, and it
+    // does not stop being one for being drawn wobbly. Three runs with real
+    // gaps read as the surface changing rather than as a line ruled under
+    // the quarters.
+    [[0.06, 0.3], [0.4, 0.27], [0.73, 0.23]].forEach(([from, span], k) => {
+      out += waterRipple(W * span, hzY + Math.sin(k * 2.1) * 3, 2.6,
+        5.5 + k * 1.7, "shore", W * from);
+    });
+
+    // ================= 5 · THE FISH ===================================
+    // The app's own koi, unchanged: fqKoi, the drawing the pond and the
+    // board's header already share. They MEASURE NOTHING and nothing about
+    // them is kept — no count, no growth, nothing written to the board and
+    // nothing read back. It is the companion's law (it roams, it never
+    // measures) applied to a second creature: the moment a fish stands for a
+    // number this page has grown a scoreboard.
+    // THREE, SPREAD DOWN THE SHEET, because the water is now the whole page
+    // and two in one corner of it read as an ornament rather than as life.
+    // Each keeps to the open water at its own depth, away from the route.
+    let koiStyle = "";
+    {
+      const lanes = [];
+      const N = H > 900 ? 3 : 2;
+      for (let k = 0; k < N; k++) {
+        const t = (k + 0.6) / (N + 0.2);
+        // AWAY FROM THE PATH. The stones step across the left and middle of
+        // the sheet and the words sit to their right; the open water is what
+        // is left, so each lap is placed at the widest gap between the route
+        // and the sheet's edge at that depth.
+        const y = H * t;
+        const near = byY.reduce((best, p) => Math.abs(p.y - y) < Math.abs(best.y - y) ? p : best, byY[0]);
+        const rightRoom = W - (near.x + 40), leftRoom = near.x - 40;
+        const onRight = rightRoom > leftRoom;
+        const cx = onRight ? near.x + 40 + rightRoom * 0.5 : leftRoom * 0.5;
+        const rx = Math.max(22, (onRight ? rightRoom : leftRoom) * 0.3);
+        const ry = Math.max(16, H / (N + 1) * 0.16);
+        lanes.push({ cx, cy: y, rx, ry, dir: k % 2 ? -1 : 1, len: 30 - k * 4 });
+        out += `<g class="at-riv-koi koi-${k}">${fqKoi(30 - k * 4, 3.1 + k * 4.6)}</g>`;
+      }
+      koiStyle = riverKoiLanes(lanes);
+    }
+
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "at-water");
     svg.setAttribute("width", W); svg.setAttribute("height", H);
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("style", `--koi:${FQ_KOI_INK}`);
     svg.innerHTML = out;
-    inner.insertBefore(svg, inner.firstChild);
+    // INTO THE GROUND, AND IT REPLACES WHATEVER WAS THERE. The ground holds
+    // the drawing and nothing else, so emptying it is the whole of the
+    // cleanup — there is no sheet to insert before any more.
+    ground.replaceChildren(svg);
+    // THE KOI'S LAPS ARE WRITTEN FROM THE PAGE'S REAL SIZE, so they go into a
+    // stylesheet rather than into the markup: a CSS animation cannot take its
+    // keyframes from an attribute. Same arrangement the moon gate's fish use
+    // (.mg-lanes), and the same one element rewritten each render rather than
+    // one more style tag per pass.
+    const lanesEl = document.createElement("style");
+    lanesEl.className = "at-riv-lanes";
+    lanesEl.textContent = koiStyle;
+    ground.appendChild(lanesEl);
     // The destination's own mark is drawn INTO its row, so it wraps and moves
     // with the words rather than being flown to them.
+    // AND IT RESTS IN THE WATER: the contact crescent where the surface closes
+    // around it, the same mark the route's stones wear. STILL NEVER FILLED —
+    // a pebble fills as it passes behind you, a life goal is where you are
+    // going, so an arrival is two rings and a wash and never a solid.
     dEls.forEach((el, i) => {
       const m = el.querySelector(".at-dest-mark");
-      const rr = matchMedia("(max-width: 640px)").matches ? 9 : 12;
-      m.innerHTML = `<svg width="${rr * 4}" height="${rr * 3.4}" viewBox="0 0 ${rr * 4} ${rr * 3.4}"
+      const rr = destR(i);
+      m.innerHTML = `<svg width="${(rr * 4).toFixed(1)}" height="${(rr * 3.4).toFixed(1)}"
+        viewBox="0 0 ${(rr * 4).toFixed(1)} ${(rr * 3.4).toFixed(1)}"
         aria-hidden="true" class="at-dest-svg">`
+        + stoneContact(rr * 2, rr * 1.7, rr, i * 2.3)
         + waterDest(rr * 2, rr * 1.7, rr, i * 2.3, "") + `</svg>`;
     });
     // THE PEBBLES ARE MARKS, NOT CONTROLS. They took the pointer and the
@@ -17301,8 +17705,23 @@
       </div>`;
     };
     mount.innerHTML = `<div class="at-page">
-      <div class="at-sheet torn-paper"><div class="torn-sheet at-inner">
-      <!-- THE HEADING SITS AT THE SHEET'S OWN EDGE, outside .at-flow.
+      <!-- ---- NO SHEET (2026-09-11, owner: "no more page just the water, the
+           compas, the rocks") ----
+           This was a div.at-sheet.torn-paper wrapping a div.torn-sheet.at-inner:
+           a torn rectangle of paper lying on the board's wash, which is what
+           every other book in the app is. (No backticks in this comment on
+           purpose — it lives INSIDE a template literal, and one backtick here
+           ends the string and takes the rest of the script with it.) The Atlas is not a
+           book page on a desk any more, it is a place — so the ground is the
+           overlay's own (see #atlasOverlay) and this is just the column the
+           words stand in.
+           .at-sheet AND .torn-sheet STAY IN THE STYLESHEET and are still worn
+           by Chapters and by a goal's own roadmap, so nothing was deleted;
+           this page stopped wearing them. .at-inner is still shared with
+           those two, which is why everything the Atlas needs from it beyond
+           the padding is scoped to #atlasMount rather than added here. -->
+      <div class="at-inner">
+      <!-- THE HEADING SITS AT THE PAGE'S OWN EDGE, outside .at-flow.
            .at-flow carries the water's gutter as a left margin, so anything
            inside it starts one gutter in — which put this page's title and
            subtitle 150px further right than every other book's (owner,
@@ -17319,15 +17738,55 @@
              now, and it reads on from the sentence above it. -->
         <p class="at-sub">and where they come out.</p>
       </div>
-      <div class="at-flow">
-      ${qs.map(sec => {
+      ${/* ---- RETIRED 2026-09-11, THE DAY IT ARRIVED: the compass ----
+            Owner, seeing it on the water: "i think we should get rid of the
+            compass sadly. its not really doing anything here." She is right,
+            and it is this page's own rule read one step further than I read
+            it. The compass was put here INERT so the round that wires the
+            filter would have something to attach to, with a note saying a
+            role="button" with no handler is a promise the page cannot keep.
+            The same sentence applies to the drawing: a compass that cannot
+            be used is an instrument that measures nothing, and on a page
+            whose whole discipline is that every mark means something, it was
+            the one mark that did not.
+            IT COMES BACK WITH ITS BEHAVIOUR OR NOT AT ALL. Everything it was
+            is recorded in DECISIONS under this date — six bearings at one
+            length, a dashed GHOST where an area has no active goal (which is
+            NOT This-week's bud: a bud is a shorter shape and means "nothing
+            planned this week", a ghost is the full shape faint and means
+            "nobody is walking this way"), the 420px the rose needs to set six
+            names at the label tier, and the arithmetic of why it could never
+            be smaller. That is enough to rebuild it in an hour if the round
+            that gives it a job ever comes. */``}
+      ${/* NO GUTTER. .at-flow used to be margined right by the width of the
+            river so the writing could not be in the water. The whole sheet is
+            water now, so there is nowhere to move the words TO, and the
+            measure the gutter was costing comes back. --step-max is the room
+            the blocks step within, held here so every block is one width. */``}
+      <div class="at-flow" style="--step-max:${atlasStepMax()}px">
+      ${qs.map((sec, qIdx) => {
         const rows = sec.rows;
         const marker = sec.past && !pastMarked ? (pastMarked = true) : false;
+        // ---- EACH QUARTER STEPS ACROSS THE WATER (2026-09-11) ----
+        // The block is nudged sideways by its own place on the route, so the
+        // page descends as a path rather than as a stack. The width is held
+        // constant (see .at-q), so a quarter MOVES and never re-wraps: the
+        // measure is the same on every one of them, and only the position
+        // says where you are on the way.
         return `
         <section class="at-q${sec.now ? " now" : sec.past ? " past" : " future"}${sec.allSketch ? " sketch" : ""}${qOpen(sec) ? " open" : " folded"}"
+          style="--step-x:${atlasStepX(qIdx)}px"
           data-q="${escHtml(sec.q)}" data-cats="${escHtml(rows.map(r => r.category + ":" + (r.sketch || sec.allSketch ? 1 : 0)).join(","))}"
           data-type-area="atlas/quarter">
-          ${marker ? `<p class="at-behind">the road so far</p>` : ``}
+          ${/* IT HAS BEEN THREE THINGS AND IS NOW NAMED AFTER NONE OF THEM.
+                "the road so far" outlived the road by two weeks; "the river
+                so far" outlived the river by a day, because the water stopped
+                being a river down the gutter and became the whole sheet. A
+                line that names the DRAWING has to be rewritten every time the
+                drawing changes, so this one names the JOURNEY instead, which
+                is the thing it was always actually about: what is behind you.
+                One name, one thing, and nothing here to go stale again. */``}
+          ${marker ? `<p class="at-behind">the way so far</p>` : ``}
           ${/* THE WORD IS "SKETCHED", NOT "THEME". A theme is a real and
                 different thing in this app — a direction without a commitment,
                 belonging to the GOAL rather than to a quarter, and never
@@ -17382,17 +17841,25 @@
           }).join("")}
           ${sec.now && !rows.length ? `<p class="at-rest" data-type-area="atlas/rest">a resting quarter · nothing is asked of you here.</p>` : ``}
         </section>`; }).join("")}
-      <section class="at-horizon" data-type-area="atlas/horizon">
+      ${/* THE ROUTE DOES NOT STOP AT THE LAST QUARTER, so neither does the
+            step: the horizon takes the next place on the same walk. */``}
+      <section class="at-horizon" data-type-area="atlas/horizon"
+        style="--step-x:${atlasStepX(qs.length)}px">
         <p class="at-hz-label">the horizon · past your last planned quarter</p>
         ${dests.map(destRow).join("")}
+        ${/* IT SAID "tap one to light its road", and neither half had been
+              true since 2026-08-28: nothing on this page is a door any more,
+              and the drawing is a river. What the line is FOR is the one
+              thing the picture cannot say on its own, which is what the sizes
+              mean, so that is all it says now. */``}
         ${caption("fe-atlasHorizon",
-          "each stone is a life goal, at its own distance · tap one to light its road")}
+          "each stone is a life goal, resting at its own distance · the further out, the smaller it sits")}
       </section>
       ${/* RETIRED 2026-08-28: "everything here serves one vision." It was the
             page's closing line, then briefly a door to the vision, and the
             owner took it off — the page says what it is without a caption
             telling you so. .at-vision and .at-vision-door went with it. */``}
-      </div></div></div>
+      </div></div>
       <div class="at-margin" id="atCompanion"></div></div>`;
     // A ROW IS A DOOR, and it is the only thing on this page that navigates
     // on a single tap. Selecting is what the pebbles and the destinations do.
@@ -17482,6 +17949,10 @@
     // page opens on its own title the way every other book does.
     // AFTER A FRAME, because the water is built from measured layout and the
     // quarters are content-sized — their real tops do not exist until then.
+    // RETIRED 2026-09-11 with the compass it was written for: a cap on this
+    // scroll at the rose's own pivot, so the page could not open having
+    // walked past the thing it opened with. There is no rose; the scroll goes
+    // back to what it always was.
     requestAnimationFrame(() => {
       const ov = document.getElementById("atlasOverlay");
       const now = ov && ov.querySelector(".at-q.now");
@@ -32795,6 +33266,28 @@
   let ciDigFrom = null;          // the picks + wheel state those questions were derived from
   let ciDigAt = 0;               // which dig question is on screen — they come one at a time
   let ciSelectedThemes = [];
+  // WHAT SHE ALREADY DOES (2026-09-11, owner: "i go to the gym every week 4
+  // times a week and it didnt generate that weekly set up either ... we need
+  // to make the AI smarter to pick up what should be those foundational tasks
+  // if the user is already doing something weekly or daily. We could just ask
+  // them as a prompt to list things"). Nothing in the twenty prompts had ever
+  // asked, so a routine could only reach the plan by accident, as prose in the
+  // entry; her gym never came up there, so the pipeline could not have found it.
+  // TWO KINDS, AND THEY ARE NOT THE SAME QUESTION. A RHYTHM is countable, and
+  // arrives here as { what, timesPerWeek, when } so it can become weekly work
+  // with her count and her days already right. A FLOOR is a limit she holds,
+  // "in bed by eleven", and has no count and no days: forcing it into the same
+  // row would make "sleep, 7x, every day" the only way to say it. It is kept
+  // as her sentence, and the mechanisms prompt's floor rule, which is gated on
+  // the person naming sleep or rest IN THEIR OWN WORDS, is what reads it.
+  let ciRoutines = [];           // [{ what, timesPerWeek, when: ["Mon",...] }]
+  // A row with no words is the page's invitation to add one, never an answer,
+  // so one home strips them and every reader takes them from here.
+  const routinesStated = () => ciRoutines
+    .map(r => ({ what: String((r && r.what) || "").trim(),
+                 timesPerWeek: Number((r && r.timesPerWeek) || 0) || null,
+                 when: ((r && r.when) || []).slice() }))
+    .filter(r => r.what);
   let ciPrevValues = null;       // last quarter's wheel, for comparison
   let ciDraft = null;            // proposed goals, before the user accepts them
   let ciDraftFrom = null;        // draftSig() of the answers that draft was read from
@@ -32959,7 +33452,12 @@
 
   // Journal keys belonging to the narrative screens. Everything else in ciJournal
   // is ladder ("why0") or depth ("depth_career" / "next_career").
-  const JOURNAL_KEYS = ["entry", "flow", "unconstrained", "soughtfor", "faded", "anything", "obstacles", "regret"];
+  // `floor` joins them (2026-09-11): it is free text she wrote, so it belongs
+  // in the quotable section like every other thing she wrote. That is not
+  // decoration, it is the whole mechanism: the floor rule may only act on
+  // words it is allowed to quote, and WHAT THEY WROTE is the only block the
+  // prompts permit as evidence.
+  const JOURNAL_KEYS = ["entry", "flow", "unconstrained", "soughtfor", "faded", "anything", "obstacles", "regret", "floor"];
 
   // ciJournal is a const object, so every load REPLACES its contents rather
   // than reassigning it — and replacing is the point. Object.assign used to
@@ -32997,6 +33495,11 @@
     ciDig = null; ciDigFrom = null; ciDigAt = 0;
     ciDraftFrom = null;
     ciSelectedThemes = [];
+    // AND THE ROUTINES (2026-09-11), by the same rule the constraints and the
+    // wheel learned the hard way: a start over that leaves last run's answers
+    // prefilled is not a start over. `setJournal({})` above already takes the
+    // floor with it, since it is a journal key.
+    ciRoutines = [];
     ciFocusKey = null;
     ciCompanion = null; ciCompanionTouched = false; ciCompanionPropAsked = false;
     ciCapacity.statedHours = null; ciCapacity.statedBy = null;
@@ -33099,6 +33602,18 @@
       where: ciConstraints.location || "", theirSituation: (ciJournal.situation || "").trim(),
       howTheirHoursActuallyGo: ciCapacity.observed || null,
     }),
+    // Both halves in one page's material, because they are one answer about
+    // her week: what already repeats, and what she holds the line on.
+    routines: () => {
+      const rows = routinesStated();
+      const floor = (ciJournal.floor || "").trim();
+      if (!rows.length && !floor) return null;
+      const out = {};
+      if (rows.length) out.whatTheyAlreadyDo = rows.map(r => ({
+        theirWords: r.what, timesAWeek: r.timesPerWeek, days: r.when.length ? r.when : null }));
+      if (floor) out.theLimitTheyHold = floor;
+      return out;
+    },
     dig: () => {
       const answers = {};
       ((ciDig && ciDig.questions) || []).forEach(q => {
@@ -33207,6 +33722,11 @@
       // from the entry alone. They belong in the intake itself, where
       // everything downstream already looks.
       followups: followupsOf(),
+      // WHAT ALREADY HAPPENS, carried whole (2026-09-11). The floor is NOT
+      // here: it is free text she wrote, so it rides `journals.floor` with
+      // everything else she wrote, which is also the only block the prompts
+      // let a model quote as evidence, and the floor rule needs to quote it.
+      routines: routinesStated(),
       ratings: {
         values: Object.assign({}, ciValues),
         receipts: Object.assign({}, ciReceipts),
@@ -33983,12 +34503,40 @@
 
     // IS THERE ANYTHING NEWER? One tiny read of the profile's own stamp,
     // which every save_board touches. Null when not signed in or refused.
+    //
+    // AND NULL WHEN THE ACCOUNT HAS NEVER BEEN SAVED TO (2026-09-11). A
+    // profiles row is not a board: on_auth_user_created inserts one the
+    // instant anyone signs up, with updated_at defaulting to now() and every
+    // other column empty. Returning that stamp told all three callers the
+    // account held something, and the guard below refused the first save a
+    // new account ever made. `first_saved_at` is set only by save_board, and
+    // only once, so it is the honest answer to "has anything been written
+    // here" where updated_at never was. The other two callers already read
+    // null as "no news", which is exactly right for an account with none.
     async freshness() {
       if (!sbc) return null;
       const session = await currentSession();
       if (!session) return null;
-      const { data, error } = await sbc.from("profiles").select("updated_at").eq("id", session.user.id).maybeSingle();
-      if (error || !data) return null;
+      const { data, error } = await sbc.from("profiles")
+        .select("updated_at, first_saved_at").eq("id", session.user.id).maybeSingle();
+      // FAILING CLOSED IF THE COLUMN IS NOT THERE YET (2026-09-11). This is the
+      // one ordering hazard in the whole change: the client READS
+      // first_saved_at, so a site published before 0022 has run asks for a
+      // column that does not exist, PostgREST answers 42703, and treating that
+      // as "no stamp" would turn the overwrite guard OFF for every account at
+      // once. So a failed read falls back to the old question and the old
+      // answer, which is the guard ON: worst case is the bug this replaced,
+      // never an open door. Migrate first and this never runs.
+      if (error) {
+        const { data: d2 } = await sbc.from("profiles")
+          .select("updated_at").eq("id", session.user.id).maybeSingle();
+        return (d2 && d2.updated_at) || null;
+      }
+      if (!data) return null;
+      // An account older than 0022 that has genuinely been saved carries no
+      // first_saved_at until its next write, and the migration backfills
+      // exactly those, so a missing value here means never saved.
+      if (!data.first_saved_at) return null;
       return data.updated_at || null;
     },
 
@@ -35822,6 +36370,12 @@
 
   QUESTION_TEXT.entry = "Tell me about your life right now, the honest version.";
   QUESTION_TEXT.situation = "Anything about your situation the plan should respect?";
+  // The floor's question is not written here: it IS health.baseline, the one
+  // question in the file that already knew how to invite an answer that is a
+  // limit rather than a number. One home for the wording, so the page and the
+  // transcript cannot drift apart.
+  const FLOOR_Q = DEPTH_QUESTIONS.health.find(x => x.key === "baseline") || DEPTH_QUESTIONS.health[0];
+  QUESTION_TEXT.floor = FLOOR_Q.q;
 
   // Dig questions are chosen per person at runtime, so their wording is
   // registered as it arrives — the transcript must show the model the question
@@ -35841,6 +36395,17 @@
   // A readable transcript, with a hard line between what the person WROTE and
   // what the app derived. Only the written section is quotable as evidence.
   function intakeTranscript(intake) {
+    // A COMPLETE PROFILE TRAVELS WITHOUT AN INTAKE (2026-09-11). realTransport
+    // builds `transcript: intakeTranscript(payload.intake)` for EVERY stage,
+    // and since the profile split of 10 September the generate payload is
+    // `{ profile }` alone when the profile is complete, with no `intake` key
+    // at all. Every line below reads a field off it, so the call threw before
+    // the request was built, and the goals read failed for the people whose
+    // six profile pages had all succeeded, which is to say the ones the split
+    // worked best for. No test caught it because every test swaps the
+    // transport out. The transcript is thin without an intake, which is
+    // correct: the profile is the payload, and it rides beside this.
+    intake = intake || {};
     const out = [];
     const written = [];
     Object.entries(intake.journals || {}).forEach(([k, v]) => {
@@ -35933,6 +36498,26 @@
         + `and no plan is sized against a smaller number.`
         + (obs != null ? ` The entry says about ${obs} of those hours already go to their own things.` : "")
         + ((cap.flags || []).length ? "\n" + cap.flags.map(f => "- " + f.say).join("\n") : ""));
+    }
+    // WHAT ALREADY HAPPENS (2026-09-11). One block, both halves, because they
+    // are one answer about her week. The rows are hers with their counts and
+    // days; the limit is her sentence and is quoted from WHAT THEY WROTE
+    // above rather than repeated as evidence here, so there is still exactly
+    // one quotable copy of anything she wrote.
+    const rout = (intake.routines || []).filter(r => r && r.what);
+    const floorSaid = ((intake.journals || {}).floor || "").trim();
+    if (rout.length || floorSaid) {
+      const lines = rout.map(r => {
+        const days = (r.when || []).length ? ", on " + r.when.join(" ") : "";
+        const n = r.timesPerWeek ? `${r.timesPerWeek}x a week` : "no count given";
+        return `- ${r.what} (${n}${days})`;
+      });
+      if (floorSaid) lines.push(`- a limit they hold, in their own words, quoted above under "${QUESTION_TEXT.floor}": ${floorSaid}`);
+      out.push("=== WHAT ALREADY HAPPENS (they were asked outright; these are commitments that EXIST, not proposals) ===\n"
+        + lines.join("\n")
+        + "\nPlan around these, never over them. A rhythm listed here is already weekly work: carry it with the count and the "
+        + "days they gave, do not re-invent it, do not re-time it, and do not propose a second thing that does the same job. "
+        + "A limit they hold is a floor, not a rhythm: it has no count and no days, and it is the floor rule's evidence.");
     }
     const sel = (intake.themes && intake.themes.selected) || [];
     if (sel.length) out.push("=== THEMES THEY CONFIRMED AS CORE ===\n" + sel.map(t => "- " + t).join("\n"));
@@ -37426,6 +38011,109 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           alignNote();
           window.addEventListener("resize", alignNote);
           // G2f (124): no caption bar here — the title is the one line.
+        }},
+
+      // WHAT SHE ALREADY DOES, asked instead of inferred (2026-09-11). It sits
+      // between the capacity page and the dig on purpose: the dig chooses its
+      // questions from what is still unknown, so a routine already named here
+      // is one it does not spend one of its five on.
+      //
+      // TWO ELEMENTS, BECAUSE THERE ARE TWO KINDS OF ANSWER. The rows are for a
+      // RHYTHM, which is countable, and they capture the count and the days so
+      // the plan does not have to guess them back. The line underneath is for a
+      // FLOOR, which is not: a protected bedtime has no frequency, and the only
+      // way to write it as a row would be "sleep, 7x, every day", which says
+      // something else. Its question is health.baseline, read from
+      // DEPTH_QUESTIONS rather than copied, because that is the one question in
+      // the file already written to invite a limit rather than a number, and it
+      // had no page to be asked from.
+      //
+      // EVERYTHING HERE IS HERS. The rows carry source "user" into the plan and
+      // are cut last; the floor is quotable text, which is what the mechanisms
+      // prompt's floor rule requires before it may act.
+      { profileKey: "routines", journalMode: true, render: b => {
+          const DAYS = TW_DAYS;
+          const blank = () => ({ what: "", timesPerWeek: 0, when: [] });
+          if (!ciRoutines.length) ciRoutines.push(blank());
+          const row = (r, i) => `<div class="ci-rt-row" data-i="${i}">
+              <span class="pm-line ci-raw-line"><input class="pm-write ci-raw-write ci-rt-what"
+                data-i="${i}" value="${escHtml(r.what || "")}" placeholder="the gym, a class, a walk…"
+                aria-label="something you already do"></span>
+              <div class="ci-review-actions ci-rt-count" data-i="${i}">
+                ${[1,2,3,4,5,6,7].map(n => `<button type="button" class="ci-chip ci-rt-n${
+                  Number(r.timesPerWeek) === n ? " on" : ""}" data-n="${n}">x${n}</button>`).join("")}
+              </div>
+              <div class="ci-review-actions ci-rt-days" data-i="${i}">
+                ${DAYS.map(d => `<button type="button" class="ci-chip ci-rt-d${
+                  (r.when || []).includes(d) ? " on" : ""}" data-d="${d}">${d.toLowerCase()}</button>`).join("")}
+              </div>
+            </div>`;
+          b.innerHTML = stepHeader("What you already do",
+            "Things that already happen on a rhythm. The plan builds around these instead of over them.")
+            + `<div class="ci-raw-stack"><div class="ci-raw torn-paper"><div class="torn-sheet ci-raw-sheet">
+                <div id="ciRtRows">${ciRoutines.map(row).join("")}</div>
+                <button type="button" class="ci-rt-add brushed-link" id="ciRtAdd">add another</button>
+                <div class="ci-raw-q ci-raw-note ci-rt-floor">
+                  <div class="ci-q-row ci-q-row-left"><p class="ci-raw-ask">${escHtml(FLOOR_Q.q)}</p>${talkButton("floor")}</div>
+                  <textarea id="ciFloor" class="ci-journal-input ci-raw-textarea" data-key="floor"
+                    placeholder="${escHtml(FLOOR_Q.ph || "")}"
+                    aria-label="${escHtml(FLOOR_Q.q)}"></textarea>
+                </div>
+              </div></div></div>`;
+          const rowsHost = b.querySelector("#ciRtRows");
+          const commit = () => {
+            // A row with no words is not an answer, and an empty last row is
+            // just the invitation to add one, so neither is stored. The array
+            // keeps its shape for the page and is cleaned on the way out.
+            saveDraft();
+          };
+          const repaint = () => {
+            rowsHost.innerHTML = ciRoutines.map(row).join("");
+            wire();
+          };
+          function wire() {
+            rowsHost.querySelectorAll(".ci-rt-what").forEach(inp => {
+              inp.addEventListener("input", () => {
+                const r = ciRoutines[Number(inp.dataset.i)];
+                if (r) { r.what = inp.value; commit(); }
+              });
+            });
+            rowsHost.querySelectorAll(".ci-rt-count .ci-rt-n").forEach(chip => {
+              chip.addEventListener("click", () => {
+                const i = Number(chip.parentElement.dataset.i), n = Number(chip.dataset.n);
+                const r = ciRoutines[i]; if (!r) return;
+                // A second tap on the same count clears it: a number nobody
+                // can take back is a number people answer wrongly once.
+                r.timesPerWeek = r.timesPerWeek === n ? 0 : n;
+                commit(); repaint();
+              });
+            });
+            rowsHost.querySelectorAll(".ci-rt-days .ci-rt-d").forEach(chip => {
+              chip.addEventListener("click", () => {
+                const i = Number(chip.parentElement.dataset.i), d = chip.dataset.d;
+                const r = ciRoutines[i]; if (!r) return;
+                r.when = (r.when || []).includes(d) ? r.when.filter(x => x !== d) : (r.when || []).concat([d]);
+                // THE DAYS ARE THE COUNT where she names them, the same rule
+                // the week's own picker follows, so naming a fourth day makes
+                // it x4 rather than leaving the two to disagree.
+                if (r.when.length) r.timesPerWeek = r.when.length;
+                commit(); repaint();
+              });
+            });
+          }
+          wire();
+          b.querySelector("#ciRtAdd").addEventListener("click", () => {
+            ciRoutines.push(blank()); repaint();
+            const last = rowsHost.querySelector(".ci-rt-row:last-child .ci-rt-what");
+            if (last) last.focus();
+          });
+          const floorEl = b.querySelector("#ciFloor");
+          floorEl.value = ciJournal.floor || "";
+          const grow = () => { floorEl.style.height = "auto"; floorEl.style.height = floorEl.scrollHeight + "px"; };
+          floorEl.addEventListener("input", () => { ciJournal.floor = floorEl.value; saveDraft(); grow(); });
+          floorEl.addEventListener("paste", () => setTimeout(grow, 0));
+          attachDictation(b.querySelector('.ci-talk[data-talk-for="floor"]'), floorEl);
+          grow();
         }},
 
       // Stage call 2 of 3 — the dig: questions chosen from the three picks and
@@ -39666,6 +40354,23 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   function mechRank(m, userStepIds) {
     if (m.type === "floor") return -1;   // never competes, never cut
     if (m.type === "setup") return 0;
+    // A THING SHE ALREADY DOES IS NOT A PROPOSAL (2026-09-11). It is already
+    // happening, so cutting it does not free an hour she was not already
+    // spending; it only removes the app's knowledge of it, and then the plan
+    // budgets that hour twice. Law 4 already says the person's own work is
+    // cut last, and this is that, applied to the routines page's rows.
+    //
+    // WHICH FIELD CARRIES IT, stated because it is the whole of the rule and
+    // it is not obvious: the model does NOT mark these. It is told what
+    // already happens in the transcript and returns an ordinary mechanism, so
+    // nothing on the returned object says "she was already doing this".
+    // `markRoutineWork` stamps `source: "user"` and `fromRoutine: true` onto
+    // the drafted mechanisms whose label matches a routine she named, right
+    // after the read comes back, and THAT is what this reads. The same
+    // `source: "user"` addUserWork writes by hand, so a routine and a
+    // hand-added mechanism are cut in the same breath, which is correct: both
+    // are hers.
+    if (m.source === "user") return 0.5;
     if (userStepIds.has(m.drivesObjectiveId)) return 1;
     if (m.type === "capability") return 2;
     return 3;
@@ -40774,12 +41479,55 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // objectives for the active goals handed in; the shared budget then
   // re-allocates across the whole board so every candidate pool competes for
   // the same honest hours.
+  // A ROUTINE COMES BACK AS AN ORDINARY MECHANISM, so the app has to recognise
+  // it (2026-09-11). The model is told what already happens and asked to carry
+  // it, but nothing on the object it returns says "she was already doing this",
+  // and two things depend on knowing: it must be cut last (mechRank reads
+  // `source`), and her count and days must survive the round trip.
+  //
+  // LAW 1 IS DONE HERE AND NOT LEFT TO THE PROMPT. A prompt is advice; the
+  // person's word is not. So where a drafted mechanism matches a routine she
+  // named, her days and her count are written back over whatever came back,
+  // rather than hoping the read carried them. The schedule is built the way
+  // addUserWork builds it, so a routine and a hand-added habit are the same
+  // shape by the time the week reads either.
+  const routineKey = t => String(t || "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ")
+    .replace(/\b(the|a|an|my|to|go|going|do|doing)\b/g, " ").replace(/\s+/g, " ").trim();
+  function markRoutineWork(mechs, intake) {
+    const rows = ((intake && intake.routines) || []).filter(r => r && r.what);
+    if (!rows.length || !Array.isArray(mechs)) return mechs;
+    mechs.forEach(m => {
+      if (!m || m.type === "floor") return;
+      const ml = routineKey(m.label);
+      if (!ml) return;
+      const hit = rows.find(r => {
+        const rk = routineKey(r.what);
+        return rk && (ml.indexOf(rk) >= 0 || rk.indexOf(ml) >= 0);
+      });
+      if (!hit) return;
+      m.source = "user";            // what mechRank reads: cut last, with her own work
+      m.fromRoutine = hit.what;     // and what it was matched to, so a reader can check
+      if (hit.when && hit.when.length) {
+        m.schedule = hit.when.length >= 7 ? "daily" : hit.when.slice();
+        m.timesPerWeek = hit.when.length;
+        m.whenSource = "user";
+      } else if (hit.timesPerWeek > 0) {
+        m.schedule = hit.timesPerWeek >= 7 ? "daily" : { any: hit.timesPerWeek };
+        m.timesPerWeek = hit.timesPerWeek;
+        m.whenSource = "user";
+      }
+      if (m.timesPerWeek >= 7) m.cadence = "daily";
+    });
+    return mechs;
+  }
+
   async function draftHabits(targets, allGoals, intake) {
     const enriched = intakeWithPatterns(intake);
     const activeCount = (allGoals || targets || []).filter(g => g.status === "active").length;
     // Same cache-warming order as draftQuarters: first alone, rest together.
     const drafted = async g => {
       const m = await draftMechanisms(g, g.objectives, enriched, activeCount);
+      markRoutineWork(m.mechanisms, enriched);
       g.pendingMechanisms = m.mechanisms;
       g.pendingDeferred = m.deferred;
       // The full pool survives allocation, so a later status change can
@@ -41068,6 +41816,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     draft: () => ciDraft,
     draftLifeGoals, draftQuarters, draftHabits, planContext, normalizePlan,
     draftMechanisms, tuneMechanisms, distillGoal, extractHorizon, capCheck, mechanismBudget, allocateMechanisms,
+    // Exported for test 234: what turns a drafted mechanism back into a
+    // thing she already does, which nothing on the model's answer records.
+    markRoutineWork, routinesStated,
     evidenceOf, planContract, applyContact, detectContactDrift,
     contactFlagQuestion: () => CONTACT_FLAG_QUESTION, contactFlagAt: () => CONTACT_FLAG_AT,
     noMilestoneNote: () => NO_MILESTONE_NOTE,
@@ -41225,6 +41976,11 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     openChapters, closeChapters, renderChapters,
     // Wave 4 seams: the shelf and the wish list.
     mountShelf, shelfZones, shelfLayout, openBooksSheet, replayShelfTour, openFaqPage, addReleaseWish,
+    // Exported for test 233: the retest's jump used to be a distance from the
+    // end of the step list, and nothing outside this file could ask where it
+    // actually landed, so the page it opened went unchecked for as long as it
+    // was wrong. A door the harness can knock on is the whole fix for that.
+    openRetest,
     // LETTING GO has no book on the shelf while it is paused, so this is
     // the only way in — the page stays under test until its door returns.
     openRelease, closeRelease,
@@ -42436,7 +43192,20 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     ciRetest = true;
     ciDraft = null; ciDraftFrom = null;     // a retest exists to see a fresh generation
     ciSteps = buildOnboardingSteps();
-    ciStepIdx = atStep === "dig" && hasEntry ? ciSteps.length - 4 : 0;   // the dig sits before the three goal steps
+    // THE DIG IS FOUND BY NAME, NOT BY COUNTING BACKWARDS (2026-09-11).
+    // This read `ciSteps.length - 4` and its comment said "the dig sits
+    // before the three goal steps", which was true when there were eight
+    // steps. The odd-questions page was inserted before the goal steps and
+    // the arithmetic was not updated, so with nine steps it resolved to 5,
+    // the ODD page, and "run the discovery again, from the dig" had been
+    // opening the wrong page. A position expressed as a distance from the
+    // end is a claim about every step between here and there, which is a
+    // thing no one remembers to re-check when they add a page.
+    // `ciSteps.length - 3` above is left as it is: it names the goals step,
+    // and unlike this one it survives an insertion anywhere before the goals,
+    // because the length and the index move together.
+    const digAt = ciSteps.findIndex(x => x.profileKey === "dig");
+    ciStepIdx = atStep === "dig" && hasEntry && digAt >= 0 ? digAt : 0;
     openBookPage(checkinOverlay);
     ciRender();
   }
