@@ -8139,6 +8139,18 @@
   /* a hidden tab spins nothing */
   body.lv-tab-hidden .companion :is(svg, .c-tail, .c-tail-tip, .c-ear, .c-wing, .c-wing-l,
     .c-wing-r, .c-leaf, .c-leaf2, .c-leaf3, .c-ant) { animation-play-state: paused !important; }
+  /* NOTHING NOBODY CAN SEE MOVES (2026-09-27, owner: This Week and opening a
+     book felt laggy). An open book hides the board (.app goes visibility:
+     hidden under it) and a lifted curtain is gone, but their loops ran on:
+     the pond's fall, fish and glints, nineteen of them restyled every frame
+     under This Week, and the curtain's breath for as long as the app stayed
+     open. Measured at phone width on a quarter-speed processor, This Week
+     standing still spent about 650ms of every four seconds on a board nobody
+     could see, and 60 to 125ms with these paused. Paused rather than
+     stopped, so the water picks up where it was when the book closes.
+     !important because the companion's own loops outrank this selector.
+     Test 239. */
+  body:has(.book-page.open) .app *, .lv-curtain.lifted * { animation-play-state: paused !important; }
   @media (prefers-reduced-motion: reduce) {
     .companion.alive :is(svg, .c-tail, .c-tail-tip, .c-ear, .c-wing, .c-wing-l, .c-wing-r,
       .c-leaf, .c-leaf2, .c-leaf3, .c-ant) { animation: none !important; }
@@ -35405,6 +35417,26 @@
     if (prev) ciPrevValues = prev.ratings;
     return true;
   }
+  // THE OBJECTS AN OPEN PAGE IS HOLDING (2026-09-27, owner: "wont save my
+  // updates to the desktop or phone if i change it on my ipad"). applyState
+  // builds every goal, habit and record anew, and an open page's editors
+  // hold the ones it was drawn from: the chapter's name, its steps, a row's
+  // pop. A sync that found nothing new used to leave the NEW objects live
+  // and the page unredrawn, so the next edit on that page went into a copy
+  // nothing saves, and snapped back. It happened on every open from the
+  // copy and on every return to the app after half a minute, which on an
+  // iPad is most of the time. So when the board did not move, the objects
+  // on the page are put back: same board, the same objects. Any object
+  // applyState assigns belongs in both lists. Test 194d.
+  const liveRefs = () => ({ goals, nextId, reminders, keepings, unstuck, weeklyTicks, weekPlans, weeks,
+    quarters, portrait, releaseWishes, twSand, twCollect, recentCheckins, ciDismissedTensions,
+    journalBook, journalDirty, profileCompanion, profileShelf, profileSeen, ciPrevValues });
+  function restoreRefs(r) {
+    ({ goals, nextId, reminders, keepings, unstuck, weeklyTicks, weekPlans, weeks,
+      quarters, portrait, releaseWishes, twSand, twCollect, recentCheckins, ciDismissedTensions,
+      journalBook, journalDirty, profileCompanion, profileShelf, profileSeen, ciPrevValues } = r);
+    deriveGates();
+  }
 
   // Saves are CHAINED, never raced: awaiting a shared in-flight promise wakes
   // every waiter in the same microtask drain, and each then started its own
@@ -35449,6 +35481,11 @@
       body = serializeState();
       let r = await store.save(body).catch(err => ({ ok: false, reason: err.message }));
       if (!r.ok && r.reason === "stale") {
+        // NEVER UNDER A BUSY HAND (2026-09-27), the pull's own rule: the
+        // account's board landing under a line being written leaves that
+        // line's editor holding objects nothing saves. The copy is marked,
+        // and the held ask merges and sends the moment the hand is free.
+        if (syncBusy()) { syncHold(false); return r; }
         // THE ACCOUNT MOVED SINCE THIS DEVICE LAST LOOKED (0018): what it
         // holds comes in under this change, and the merged board goes up.
         await mergeDownFirst();
@@ -35890,13 +35927,16 @@
     const m = mirrorRead();
     const local = boardSnapshot();
     const unsent = !!(m && m.dirty) || offlineDirty || (!!base && !boardSame(local, base));
+    const held = liveRefs();
     if (!applyState(remote)) return null;
     const theirs = boardSnapshot();
     const moved = who => !boardSame(local, who);
-    if (!unsent && base) { baseWrite(theirs); return { needSave: false, changed: moved(theirs) }; }
+    // A board that did not move keeps the objects the page was drawn from.
+    const settle = res => { if (!res.changed) restoreRefs(held); return res; };
+    if (!unsent && base) { baseWrite(theirs); return settle({ needSave: false, changed: moved(theirs) }); }
     const merged = mergeBoards(base, local, theirs);
-    if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return { needSave: false, changed: moved(theirs) }; }
-    return { needSave: true, changed: moved(merged) };
+    if (boardSame(merged, theirs) || !applyState(merged)) { baseWrite(theirs); return settle({ needSave: false, changed: moved(theirs) }); }
+    return settle({ needSave: true, changed: moved(merged) });
   }
   // WHAT IS OPEN IS REDRAWN (2026-09-07). A page holds the board's objects
   // as they were when it opened; once the account's board has come in
@@ -36183,7 +36223,11 @@
   const syncBusy = () => {
     if (handDown) return true;
     const a = document.activeElement;
-    if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))) return true;
+    // Only a line the person can see counts: a field inside a book that has
+    // closed, or one taken off the page, holds no cursor anyone is writing
+    // with, and must not hold the sync for as long as the focus stays on it.
+    if (a && (a.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))
+        && a.isConnected && a.getClientRects().length) return true;
     if (document.querySelector(".dragging, .when-pop, .move-pop, .tw-row-pop")) return true;
     return SYNC_FLOWS.some(id => { const el = document.getElementById(id); return !!(el && el.classList.contains("open")); });
   };
