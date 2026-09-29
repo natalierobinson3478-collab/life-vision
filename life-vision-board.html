@@ -3750,8 +3750,8 @@
      the owner found the morning after: "But it added it as grey pebbles in my
      weekly page once i pressed done." Law 8 held either way, since the stone
      carried no hours, but the week is where WORK lives and a direction is not
-     work. It goes to the keepings now, under the chapter whose words these
-     already are: directions, not commitments. */
+     work. It goes to the keepings now. (Their page had a chapter headed in
+     these same words until 29 Sep, when it became one list under its title.) */
   /* The app's own wording for this quarter, offered beside theirs. It is
      read, so it is --t-read on the lead; the swap is a door, so it is an
      underline. */
@@ -5714,13 +5714,15 @@
     font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
     color: var(--ink-muted); opacity: 0.55; -webkit-tap-highlight-color: transparent; }
   .kp-item:hover .kp-drop, .kp-drop:focus-visible { opacity: 1; color: var(--ink); }
-  .kp-note { margin-bottom: calc(var(--lead) * 0.25); }
-  .kp-empty { opacity: 0.7; }
-  /* The foot's line, the corner's own field on the page's paper. */
+  /* ONE LIST UNDER THE TITLE (2026-09-29): it starts where the chapter
+     heading used to, a lead below the subtitle. */
+  .kp-list { margin-top: calc(var(--lead) * 0.5); }
+  .kp-empty { opacity: 0.7; margin-top: calc(var(--lead) * 0.5); }
+  /* The foot's line, the corner's own field on the page's paper: a line to
+     write on and the arrow that keeps it, nothing else. */
   .kp-add { margin-top: calc(var(--lead) * 1.5); }
   .kp-add-row { display: flex; align-items: center; gap: 8px; }
   .kp-input { flex: 1 1 auto; min-width: 0; }
-  .kp-kinds { display: flex; gap: 6px; margin-top: calc(var(--lead) * 0.4); }
   .fq-sub { display: block; font-family: var(--voice-hand); font-size: var(--t-label);
     font-style: italic; color: var(--ink-muted);
     line-height: var(--lead);
@@ -11491,7 +11493,7 @@
 
   <!-- WHAT SHE IS KEEPING IN MIND. The Facts page's own build, because it is
        the page she pointed at: "itll be a cute form like the FAQ part where
-       the books are". Same sheet, same rows, same drawn rules. -->
+       the books are". Same sheet, same rows. -->
   <div id="keepOverlay" class="book-page">
     <button class="checkin-close" id="keepClose" aria-label="close" title="close"></button>
     <div id="keepMount"></div>
@@ -14803,7 +14805,6 @@
     saveState();
     return true;
   }
-  const keepingsOf = kind => keepings.filter(k => k && k.kind === kind);
 
   let releaseWishes = [];
   // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
@@ -42289,53 +42290,64 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // reminders ... And itll be a cute form like the FAQ part where the books
   // are and use the watercolor mark for each different reminder."
   //
-  // So it is the Facts page's own build: the same sheet, the same row and
-  // chapter helpers, the same drawn rules. What it is NOT is a list of work.
+  // So it is the Facts page's own build: the same sheet, the same rows.
+  // What it is NOT is a list of work.
   // Nothing here has hours, a day, a pebble, a tick or a count, and it never
   // may: a standing thought the week counts against you is a debt, and law 8
   // forbids the app holding one.
-  let keepKind = "reminder";          // which kind the foot's line will file
+  //
+  // ONE LIST UNDER THE PAGE'S OWN TITLE (2026-09-29, owner: "The title is
+  // repeated twice. I just want the main title ... then the subheading ...
+  // i want the watercolor dots in other colors randomly not just green. Then
+  // make the additions simpler. Just have a textbox and enter button"). The
+  // two chapters are gone, because the first one said the title a second
+  // time, and so are the two kind chips, which asked a question before every
+  // line. Every kept thing, either kind, sits in one list, newest first, and
+  // a line written here is filed as a reminder. `kind` stays on the record,
+  // so nothing already kept changes shape and the pin from a plan is
+  // untouched.
+  //
+  // THE MARKS ARE THE SHELF'S OWN COLOURS, each a wash and a deeper pool of
+  // the same hue. Which one a line wears is seeded off its id, like its
+  // shape, so chance picks it and it holds between visits; the one rule on
+  // top is that a line never wears the colour of the line above it.
+  const KEEP_MARKS = [
+    ["#c3c9b4", "#5d6647"],   // sage, the book's own
+    ["#dcc79c", "#8f733d"],   // ochre
+    ["#dcb398", "#a0634a"],   // terracotta
+    ["#d3aea8", "#935f59"],   // dusty rose
+    ["#b3c2cc", "#557082"],   // slate blue
+    ["#c2b8c9", "#6f6180"],   // lavender
+    ["#adc6c0", "#4f756c"],   // sea green
+  ];
+  const keepMarkOf = id => [...String(id || "x")]
+    .reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261) % KEEP_MARKS.length;
   function openKeepings() {
     const mount = document.getElementById("keepMount");
     if (!mount) return;
+    let above = -1;
     const row = (k) => {
-      // THE MARK IS THE ONE THE BOOKS WEAR, seeded off this line's own id, so
-      // every kept thing has a dab nobody chose and nothing repeats.
-      const sw = paintSwatch(k.id, "#c3c9b4", "#5d6647", "kp-mark");
+      let m = keepMarkOf(k.id);
+      if (m === above) m = (m + 1) % KEEP_MARKS.length;
+      above = m;
+      const sw = paintSwatch(k.id, KEEP_MARKS[m][0], KEEP_MARKS[m][1], "kp-mark");
       return `<div data-type-area="keep/row" class="fq-item kp-item">
         <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
         <button class="kp-drop" type="button" data-drop="${escHtml(k.id)}"
           aria-label="take this off the page">take it off</button>
       </div>`;
     };
-    const ch = (name, note, rows, empty) => `<div data-type-area="keep/chapter" class="fq-ch"
-      ><div data-type-area="keep/chapter" class="fq-ch-h">${name}</div>
-      <div class="fq-ch-rule"></div>
-      <span class="fq-sub kp-note">${note}</span>
-      ${rows.length ? rows.join("") : `<span class="fq-sub kp-empty">${empty}</span>`}</div>`;
-    const mine = keepingsOf("reminder").map(row);
-    const said = keepingsOf("affirmation").map(row);
+    const rows = keepings.filter(k => k && k.text).map(row);
     mount.innerHTML = `<div class="fq-page kp-page">
       <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
         <div data-type-area="keep/header"><h1 class="fq-h1">keeping in mind.</h1>
           <p class="fq-sub-line">nothing here is owed. it is what you wanted to keep where you could see it.</p></div>
-        ${ch("keeping in mind",
-             "directions, not commitments. looked at when you want them, never graded.",
-             mine, "nothing yet. anything you pin from a plan lands here.")}
-        ${ch("in my own words",
-             "lines about you, in your words, for the days you need reading back to yourself.",
-             said, "nothing yet. write one below.")}
-        <div data-type-area="keep/add" class="kp-add">
-          <div class="kp-add-row">
-            <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
-              placeholder="${keepKind === "affirmation" ? "i am someone who…" : "something to keep in mind"}"
-              aria-label="write something to keep">
-            <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
-          </div>
-          <div class="kp-kinds">
-            <button type="button" class="ci-chip kp-kind${keepKind === "reminder" ? " on" : ""}" data-kind="reminder">to keep in mind</button>
-            <button type="button" class="ci-chip kp-kind${keepKind === "affirmation" ? " on" : ""}" data-kind="affirmation">in my own words</button>
-          </div>
+        <div data-type-area="keep/list" class="kp-list">${rows.length ? rows.join("")
+          : `<span class="fq-sub kp-empty">nothing yet. write one below.</span>`}</div>
+        <div data-type-area="keep/add" class="kp-add kp-add-row">
+          <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
+            placeholder="something to keep in mind" aria-label="write something to keep">
+          <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
         </div>
       </div></div>
       <div class="at-margin" id="keepCompanion" data-type-area="keep/margin"></div></div>`;
@@ -42343,7 +42355,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     const file = () => {
       const t = (input.value || "").trim();
       if (!t) return;
-      addKeeping({ text: t, kind: keepKind });
+      addKeeping({ text: t, kind: "reminder" });
       input.value = "";
       openKeepings();
       const again = document.getElementById("keepInput");
@@ -42355,13 +42367,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       e.preventDefault();
       file();
     });
-    mount.querySelectorAll(".kp-kind").forEach(b => b.addEventListener("click", () => {
-      keepKind = b.dataset.kind === "affirmation" ? "affirmation" : "reminder";
-      const held = input.value;
-      openKeepings();
-      const again = document.getElementById("keepInput");
-      if (again) { again.value = held; again.focus(); }
-    }));
     // THE WAY BACK IS THE BREATH, the same one the board's deletes use, and
     // the same scrap: it lives at body level since 11 September precisely so
     // a page like this one can raise it.
@@ -42374,9 +42379,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       twShowUndo("taken off the page", () => restoreKeeping(gone, at), () => openKeepings());
     }));
     openBookPage(document.getElementById("keepOverlay"));
-    // AFTER THE PAGE IS OPEN, NEVER BEFORE: a closed book page is
-    // display:none and every width it reports is zero.
-    buildQuarterRules(mount, ".fq-ch-rule");
   }
   function closeKeepings() {
     closeBookPage(document.getElementById("keepOverlay"));
