@@ -2676,7 +2676,6 @@
   .rm-block-label { font-size: var(--t-label); font-weight: 600; letter-spacing: 0.1em;
     color: var(--ink-muted); margin-top: 8px; line-height: var(--lead); }
   .rm-rc-row { line-height: var(--lead); }
-  .rm-keeps .rm-keep-line { font-size: var(--t-read); line-height: var(--lead); color: var(--ink-soft); }
   /* Plain small-caps text where pills used to be (item 85). */
   .rm-meta-txt { display: inline-block; margin-left: 10px; font-size: var(--t-label);
     font-weight: 600; letter-spacing: 0.06em; color: var(--ink-soft); }
@@ -18992,7 +18991,6 @@
     const objs = g.objectives || [];
     const committed = objs.filter(o => !o.theme && !o.sketch);
     const sketchObjs = objs.filter(o => !o.theme && o.sketch);
-    const themes = objs.filter(o => o.theme);
     // Item 80 (single-sheet ruling, 23 Aug): the roadmap is ONE bark sheet
     // read top to bottom — five quarters as list blocks, then the KEEP
     // block carrying the standing themes one per line, then the firming
@@ -19183,16 +19181,12 @@
         ${o && !sk ? `<div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" data-oid="${escHtml(o.id)}" type="button">+ add weekly work</button></div>` : ``}
       </div>`;
     };
-    // SAID IN PLAIN WORDS (2026-09-07, owner: "what is the keep section").
-    // These are the goal's THEMES, directions without a commitment; the
-    // one-word label read as a mystery, so the block says what it holds.
-    const keeps = themes.length ? `<div data-type-area="chapters/quarter" class="ch-q rm-qblock rm-keeps">
-        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">keeping in mind</span>
-          <span class="rm-meta-txt">directions, not commitments. looked at each quarter, never graded.</span></div>
-        <div class="ch-q-rule"></div>
-        ${themes.map(o => `<div class="rm-keep-line">${escHtml(appVoice(o.label, wroteIt(o)))}</div>`).join("")}
-      </div>` : ``;
-    const anySketch = slots.some(sl => sl.type === "sketch" || !sl.o) || themes.length;
+    // THE GOAL'S DIRECTIONS LIVE IN THE KEEPING BOOK (2026-09-29, owner: "i
+    // dont think we need the keeping in mind in here for each category. We
+    // already have it in a seperate book"). The chapter used to end on a
+    // "keeping in mind" block of the goal's themes; they are read on the
+    // keeping in mind page now, in this goal's colour, beside her own lines.
+    const anySketch = slots.some(sl => sl.type === "sketch" || !sl.o);
     const mount = document.getElementById(o.mount || "roadmapMount");
     // ---- THE CHAPTER, ON PAPER ----
     // The header band was bark and it was the heaviest thing on the page.
@@ -19242,7 +19236,6 @@
           ${beyond.map(sl => qBlock(sl, -1)).join("")}
           <div data-type-area="chapters/add-quarter" class="rm-addq-row"><button class="rm-add-quarter" type="button">+ add a quarter</button></div>
           ${warn ? `<div class="rm-warn-scrap scrap"><div class="torn-paper"><div class="torn-sheet rm-warn-sheet">${escHtml(warn)}</div></div></div>` : ``}
-          ${keeps}
           ${anySketch ? `<div data-type-area="chapters/firming" class="rm-firming">these firm up at your check-ins.</div>` : ``}
           </div>
         </div>
@@ -19395,7 +19388,6 @@
     // exists (post-G2x). Anchored at the first instance on the sheet.
     firstEncounter("rc", mount.querySelector(".rm-q-rc"));
     firstEncounter("sketch", mount.querySelector(".ch-q.sketch .ch-q-label"));
-    firstEncounter("keep", mount.querySelector(".rm-keeps .ch-q-label"));
     wireHelpDot(mount);
     const atDoor = document.getElementById("rmAtlasDoor");
     if (atDoor) atDoor.addEventListener("click", () => { leaveChapter(o); openAtlas(); });
@@ -42442,7 +42434,20 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           aria-label="take this off the page">take it off</button>
       </div>`;
     };
-    const rows = keepings.filter(k => k && k.text).map(row);
+    // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
+    // since the chapter page stopped showing them. Each wears its goal's
+    // area colour rather than a seeded one, which is how it says whose it
+    // is, and it has no way off here: it belongs to the goal, and the
+    // quarter's check-in is where a direction is kept or let go. A paused
+    // goal's wait with it. One she already pinned is not said twice.
+    const same = t => String(t || "").trim().toLowerCase();
+    const pinned = new Set(keepings.map(k => same(k && k.text)));
+    const fromGoals = goals.filter(g => g && g.status !== "parked").flatMap(g =>
+      (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
+        .map(d => `<div data-type-area="keep/row" class="fq-item kp-item kp-goal ${(CATS[g.category] || CATS.Other).cls}">
+        <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
+      </div>`));
+    const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
     mount.innerHTML = `<div class="fq-page kp-page">
       <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
         <div data-type-area="keep/header"><h1 class="fq-h1">keeping in mind.</h1>
