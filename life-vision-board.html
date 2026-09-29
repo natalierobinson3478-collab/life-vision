@@ -15059,13 +15059,16 @@
   // book before it (the WIDER of the two, never the sum), so a cluster keeps
   // its breath when its last member steps off — without this, hiding the
   // quarterly welds the weekly onto the add/release cluster.
-  function shelfRoster() {
+  // `stands` asks it about another shelf than today's: the scale reads the
+  // permanent shelf through it (every book with no come-and-go rule, put
+  // away or not; see shelfWidthCss).
+  function shelfRoster(stands) {
     const out = [];
     SHELF_BOOKS.forEach(bk => {
       // A BOOK IN THE LIBRARY IS OFF THE SHELF THE SAME WAY A CHECK-IN THAT
       // IS NOT DUE IS (2026-09-07): absent, never dimmed. It is still a
       // permanent book, with no come-and-go rule of its own.
-      if ((bk.show && !bk.show()) || (bk.library && !shelfOn(bk.door))) {
+      if (stands ? !stands(bk) : ((bk.show && !bk.show()) || (bk.library && !shelfOn(bk.door)))) {
         const prev = out[out.length - 1];
         if (prev) prev.gapAfter = Math.max(prev.gapAfter || 0, bk.gapAfter || 0);
         return;
@@ -15171,7 +15174,16 @@
       return { mode: "stack", books, putAway, totalW, vbH, baseY: vbH, seatSize: 54,
         seat: { x: seatX, y: first.top + 2 } };
     }
-    const books = shelfRoster().map(bk => {
+    const L = shelfRowLayout(shelfRoster(), true);
+    // The permanent shelf's length, which the drawn shelf takes its scale
+    // from: the same row laid with every book that has no come-and-go rule
+    // standing on it, and nothing put away.
+    L.refW = shelfRowLayout(shelfRoster(bk => !bk.show), false).totalW;
+    return L;
+  }
+  function shelfRowLayout(roster, withPutAway) {
+    const { W, PADV, FS_B, FS_S, FS_MIN_B, LH } = SHELF_TYPE;
+    const books = roster.map(bk => {
       let fsB = FS_B, w = W, inner = w - 14;
       const widest = () => Math.max(...bk.lines.map(([t, k]) =>
         spineTextWidth(k === "b" ? t.toUpperCase() : t, k === "b" ? fsB : FS_S, k === "b" ? "sb-sp" : "sb-spl")));
@@ -15185,7 +15197,7 @@
     books.forEach(b => { b.x = x; b.top = baseY - b.h; x += b.w + (b.gapAfter || 0); });
     // THE BOOKS PUT AWAY lie after the last spine (clear of its lean) and
     // before the bookend, which is placed after them below.
-    const putAway = putAwayPile(x + 18, baseY, 1);
+    const putAway = withPutAway ? putAwayPile(x + 18, baseY, 1) : null;
     if (putAway) x = putAway.x + putAway.w;
     // THE COMPANION IS A BOOKEND (owner, 2026-08-27), not an ornament in the
     // corner. It stands ON the board at the right end, at the scale of the
@@ -15207,6 +15219,22 @@
       // specks to keep them on the board.
       totalW: seatX + Math.round(seatSize * 1.5) + 20,
       vbH: baseY + 92 };
+  }
+  // THE SHELF'S SCALE BELONGS TO THE WHOLE SHELF (2026-09-29, owner, after
+  // putting five books away: "it makes my app look odd. like it doesnt
+  // re-format correctly"). The drawing was sized to fill the width whatever
+  // stood on it, so every book put away made the rest bigger: four books and
+  // a cat came out a third larger and ran off the foot of the board, and the
+  // board's fit could no longer hold the page. The shelf now takes the share
+  // of that width that its own length is of the permanent shelf's (refW), so
+  // a book is one size with four on the shelf or nine, and a shorter shelf
+  // simply stands shorter, centred. With nothing put away the share is 1 and
+  // the width is exactly what it was; a check-in arriving still squeezes
+  // under the max-width, as it always did.
+  function shelfWidthCss(L) {
+    const share = L.refW ? L.totalW / L.refW : 1;
+    const px = innerWidth >= 900 ? Math.round(L.totalW * 1.35) : L.totalW;
+    return `min(${px}px, ${(92 * share).toFixed(2)}vw)`;
   }
   function shelfSvg(L) {
     const { books, totalW, vbH, baseY } = L || (L = shelfLayout());
@@ -15334,7 +15362,7 @@
       return `<g transform="translate(${b.x + 13},${b.top + 3})${ln ? ` rotate(${ln} ${(bw / 2).toFixed(0)} ${bh})` : ""}"
         filter="url(#shade)" opacity=".13"><path d="${shape}" fill="#54503c" stroke="none"/></g>`;
     }).join("");
-    return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${innerWidth >= 900 ? `min(${Math.round(totalW * 1.35)}px, 92vw)` : `${totalW}px`}"
+    return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${shelfWidthCss(L)}"
         fill="none" stroke="#3a3a2e" stroke-width="2.2" stroke-linecap="round" aria-hidden="false">
       <g filter="url(#shade-wide)" opacity=".28"><path stroke="none" fill="#6d6a52"
         d="M26 ${baseY + 20} L${totalW - 30} ${baseY + 16} L${totalW - 34} ${baseY + 50} C${(totalW * 0.6).toFixed(0)} ${baseY + 60} 200 ${baseY + 56} 30 ${baseY + 48} Z"/></g>
