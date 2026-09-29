@@ -7357,6 +7357,10 @@
      the brush; a book put away keeps its row, a shade quieter. */
   .bs-where { background: none; border: none; padding: 0 2px; margin-left: 8px; font: inherit; color: inherit; cursor: pointer; }
   .bs-row.bs-away .bs-name { opacity: 0.55; }
+  /* A library book's name is its door (2026-09-29): the same words, set as
+     a button that looks like nothing but the name. */
+  button.bs-name { background: none; border: none; padding: 0; margin: 0; color: inherit;
+    text-align: left; justify-self: start; cursor: pointer; }
   /* A POKE IN THE WATER (2026-09-07): rings in the water's own line, two
      drops that rise and fall. Drawn for a second and gone. */
   .mg-splash-ring { fill: none; stroke: #6F8A8C; stroke-width: 1.1; }
@@ -7435,8 +7439,15 @@
   .sb-tilt { transition: transform 120ms ease; transform-box: fill-box; transform-origin: 50% 95%; }
   .sb-book.pull .sb-tilt { transform: rotate(-4deg) translateY(-3px); }
   .sb-book:hover .sb-tilt { transform: translateY(-1.5px); }
+  /* The books put away (2026-09-29) lift together and never tip: a pile
+     tipping reads as a pile falling over. */
+  .sb-putaway { cursor: pointer; }
+  .sb-putaway:focus { outline: none; }
+  .sb-putaway.pull .sb-tilt { transform: translateY(-3px); }
+  .sb-putaway:hover .sb-tilt { transform: translateY(-1.5px); }
   @media (prefers-reduced-motion: reduce) { .sb-tilt { transition: none; }
-    .sb-book.pull .sb-tilt, .sb-book:hover .sb-tilt { transform: none; } }
+    .sb-book.pull .sb-tilt, .sb-book:hover .sb-tilt,
+    .sb-putaway.pull .sb-tilt, .sb-putaway:hover .sb-tilt { transform: none; } }
   .help-dot { width: 46px; height: 46px; background: none; border: none; cursor: pointer;
     padding: 2px; display: inline-block; vertical-align: middle; }
   .help-dot svg { width: 100%; height: 100%; overflow: visible; display: block; }
@@ -14867,6 +14878,10 @@
   //             that answers "not yet", which is a book pretending to be a
   //             door. Everything derives: the shelf, the stack, the gaps and
   //             the walk's tour all read the visible roster.
+  //   library   true: the person may put it away (profile.shelf, 7 Sep).
+  //             Away, it is absent the way a check-in that is not due is;
+  //             its name in the library still opens it, and the books put
+  //             away lie by the bookend as the way back (29 Sep).
   const SHELF_BOOKS = [
     { door: "week", aria: "open This week", open: openThisWeek,
       lines: [["a week in the", "s"], ["CERULEAN", "b"], ["SEA", "b"]],
@@ -14930,7 +14945,11 @@
       show: () => goals.length > 0 && !reviewLandedToday()
         && (!!quarterCatchUp() || (quarterlyDueNow() && quarterReviewOpen().open)),
       tour: "the big one, it comes out near the quarter's end and waits until it's done." },
-    { door: "addgoal", aria: "add a life vision", open: openAdd,
+    // IN THE LIBRARY TOO (2026-09-29, owner: "i want to hide ... lessons in
+    // life vision"). Ruled an essential on 7 Sep because it is the way in to
+    // a new goal, and it still is while it is put away: a book in the library
+    // opens from its own name there. An empty board has its own way in.
+    { door: "addgoal", aria: "add a life vision", open: openAdd, library: true,
       lines: [["lessons in", "s"], ["LIFE", "b"], ["VISION", "b"]],
       // gapAfter 30, not 3: while LETTING GO is paused (below) this is the
       // last book of its cluster, so it carries the breath before the FAQ.
@@ -15055,6 +15074,56 @@
     });
     return out;
   }
+  // ---- THE BOOKS PUT AWAY (2026-09-29) ----
+  // Owner: "i want to hide the midnight atlas, breaking bad, things ive
+  // noticed, the secret history, lessons in life vision books. Maybe a little
+  // button or seperate thing i can click and add those books back easily".
+  // The library was already there (7 Sep), three taps inside Facts. This is
+  // its door on the shelf: the books put away lie flat beside the bookend,
+  // the way a book taken down is laid near its shelf, and a tap there opens
+  // the library. Drawn only while something is away, so a shelf nobody has
+  // changed is exactly the shelf it was. At most three lie there and none
+  // carries its title: it says "some are put away", never how many or which,
+  // so it cannot become a count, and it stays small, because less on the
+  // shelf is the reason they left.
+  const PUT_AWAY_FLAT = [{ len: 104, t: 18, dx: 0 }, { len: 94, t: 16, dx: 7 }, { len: 99, t: 17, dx: -2 }];
+  const shelfAway = () => SHELF_BOOKS.filter(bk => bk.library && !shelfOn(bk.door));
+  // Laid from the floor up, from (x, floorY), in the layout's units, at k.
+  function putAwayPile(x, floorY, k) {
+    const away = shelfAway().slice(0, PUT_AWAY_FLAT.length);
+    if (!away.length) return null;
+    let y = floorY;
+    const books = away.map((bk, i) => {
+      const f = PUT_AWAY_FLAT[i], t = f.t * k;
+      y -= t;
+      return { door: bk.door, board: bk.board, rule: bk.rule, x: x + (f.dx + 2) * k, top: y, len: f.len * k, t };
+    });
+    const w = Math.max(...books.map(b => b.x + b.len)) - x + 2 * k;
+    return { x, w, top: y, h: floorY - y, floorY, books };
+  }
+  // The same hand as the spines: flat board, a wobbly outline through
+  // #rough, and one band near each end, the dress turned on its side. With
+  // `cast`, only their shade on the wall, drawn where the spines' is.
+  function putAwaySvg(P, cast) {
+    const f1 = n => n.toFixed(1);
+    const bodyOf = (w, h) => `M2 2 C${f1(w * 0.3)} 0.5 ${f1(w * 0.7)} 2.5 ${f1(w - 2)} 1.5 L${f1(w - 1.5)} ${f1(h - 1.5)} C${f1(w * 0.66)} ${f1(h)} ${f1(w * 0.3)} ${f1(h - 1.5)} 1.5 ${f1(h - 1)} Z`;
+    if (cast) return P.books.map(b => `<g transform="translate(${f1(b.x + 10)},${f1(b.top + 3)})"
+        filter="url(#shade)" opacity=".13"><path d="${bodyOf(b.len, b.t)}" fill="#54503c" stroke="none"/></g>`).join("");
+    const flat = b => {
+      const w = b.len, h = b.t, body = bodyOf(w, h);
+      const band = rx => `<path d="M${f1(rx)} 3 L${f1(rx - 0.6)} ${f1(h - 3)}" stroke="${b.rule}" stroke-width="1.5" opacity=".62"/>`;
+      return `<g transform="translate(${f1(b.x)},${f1(b.top)})">
+          <path d="${body}" fill="${b.board}" stroke="none"/>
+          <path d="M5 ${f1(h - 4)} L${f1(w - 5)} ${f1(h - 3.5)}" stroke="#3a3a2e" stroke-width="3" opacity=".08"/>
+          <g filter="url(#rough)"><path d="${body}" fill="none" stroke="#3a3a2e" stroke-width="2.05"/>${band(12)}${band(w - 12)}</g>
+        </g>`;
+    };
+    return `<g class="sb-putaway" role="button" tabindex="0" aria-label="your library, the books you put away">
+        <g class="sb-tilt">
+          <rect class="sb-hit" x="${f1(P.x - 8)}" y="${f1(P.top - 12)}" width="${f1(P.w + 16)}" height="${f1(P.h + 16)}" fill="transparent" stroke="none"/>
+          ${P.books.map(flat).join("")}
+        </g></g>`;
+  }
   function shelfLayout() {
     const { W, PADV, FS_B, FS_S, FS_MIN_B, LH } = SHELF_TYPE;
     if (shelfStackMode()) {
@@ -15070,7 +15139,11 @@
       const barW = Math.round(Math.max(...measured.map(b => b.inlineW)) + 44);
       const barH = 48;
       const OFFS = [0, 12, 5, 15, 2, 13, 7, 16], LEANS = [1.2, -1.5, 0.9, -1, 1.6, -0.8, 1.2, -1.4];
-      let y = 10;
+      // THE BOOKS PUT AWAY lie on TOP of the stack, beside the companion's
+      // perch: the stack has no end to lay them at, and the top of a pile is
+      // where a book taken down goes. The stack steps down to make the room.
+      const PUT_K = 0.8, probe = putAwayPile(0, 0, PUT_K);
+      let y = 10 + (probe ? Math.ceil(probe.h) + 2 : 0);
       const books = measured.map((bk, i) => {
         const out = { ...bk, w: barW, h: barH, fsB: FS_B,
           x: 8 + OFFS[i % OFFS.length], top: y, lean: LEANS[i % LEANS.length] };
@@ -15089,8 +15162,14 @@
       // The pile has no right end to stand at, so the companion keeps its
       // perch on top — but it is sized the same way, in the layout's units,
       // so it holds its proportion when the stack is fitted to the phone.
-      return { mode: "stack", books, totalW, vbH, baseY: vbH, seatSize: 54,
-        seat: { x: first.x + barW / 2, y: first.top + 2 } };
+      // Resting a unit or two into the top bar, never floating over its lean;
+      // and the companion steps right of them, never onto them.
+      const putAway = probe ? putAwayPile(first.x + 10, first.top + 2, PUT_K) : null;
+      const seatX = putAway
+        ? Math.min(first.x + barW - 30, Math.max(first.x + barW / 2, putAway.x + putAway.w + 54 / 2 + 10))
+        : first.x + barW / 2;
+      return { mode: "stack", books, putAway, totalW, vbH, baseY: vbH, seatSize: 54,
+        seat: { x: seatX, y: first.top + 2 } };
     }
     const books = shelfRoster().map(bk => {
       let fsB = FS_B, w = W, inner = w - 14;
@@ -15104,6 +15183,10 @@
     const baseY = Math.max(...books.map(b => b.h)) + 40;
     let x = 44;
     books.forEach(b => { b.x = x; b.top = baseY - b.h; x += b.w + (b.gapAfter || 0); });
+    // THE BOOKS PUT AWAY lie after the last spine (clear of its lean) and
+    // before the bookend, which is placed after them below.
+    const putAway = putAwayPile(x + 18, baseY, 1);
+    if (putAway) x = putAway.x + putAway.w;
     // THE COMPANION IS A BOOKEND (owner, 2026-08-27), not an ornament in the
     // corner. It stands ON the board at the right end, at the scale of the
     // books it stands beside: as tall as the shortest spine, which is what a
@@ -15114,7 +15197,7 @@
     // 200px books on a wide board.
     const seatSize = Math.round(Math.min(...books.map(b => b.h)));
     const seatX = x + 26;
-    return { mode: "shelf", books, baseY, seatX, seatSize,
+    return { mode: "shelf", books, putAway, baseY, seatX, seatSize,
       // its own width is reserved, so the bookend can never sit over the
       // last spine or hang off the end of the board
       seat: { x: seatX + seatSize / 2, y: baseY - 1 },
@@ -15166,6 +15249,7 @@
       return `<svg class="sb-full" viewBox="0 0 ${totalW} ${vbH}" style="width:${innerWidth >= 900 ? `min(${Math.round(totalW * 1.35)}px, 92vw)` : `${totalW}px`}"
           fill="none" stroke="#3a3a2e" stroke-width="2.2" stroke-linecap="round" aria-hidden="false">
         ${books.map(barSvg).join("\n        ")}
+        ${L.putAway ? putAwaySvg(L.putAway) : ""}
       </svg>`;
     }
     const bookSvg = bk => {
@@ -15254,12 +15338,13 @@
         fill="none" stroke="#3a3a2e" stroke-width="2.2" stroke-linecap="round" aria-hidden="false">
       <g filter="url(#shade-wide)" opacity=".28"><path stroke="none" fill="#6d6a52"
         d="M26 ${baseY + 20} L${totalW - 30} ${baseY + 16} L${totalW - 34} ${baseY + 50} C${(totalW * 0.6).toFixed(0)} ${baseY + 60} 200 ${baseY + 56} 30 ${baseY + 48} Z"/></g>
-      ${wallCast}
+      ${wallCast}${L.putAway ? putAwaySvg(L.putAway, true) : ""}
       <path d="${plankTop}" fill="var(--shelf-plank)" stroke="none"/>
       ${books.map(bookSvg).join("\n      ")}
+      ${L.putAway ? putAwaySvg(L.putAway) : ""}
       <path d="M18 ${baseY + 3} C200 ${baseY - 2} ${(totalW * 0.7).toFixed(0)} ${baseY + 9} ${totalW - 26} ${baseY + 2} L${totalW - 28} ${baseY + 19} C${(totalW * 0.7).toFixed(0)} ${baseY + 25} 208 ${baseY + 15} 20 ${baseY + 19} Z"
         fill="var(--shelf-plank)" stroke="none"/>
-      ${books.map(b => `<g filter="url(#shade)" opacity=".38"><ellipse stroke="none" fill="#453f2c"
+      ${books.concat(L.putAway ? [L.putAway] : []).map(b => `<g filter="url(#shade)" opacity=".38"><ellipse stroke="none" fill="#453f2c"
         cx="${(b.x + b.w / 2).toFixed(0)}" cy="${baseY + 4}" rx="${(b.w / 2 + 2).toFixed(0)}" ry="4"/></g>`).join("")}
       <path d="M20 ${baseY + 4} C200 ${baseY - 1} ${(totalW * 0.7).toFixed(0)} ${baseY + 10} ${totalW - 28} ${baseY + 3}"
         stroke="var(--shelf-lit)" stroke-width="1.8" opacity=".5"/>
@@ -15404,6 +15489,18 @@
       b.addEventListener("click", go);
       b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
     });
+    // The books put away open the library, with the spines' own small pull.
+    // The watch below needs nothing new: a book put away leaves the roster,
+    // so the doors' signature already changes whenever these do.
+    const laid = slot.querySelector(".sb-putaway");
+    if (laid) {
+      const go = () => {
+        laid.classList.add("pull");
+        setTimeout(() => { laid.classList.remove("pull"); openBooksSheet(); }, 130);
+      };
+      laid.addEventListener("click", go);
+      laid.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+    }
     shelfDoorSig = L.books.map(b => b.door).join(",");
   }
   // A BOOK'S MOMENT ARRIVES WHILE THE PAGE JUST SITS THERE. This board gets
@@ -21309,12 +21406,25 @@
     // which flips it. The essentials carry no word and cannot leave.
     list.innerHTML = SHELF_BOOKS.map(bk => `<div data-type-area="books/row" class="bs-row${bk.library && !shelfOn(bk.door) ? " bs-away" : ""}">
       ${bookSwatch(bk)}
-      <span class="bs-name">${escHtml(bookTitle(bk))}</span>
+      ${bk.library ? `<button type="button" class="bs-name bs-open" data-open="${bk.door}">${escHtml(bookTitle(bk))}</button>`
+        : `<span class="bs-name">${escHtml(bookTitle(bk))}</span>`}
       <span class="bs-line">${escHtml(bk.tour)}${bk.library
         ? ` <button type="button" class="bs-where" data-shelf="${bk.door}"><span class="ch-hi">${shelfOn(bk.door) ? "on my shelf" : "in the library"}</span></button>` : ``}</span></div>`).join("");
     list.querySelectorAll(".bs-where").forEach(b => b.addEventListener("click", () => {
       shelfSet(b.dataset.shelf, !shelfOn(b.dataset.shelf));
       openBooksSheet();
+    }));
+    // A BOOK IN THE LIBRARY STILL OPENS (2026-09-29). Put away means off the
+    // shelf, never out of use: a new goal still starts at LIFE VISION with
+    // that book in here. Only a library book's name is a door; the check-in
+    // books keep their hours. The sheet, and Facts if it is under it, close
+    // first, so the book opens on the board as it does from its spine.
+    list.querySelectorAll(".bs-open").forEach(b => b.addEventListener("click", () => {
+      const bk = SHELF_BOOKS.find(k => k.door === b.dataset.open);
+      closeBookPage(document.getElementById("booksSheetOverlay"));
+      const faq = document.getElementById("faqOverlay");
+      if (faq && faq.classList.contains("open")) closeFaqPage();
+      if (bk && bk.open) bk.open();
     }));
     const ov = document.getElementById("booksSheetOverlay");
     openBookPage(ov);
@@ -42386,7 +42496,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         <div data-type-area="faq/header"><h1 class="fq-h1">facts about life.</h1>
           <p class="fq-sub-line">${escHtml(FQ_SAFETY_LINE)}</p></div>
         ${ch("the books", `
-          ${row("books", `what each book is ${DRAWN_ARROW}`, "every book on the shelf, and what it opens.")}
+          ${row("books", `what each book is, and your library ${DRAWN_ARROW}`, "every book on the shelf, what it opens, and the ones you put away.")}
           ${row("tour", `replay the shelf tour ${DRAWN_ARROW}`, "the walk that points at each one in turn.")}`)}
         ${/* THE INTRO IS EXPLANATION, NOT FURNITURE (owner, 2026-08-28). It
              sat under "the books" because it replays alongside the shelf
