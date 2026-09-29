@@ -7538,6 +7538,12 @@
   .tw-head { padding-right: calc(var(--comp-seat, 140px) + 12px); min-height: calc(var(--comp-seat, 140px) + 36px); }
   /* No companion, no seat: the head is the words' own height (2026-09-08). */
   #thisWeekMount:not(:has(#twCompanion .companion)) .tw-head { padding-right: 0; min-height: 0; }
+  /* A figure standing over the sand beside the title owes the head row no
+     height either (2026-09-29). twSeatCompanion sets this only when it has
+     found the figure a place that covers no word; otherwise the seat above
+     stands. One lead under the title, the same air every section heading
+     has above it, so "today" does not sit against the title. */
+  .tw-head.tw-seat-free { min-height: 0; margin-bottom: var(--lead); }
   @media (max-width: 640px) {
     .tw-head { --comp-seat: 96px; }
     /* At the phone's size the prop tucks under the figure's feet as it
@@ -7906,20 +7912,8 @@
   /* The drawn arrows are 16px tall, so the row was 16px tall — the last
      block on the sheet, sitting 3px off the last rule. It takes one rule,
      with the marks centred in it. */
-  /* THE ROCK COLLECTION: finished stones' second home, centred in the
-     open sand above the companion; the line beneath names a tapped one. */
-  /* THE HANDLES CARRY THE TOUCH RULE (2026-09-05). The whole patch wore
-     touch-action: none for a day, and a scroll that began on the pile went
-     nowhere — one of the "glitchy" feelings. Now each stone has an HTML
-     handle over it (where iOS honours touch-action) and the sand between
-     stones scrolls like the rest of the page. */
-  .tw-collection { margin-top: calc(var(--lead) * 0.35); position: relative; }
-  .tw-col-handle { position: absolute; transform: translate(-50%, -50%);
-    background: none; border: none; padding: 0; border-radius: 50%;
-    touch-action: none; cursor: grab; -webkit-tap-highlight-color: transparent; }
-  .tw-col-handle:focus-visible { outline: none /* A1: the drawn ring */; }
-  .tw-collection.dragging .tw-col-handle { cursor: grabbing; }
-  .tw-collection svg { display: block; margin: 0 auto; }
+  /* (The rock collection's styles stood here until 2026-09-28, when the
+     pile under the week came off; a finished stone stays on its day.) */
   /* THE LINE KEEPS ITS PLACE WHETHER OR NOT IT SPEAKS (2026-09-07, owner:
      "the page is insanely jumping, like the page flickers up and down and
      up and down"). An empty paragraph is no paragraph at all: the line was
@@ -24652,7 +24646,7 @@
   // line, the corner. What is not on this list is sand.
   const TW_WORDS_ON_THE_SAND = "#thisWeekMount .tw-head > *, #thisWeekMount .tw-topline, #thisWeekMount .tw-row, "
     + "#thisWeekMount .tw-sec-head, #thisWeekMount .tw-sec-label, #thisWeekMount .tw-unplaced, #thisWeekMount .tw-parked-line, "
-    + "#thisWeekMount .tw-catchup, #twStripMount, #twCollectionMount, #twColLine, #twCorner, #twCornerAdd";
+    + "#thisWeekMount .tw-catchup, #twStripMount, #twColLine, #twCorner, #twCornerAdd";
   function roamWorld() {
     const vp = { w: innerWidth, h: innerHeight };
     let sheet = null;
@@ -24670,7 +24664,7 @@
       // able to move anywhere except on the words or graphics"): the rows,
       // the strip, the pile and its line, the corner. What is not sand is
       // not ground.
-      ["#twStripMount", "#twCollectionMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
+      ["#twStripMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
       document.querySelectorAll(TW_WORDS_ON_THE_SAND).forEach(take);
       // AND THE GROUND ENDS WHERE THE SAND ENDS (2026-09-07): no target
       // below the garden's foot, which would stretch the page past it.
@@ -24755,7 +24749,11 @@
   function roamMove(dx, dy, ms) {
     roam.slot.style.setProperty("--roam-dur", (ms / 1000).toFixed(2) + "s");
     roam.x = dx; roam.y = dy;
-    roam.slot.style.transform = dx || dy ? `translate(${Math.round(dx)}px, ${Math.round(dy)}px)` : "";
+    // dx and dy are the screen's pixels; on This Week the page may be drawn
+    // larger (twZoom, 2026-09-28), and a translate inside it is multiplied
+    // by that, so the walk is divided back down to land where it aimed.
+    const z = roam.scope === "week" && twZoom > 1 ? twZoom : 1;
+    roam.slot.style.transform = dx || dy ? `translate(${Math.round(dx / z)}px, ${Math.round(dy / z)}px)` : "";
   }
   function roamNext(ms, fn) {
     clearTimeout(roam.timer);
@@ -28616,19 +28614,14 @@
         // this-week move against the flex slot, and now the slot has a
         // pebble in the lane to walk onto the chosen day.
         occurrenceSlotsFor(m, g.id, wk).forEach((sl, n) => {
-          // A FINISHED OCCURRENCE DRAWS NO STONE (owner ruling, 2026-09-01:
-          // "if i complete a task i want that specific pebble for that day
-          // to disapear. unless i uncheck it and then it comes back"). This
-          // replaces "ink only ever accumulates" FOR THE LIVE STRIP: the
-          // strip's question is what is still to do, and a filled stone
-          // answered a question nobody was asking it. The RENDER is the
-          // only layer that skips — the slot still exists, so the rose's
-          // hours and the chapter's totals do not drain as things get
-          // ticked, and an untick re-emits the stone exactly where it was.
-          // ON THIS WEEK ONLY: a past week's sheet is a RECORD (test 165),
-          // and a record with its done stones removed says the week held
-          // less than it did. The turn of the sheet keeps every stone.
-          if (sl.done && wkS === weekKeyOf()) return;
+          // A FINISHED OCCURRENCE STAYS ON ITS DAY AND FILLS IN (owner,
+          // 2026-09-28: "I dont want the pebbles to go under the week
+          // anymore. completed pebbles stay on the day completed and just
+          // fill in"). Overturns 2026-09-01's "a finished occurrence draws
+          // no stone" and its other half, the rock collection under the
+          // week (2026-09-02): ink only accumulates again, on every week
+          // alike. A done slot's date is the day it was done (a floating
+          // one is re-dated to its completion), so the stone stands there.
           if (sl.date == null) {
             // `from` IS THE SLOT KEY ("f0", "f1"), not null. A move is
             // written under where the SCHEDULE put the occurrence, and a
@@ -28680,9 +28673,8 @@
       .forEach(r => {
       const wk = wkS, wd = weekDates(wk);
       occurrenceSlotsFor(r, null, wk).forEach((sl, n) => {
-        // Finished draws no stone here either — one ruling, both loops,
-        // and the same record rule for a week that is not this one.
-        if (sl.done && wkS === weekKeyOf()) return;
+        // Finished stays on its day and fills in here too, one ruling,
+        // both loops (2026-09-28).
         const base = { cls: "cat-none", cat: null, done: !!sl.done, gid: null, mid: r.id,
           // A task with no duration sits on the floor — it is a real thing
           // on the day, and the smallest stone still says so.
@@ -29022,39 +29014,13 @@
                  announces fullness, and "0 hrs unspoken" would be exactly
                  that. Existing style, existing size — .tw-readout, which is
                  the line this replaces. -->
-            <!-- WHERE THE QUARTER STANDS. The page is opened daily to ask
-                 whether this quarter is being won, so the line under the
-                 title answers that and nothing else: which week of how many,
-                 and how far off the reality check. Facts, no verdict, and no
-                 percentage — a percentage would be the app grading the
-                 quarter, which is the one thing the rose refuses to do. -->
-            <!-- ONE SUBTITLE, not two stacked lines. Where the quarter
-                 stands and how much of the week is still unspoken for are
-                 both facts about the same week, and read as one sentence
-                 separated the way the rest of the page separates facts. The
-                 unspoken half keeps its own element and its own absence
-                 rule — it is still gone entirely when the week is full — so
-                 it stays one span inside the line rather than merged text. -->
-            <!-- NO COUNTDOWN (2026-09-01, DECISIONS: the garden beside the
-                 desk). The line said "week 10 of 14" and then counted
-                 something down in every branch — the reality check, then
-                 the quarter's close. Days-remaining is pressure on a page
-                 opened daily, so the line now says where the quarter
-                 stands and stops. quarterStandingLine keeps its shape for
-                 a page that wants the countdown, and is caller-less today
-                 (named in DECISIONS per the dead-code rule). -->
-            <p class="tw-sub-line" data-type-area="thisweek/quarter"><span
-              class="tw-quarter-line" id="twQuarterLine">${escHtml((() => {
-                // THE LINE COUNTS THE WEEK ON THE SHEET (owner, 2026-09-02:
-                // "if i go to next week, it still says its the same week X
-                // out of Y"). Asked at the viewed week's own date, so a
-                // turned page says ITS number — and a week that lands in
-                // the next quarter gets that quarter's own count, because
-                // quarterWeekPosition derives both halves from the date it
-                // is handed.
-                const pos = quarterWeekPosition(new Date(twViewWk() + "T12:00:00"));
-                return "week " + pos.week + " of " + pos.of;
-              })())}</span></p>
+            <!-- NO WEEK NUMBER UNDER THE TITLE (owner, 2026-09-28: "i dont
+                 want to show 'week X of Y' anymore. Lets just remove that").
+                 The line said where the quarter stood ("week 14 of 14"),
+                 and before that counted the quarter down (2026-09-01). The
+                 title stands alone now. quarterWeekPosition is left with no
+                 live caller (quarterStandingLine was already dead), named in
+                 CLAUDE.md's known-dead list. -->
             <!-- THE HOURS LINE LEFT THE HEADER (2026-09-01, DECISIONS: the
                  garden beside the desk) — it stands beside the strip now,
                  where the hours are drawn. -->
@@ -29390,17 +29356,10 @@
             ${twCanFwd() ? `<button class="tw-turn tw-turn-fwd" type="button" id="twTurnFwd"
               aria-label="the week after">${DRAWN_TURN("fwd")}</button>` : `<span class="tw-turn-gap"></span>`}
           </div>
-          <!-- THE ROCK COLLECTION (2026-09-02, owner: "when we finish a
-               task, it should show in this blank space where the
-               companion is, like a little rock collection. and be filled
-               in. and if you click it still shows which one it belonged
-               to"). The strip's done-disappears rule gets its other half:
-               a finished occurrence's stone leaves its day and lands
-               here, FILLED, in the open sand the companion keeps. Live
-               week only — a past week is a record and keeps its stones on
-               the strip. Built after injection, like the strip, because
-               it lays stones to a measured width. -->
-          <div class="tw-collection" id="twCollectionMount" data-type-area="thisweek/collection"></div>
+          <!-- THE ROCK COLLECTION CAME OFF (owner, 2026-09-28: "I dont
+               want the pebbles to go under the week anymore"). A finished
+               stone stays on its day and fills in, so nothing lands down
+               here; the naming line stays, for a chosen day or stone. -->
           <p class="tw-col-line" id="twColLine" data-type-area="thisweek/colline"></p>
         </div></div>
       </div>
@@ -29538,18 +29497,9 @@
         }
         return null;
       };
-      // THE PILE IS A DROP TARGET TOO (2026-09-06, owner: "drag a incomplete
-      // pebble that week to my pile of done pebbles to indicate i did
-      // actually complete it that day im dragging it from, just didnt mark
-      // it at the time"). Its patch of sand is measured at least a hand
-      // tall, so an empty pile still catches the first stone.
-      const twOnPile = (clientX, clientY) => {
-        const col = document.getElementById("twCollectionMount");
-        if (!col || !col.isConnected) return false;
-        const r = col.getBoundingClientRect();
-        const bottom = Math.max(r.bottom, r.top + 72);
-        return clientX >= r.left && clientX <= r.right && clientY >= r.top - 6 && clientY <= bottom;
-      };
+      // (The pile under the week was a drop target from 2026-09-06, "drag a
+      // incomplete pebble ... to my pile of done pebbles". The pile came off
+      // on 2026-09-28, and its drop went with it.)
       // AND THE CORNER IS WHERE ONE GOES TO BE DROPPED (2026-09-11, owner:
       // "I can get rid of rocks and dump it in a trash can or something if i
       // dont want to do it that week on a particular day"). Until now a stone
@@ -29590,7 +29540,10 @@
           // IT FOLLOWS YOUR HAND. A pebble that stays put while you drag
           // gives you nothing to aim with — you are guessing where it will
           // land right up until you let go.
-          const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+          // Divided by the page's zoom (2026-09-28): the strip is drawn at
+          // its own size and shown larger, so a finger's pixel is less
+          // than one of the drawing's.
+          const dx = (e.clientX - drag.x) / twZoom, dy = (e.clientY - drag.y) / twZoom;
           drag.twins.forEach(x => x.setAttribute("transform", `translate(${dx} ${dy})`));
           // THE CORNER SAYS WHEN IT WOULD TAKE IT, the same way the days
           // light up under a stone. An unfinished stone only: a finished one
@@ -29637,16 +29590,6 @@
           twSelectMech(d.gid, d.mid);
           twHover = null;
           twPaintSelection();
-          return;
-        }
-        // DROPPED ON THE PILE: IT WAS DONE, THAT DAY. The pile is where
-        // finished stones live, so a stone carried there is finished, on
-        // the day it was carried from; a stone from the lane has no day and
-        // is done today. The write is the row's own tick, so the pile, the
-        // row and the week's record all agree.
-        if (!d.done && twIsNow() && twOnPile(e.clientX, e.clientY)) {
-          tickOccurrence(d.gid, d.mid, d.date || null);
-          renderThisWeek();
           return;
         }
         // DROPPED ON THE CORNER: NOT THIS DAY. One occurrence, this week
@@ -29826,6 +29769,10 @@
       }
       const place = el => {
         if (!el) return;
+        // THE SEAT ARRIVES AFTER THE PAGE WAS FITTED. The figure is mounted
+        // asynchronously, and under 1280px its seat makes the head row
+        // taller, so the page is fitted to the screen again once it stands.
+        if (mount.isConnected) { twSeatCompanion(mount); twFitToScreen(mount); twSandGroundPaint(); }
         if (compRun.yawnPending) {
           compRun.yawnPending = false;
           setTimeout(() => { if (el.isConnected) { el.classList.add("b-yawn"); setTimeout(() => el.classList.remove("b-yawn", "gesturing"), 1200); } }, 300);
@@ -30025,200 +29972,9 @@
       btn.addEventListener("focus", () => twPreview(as()));
       btn.addEventListener("blur", () => twPreview(null));
     });
-    // ---- THE ROCK COLLECTION: where finished stones land ----
-    // Derived the way the strip derives, from the same walk with the same
-    // skips, keeping exactly the slots the live strip drops: the done
-    // ones. One source of stones, two homes — the day while it waits, the
-    // collection once it is finished.
-    const colMount = mount.querySelector("#twCollectionMount");
-    if (colMount) {
-      const doneStones = [];
-      if (twIsNow()) {
-        const wkC = weekKeyOf();
-        twWeekGoals(wkC).filter(g => g.status === "active").forEach(g => {
-          const cls = (CATS[g.category] || CATS.Other).cls;
-          weeklyWorkFor(g, { wk: wkC }).forEach(r2 => {
-            const m2 = r2.m;
-            if (m2.kind === "reminder") return;
-            if (r2.early && !r2.pulled) return;
-            occurrenceSlotsFor(m2, g.id, wkC).forEach((sl, n) => {
-              if (!sl.done) return;
-              doneStones.push({ cls, cat: g.category, gid: g.id, mid: m2.id,
-                mins: minutesOf(m2, g.id, wkC), date: sl.date || "", from: sl.origin,
-                slot: n, done: true });
-            });
-          });
-        });
-        // FINISHED HAND-ADDED TASKS LAND HERE TOO (2026-09-02, with the
-        // grey-stone ruling): the strip's own two sources, done slots only.
-        twWeekReminders(wkC).filter(r => r && r.schedule)
-          .concat(remindersInWeek(wkC).filter(r => r && !r.schedule))
-          .forEach(r => occurrenceSlotsFor(r, null, wkC).forEach((sl, n) => {
-            if (!sl.done) return;
-            doneStones.push({ cls: "cat-none", cat: null, gid: null, mid: r.id,
-              mins: minutesOf(r, null, wkC), date: sl.date || "", from: sl.origin,
-              slot: n, done: true });
-          }));
-      }
-      if (!doneStones.length) {
-        colMount.innerHTML = "";
-      } else {
-        const wkC = weekKeyOf();
-        if (twCollect.wk !== wkC) twCollect = { wk: wkC, pos: {} };
-        const CW = colMount.clientWidth || 320;
-        const CH = 96;
-        // A PILE, NOT A LINE (owner, 2026-09-02: "instead of collecting in
-        // a straight line they collect in like a little pile"). Courses
-        // laid like a cairn seen from the front — a base row, fewer on
-        // each course above, nestled a half-step over — the triangle a
-        // hand makes dropping stones in one spot. A stone the hand has
-        // moved rests where it was left instead (twCollect, below).
-        const n = doneStones.length;
-        const courses = [];
-        let cLeft = n, cw = Math.max(1, Math.ceil((Math.sqrt(8 * n + 1) - 1) / 2));
-        while (cLeft > 0) {
-          const take = Math.max(1, Math.min(cw, cLeft));
-          courses.push(take); cLeft -= take; cw = Math.max(1, cw - 1);
-        }
-        const spots = []; let k0 = 0;
-        courses.forEach((cnt, ci) => {
-          for (let j = 0; j < cnt; j++, k0++) spots.push({
-            x: CW / 2 + (j - (cnt - 1) / 2) * 19 + (ci % 2 ? 4 : 0) + (twJit(k0 + 3, 7) - 0.5) * 6,
-            y: CH - 16 - ci * 14 + (twJit(k0 + 11, 5) - 0.5) * 4 });
-        });
-        const keyOf = it => (it.gid == null ? "" : it.gid) + "|" + it.mid + ":" + it.slot;
-        const laid = {};
-        const parts = doneStones.map((it, k) => {
-          const key = keyOf(it);
-          const p = twCollect.pos[key];
-          const x = p ? Math.max(10, Math.min(CW - 10, p[0])) : spots[k].x;
-          const y = p ? Math.max(10, Math.min(CH - 8, p[1])) : spots[k].y;
-          laid[key] = { x, y };
-          return twStone(x, y, twStoneR(it.mins), it.cls, true, k * 7 + 2, it);
-        });
-        colMount.innerHTML = `<svg class="tw-col-svg" width="${CW}" height="${CH}"
-          viewBox="0 0 ${CW} ${CH}">${parts.join("")}</svg>`;
-        // A COLLECTED STONE STILL KNOWS WHOSE IT WAS: tapping it is the
-        // page's one selection (the row lights, the paint decides), and
-        // the line under the pile names it in place, because the lit row
-        // is a screen away when you are standing at the foot.
-        // AND IT CAN BE PLAYED WITH (owner, 2026-09-02): a drag moves the
-        // stone, only inside this patch of sand below the strip — the
-        // same recipe as the strip's own drag (document listeners, a
-        // wobble gate, cancel restores), a tap still just asks. Where it
-        // is dropped is remembered for the week and smooths with it.
-        // THE HANDLE IS HTML AND THE DROP IS IN PLACE (2026-09-05, "it
-        // doesnt really run smooth on my phone"). The drawn paths are the
-        // picture; what a finger holds is a button laid over each stone,
-        // where iOS honours touch-action, so the sand between stones
-        // scrolls and a stone drags any direction. Letting go moves the
-        // paths and the handle to where the finger left them and writes
-        // the resting place — nothing else on the page is rebuilt, which
-        // is what took the snap out of the release.
-        const colLine = mount.querySelector("#twColLine");
-        colMount.querySelectorAll(".tw-stone[tabindex]").forEach(p => p.removeAttribute("tabindex"));
-        const baked = {};
-        Object.keys(laid).forEach(k => { baked[k] = { x: laid[k].x, y: laid[k].y }; });
-        const keyOfEl = x => (x.dataset.goal === "null" || x.dataset.goal === "" ? "" : x.dataset.goal)
-          + "|" + x.dataset.mech + ":" + x.dataset.slot;
-        const stoneEls = key => [].slice.call(colMount.querySelectorAll(".tw-stone[data-mech]"))
-          .filter(x => keyOfEl(x) === key);
-        colMount.insertAdjacentHTML("beforeend", doneStones.map(it => {
-          const key = keyOf(it), at = laid[key], r = twStoneR(it.mins);
-          return `<button type="button" class="tw-col-handle" data-key="${escHtml(key)}"
-            data-goal="${it.gid}" data-mech="${escHtml(it.mid)}" data-slot="${it.slot}"
-            data-date="${it.date || ""}" aria-label="a finished stone, tap to see whose, drag to move"
-            style="left:${at.x.toFixed(1)}px; top:${at.y.toFixed(1)}px; width:${
-              (TW_STONE_R * 2 + 14).toFixed(0)}px; height:${(r * 2 + 12).toFixed(0)}px"></button>`;
-        }).join(""));
-        const setTx = (t, x, y) => {
-          if (Math.abs(x) > 0.01 || Math.abs(y) > 0.01) t.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
-          else t.removeAttribute("transform");
-        };
-        let cdrag = null;
-        const cUnhook = () => {
-          document.removeEventListener("pointermove", cMove, true);
-          document.removeEventListener("pointerup", cUp, true);
-          document.removeEventListener("pointercancel", cCancel, true);
-        };
-        const cMove = e2 => {
-          if (!cdrag) return;
-          const gate = e2.pointerType === "touch" ? 6 : 4;
-          const dx = e2.clientX - cdrag.x, dy = e2.clientY - cdrag.y;
-          if (!cdrag.moved && (Math.abs(dx) > gate || Math.abs(dy) > gate)) {
-            cdrag.moved = true;
-            colMount.classList.add("dragging");
-          }
-          if (cdrag.moved) {
-            cdrag.twins.forEach(t => setTx(t, cdrag.off.x + dx, cdrag.off.y + dy));
-            cdrag.h.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-          }
-        };
-        const cCancel = () => {
-          cUnhook();
-          if (!cdrag) return;
-          const d = cdrag; cdrag = null;
-          colMount.classList.remove("dragging");
-          d.twins.forEach(t => setTx(t, d.off.x, d.off.y));
-          d.h.style.transform = "";
-        };
-        const cUp = e2 => {
-          cUnhook();
-          if (!cdrag) return;
-          const d = cdrag; cdrag = null;
-          colMount.classList.remove("dragging");
-          d.h.style.transform = "";
-          if (!d.moved) { d.twins.forEach(t => setTx(t, d.off.x, d.off.y)); d.pick(); return; }
-          const nx = Math.max(10, Math.min(CW - 10, d.ox + (e2.clientX - d.x)));
-          const ny = Math.max(10, Math.min(CH - 8, d.oy + (e2.clientY - d.y)));
-          d.twins.forEach(t => setTx(t, nx - d.base.x, ny - d.base.y));
-          d.h.style.left = nx.toFixed(1) + "px";
-          d.h.style.top = ny.toFixed(1) + "px";
-          laid[d.key] = { x: nx, y: ny };
-          twCollect.pos[d.key] = [Math.round(nx), Math.round(ny)];
-          saveState();
-        };
-        colMount.querySelectorAll(".tw-col-handle").forEach(h => {
-          const key = h.dataset.key;
-          const pick = () => {
-            const same = twHeld && twHeld.mid === h.dataset.mech
-              && twGoalKey(twHeld.gid) === twGoalKey(h.dataset.goal);
-            twSelectMech(h.dataset.goal, h.dataset.mech);
-            twHover = null;
-            twPaintSelection();
-            if (!colLine) return;
-            if (same) { colLine.textContent = ""; return; }
-            const g3 = goals.find(x => x.id === Number(h.dataset.goal));
-            const m3 = g3 ? (g3.mechanisms || []).find(x => x.id === h.dataset.mech)
-                          : reminderList().find(x => x.id === h.dataset.mech);
-            const dayWord = h.dataset.date
-              ? new Date(h.dataset.date + "T12:00:00")
-                  .toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
-              : "";
-            colLine.textContent = m3
-              ? appVoice(m3.weekLabel ?? m3.label, wroteIt(m3)) + (dayWord ? ", done " + dayWord : ", done")
-              : "";
-          };
-          h.addEventListener("pointerdown", e3 => {
-            if (e3.button != null && e3.button !== 0) return;
-            e3.preventDefault();
-            const pos = laid[key] || { x: CW / 2, y: CH - 20 };
-            const base = baked[key] || pos;
-            cdrag = { key, h, twins: stoneEls(key), pick, ox: pos.x, oy: pos.y, base,
-                      off: { x: pos.x - base.x, y: pos.y - base.y },
-                      x: e3.clientX, y: e3.clientY, moved: false };
-            try { h.setPointerCapture(e3.pointerId); } catch (err) {}
-            document.addEventListener("pointermove", cMove, true);
-            document.addEventListener("pointerup", cUp, true);
-            document.addEventListener("pointercancel", cCancel, true);
-          });
-          h.addEventListener("keydown", e3 => {
-            if (e3.key !== "Enter" && e3.key !== " ") return;
-            e3.preventDefault(); pick();
-          });
-        });
-      }
-    }
+    // (THE ROCK COLLECTION was drawn here, 2026-09-02 to 2026-09-28: a
+    // finished stone left its day and landed, filled, in a pile under the
+    // week. The owner took it off; a finished stone stays on its day now.)
     // ---- SWIPES ON A ROW (owner ruling, 2026-09-01: "if i swipe right it
     // deletes, if i swipe left it does something else", and left is push
     // to tomorrow). THE NO-SWIPE RULING IS OVERTURNED FOR THIS PAGE, and
@@ -30254,7 +30010,7 @@
           rowEl.classList.add("tw-swiping");
         }
         sw.dx = dx;
-        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(96, dx)) + "px)";
+        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(96, dx)) / twZoom + "px)";
       };
       const end = commit => {
         document.removeEventListener("pointermove", onMove, true);
@@ -30362,6 +30118,9 @@
     // sand and the paper showed through at the foot. Measured again here,
     // when nothing else will move; a length that did not change costs a
     // read and no paint.
+    // The page is fitted to the screen first, so the sand is measured
+    // against the page as it will actually stand.
+    twFitToScreen(mount);
     twSandGroundPaint();
     // ...and every reader keeps theirs. The strip has its height by now, so
     // the page is back to full length and the old position exists again. A
@@ -30369,6 +30128,122 @@
     // opening the book still starts at the top of the page.
     if (twOv && twScroll) twOv.scrollTop = twScroll;
   }
+
+  // THE PAGE FILLS THE SCREEN (owner, 2026-09-28: "there's too much blank
+  // space at the bottom, i would like my week to fit to the screen size").
+  // Two candidates were drawn at her window's size, the pebbles alone
+  // growing and the whole page growing evenly, and she chose the whole
+  // page. Measured at its own size, the page is zoomed up until its foot
+  // meets the overlay's bottom padding (where the corner stands) or until
+  // it would run wider than the screen, whichever comes first, and never
+  // past TW_ZOOM_MAX. It only ever grows: a page as long as the screen or
+  // longer, which is every phone, is drawn exactly as before and scrolls.
+  // CSS zoom, so the page's own layout (the ruling, the rows, the strip
+  // drawn to its measured width) is untouched and simply drawn larger. The
+  // three things that turn a finger's travel into a translate inside the
+  // page, a dragged stone, a swiped row and the companion's walk, divide
+  // by twZoom; everything that reads the screen (the day under a dropped
+  // stone, the row's box, the corner) already speaks screen pixels.
+  function twFitToScreen(mount) {
+    const stack = mount && mount.querySelector(".tw-stack");
+    twZoom = 1;
+    if (!stack) return 1;
+    stack.style.zoom = "";
+    const ov = document.getElementById("thisWeekOverlay");
+    if (!ov || !ov.classList.contains("open") || !ov.clientHeight || !ov.clientWidth) return 1;
+    const cs = getComputedStyle(ov);
+    const padB = parseFloat(cs.paddingBottom) || 0;
+    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const sr = stack.getBoundingClientRect(), or = ov.getBoundingClientRect();
+    if (!sr.height || !sr.width) return 1;
+    const top = sr.top - or.top + ov.scrollTop;
+    const byH = (ov.clientHeight - top - padB - 2) / sr.height;
+    // At 1280 and up the companion rides the LEFT MARGIN, 226px out from a
+    // centred page, so the fit keeps that margin on screen on both sides.
+    const margin = matchMedia("(min-width: 1280px)").matches
+      && stack.querySelector(".tw-margin .companion") ? 2 * 226 : 0;
+    const byW = (ov.clientWidth - padX) / (sr.width + margin);
+    const z = Math.floor(Math.min(byH, byW, TW_ZOOM_MAX) * 100) / 100;
+    if (!(z > 1)) return 1;
+    twZoom = z;
+    stack.style.zoom = String(z);
+    return z;
+  }
+  // THE COMPANION STANDS OVER THE SAND BESIDE THE TITLE, NOT IN A ROW OF
+  // ITS OWN (owner, 2026-09-29: "i dont want the space like that. But i
+  // want the cat to be able to be on top of that area since it wouldnt
+  // overlap with any texts"). Between 641 and 1279px the head row was held
+  // the figure's height (176px beside a title 32px tall), so the tasks
+  // began far down the page. Now the head row is its words' height and the
+  // figure stands over whatever sand lies beside the title and the first
+  // rows: it starts where it always stood and slides left until it covers
+  // no word, the title, a heading, a task's name or its "1 hr each",
+  // measured from the glyphs themselves. It may stand over the empty
+  // middle of a row; it never stands on a word. Where there is no such
+  // place (first rows whose words run the whole width) the seat comes back
+  // and the head row is tall again. The phone keeps its seat in the head
+  // row (2026-09-07), and at 1280 and up the figure rides the margin, so
+  // neither is touched here.
+  function twSeatCompanion(mount) {
+    const head = mount && mount.querySelector(".tw-head");
+    const margin = mount && mount.querySelector(".tw-margin");
+    const sheet = mount && mount.querySelector(".tw-sheet");
+    const fig = mount && mount.querySelector("#twCompanion .companion");
+    if (!head || !margin || !sheet) return;
+    margin.style.right = "";
+    head.classList.remove("tw-seat-free");
+    if (!fig || !matchMedia("(min-width: 641px) and (max-width: 1279px)").matches) return;
+    // Measured at the page's own size; the fit that follows sets the zoom.
+    const stack = mount.querySelector(".tw-stack");
+    if (stack) stack.style.zoom = "";
+    head.classList.add("tw-seat-free");
+    // Where the figure stands AT HOME: a stroll's translate is set aside
+    // for the reading, the way roamHomeRect does.
+    const slot = fig.parentElement;
+    const tf = slot.style.transform, tr = slot.style.transition;
+    slot.style.transition = "none"; slot.style.transform = "";
+    const box = el => { const r = el.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; };
+    let cat = box(fig);
+    const prop = slot.querySelector(".companion-prop");
+    if (prop) {
+      const p = box(prop);
+      if (p.r > p.l && p.b > p.t) cat = { l: Math.min(cat.l, p.l), t: Math.min(cat.t, p.t),
+        r: Math.max(cat.r, p.r), b: Math.max(cat.b, p.b) };
+    }
+    slot.style.transform = tf; void slot.offsetHeight; slot.style.transition = tr;
+    // Every word beside the figure, as glyph boxes, and the rows' marks.
+    const words = [];
+    const near = r => r.bottom > cat.t && r.top < cat.b && r.width > 0;
+    const walk = document.createTreeWalker(sheet, NodeFilter.SHOW_TEXT,
+      { acceptNode: n => n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const rg = document.createRange();
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      rg.selectNodeContents(n);
+      for (const r of rg.getClientRects()) if (near(r)) words.push(r);
+    }
+    sheet.querySelectorAll(".tw-tick").forEach(el => { const r = el.getBoundingClientRect(); if (near(r)) words.push(r); });
+    const PAD = 8, sr = box(sheet);
+    const clearAt = d => !words.some(r => r.right > cat.l - d - PAD && r.left < cat.r - d + PAD);
+    let found = null;
+    for (let d = 0; cat.l - d >= sr.l; d += 6) if (clearAt(d)) { found = d; break; }
+    if (found == null) head.classList.remove("tw-seat-free");
+    else if (found > 0) margin.style.right = (parseFloat(getComputedStyle(margin).right) + found) + "px";
+  }
+  // A WINDOW THAT CHANGES SIZE IS FITTED AGAIN, without a re-render: the
+  // zoom is cleared, the figure seated against the rows as they now wrap,
+  // and the page measured at its own size and fitted anew.
+  let twFitTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(twFitTimer);
+    twFitTimer = setTimeout(() => {
+      const ov = document.getElementById("thisWeekOverlay");
+      if (!ov || !ov.classList.contains("open")) return;
+      const mount = document.getElementById("thisWeekMount");
+      twSeatCompanion(mount);
+      twFitToScreen(mount);
+      twSandGroundPaint();
+    }, 120);
+  });
 
   // THE EDIT STATE'S WIRING. Every control writes immediately; nothing here
   // waits for a save. The TITLE is the exception to re-rendering on write —
@@ -31184,7 +31059,14 @@
   // them"). Positions a hand chose, keyed by the stone's own identity,
   // for THIS week only — Monday smooths the pile with the sand, by the
   // same one reader (weekKeyOf) and the same serialize-as-absence road.
+  // NOTHING WRITES IT SINCE 2026-09-28, when the pile came off. It is still
+  // serialized and read back so the save path is untouched, and it empties
+  // itself at the next week turn (named in CLAUDE.md's known-dead list).
   let twCollect = { wk: null, pos: {} };
+  // HOW MUCH LARGER THIS WEEK IS DRAWN THAN ITS OWN SIZE (twFitToScreen).
+  // 1 unless the page is shorter than the screen.
+  let twZoom = 1;
+  const TW_ZOOM_MAX = 1.6;
   const twSandStrokesNow = () => (twSand && twSand.wk === weekKeyOf()
     && Array.isArray(twSand.strokes)) ? twSand.strokes : [];
   // A stroke point is [x as a fraction of the ground's width, y in the
@@ -42103,6 +41985,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     twEditingGet: () => twEditing, twSetEditing(v) { twEditing = v || null; },
     daysFor, moveThisWeek, openMovePicker, openWhenPicker, whenLineFor, chaptersDepth: () => chapterGoalId,
     twAreaHours, twStripItems, buildWeekStrip, twStoneR, twCairn, TW_STONE_R, TW_STONE_GAP,
+    twFitToScreen, twZoomGet: () => twZoom, twSeatCompanion,
     twQuarterPetals, quarterWeeks, quarterWeekPosition, quarterStandingLine,
     renderBoard, renderAll, boardRose, boardPetals,
     twViewWk, twIsNow, twIsPast, twIsFuture, twReadOnly, twTurn, twWeekBounds,
