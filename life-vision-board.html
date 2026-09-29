@@ -34636,6 +34636,19 @@
       // board, by this device's own calendar. Before 0019 the account knows
       // save_board(board, seen); before 0018 only save_board(board).
       const notThere = r => r.error && (r.error.code === "PGRST202" || /could not find the function/i.test(r.error.message || ""));
+      // A GOAL'S `source` IS THE MODEL'S WORD ON THE WIRE (2026-09-28, owner:
+      // "hasn't reached your account" on the phone and the iPad). The goals
+      // table only takes 'model' or 'fallback' there (0001), and the app
+      // writes 'user' for a goal added in the person's own words, or added
+      // while the reading could not run. One such goal refused the whole
+      // save, on every device that held it, from then on. Who wrote the goal
+      // travels as `provenance`, which the table takes, and nothing in the
+      // app reads a goal's `source`; so the wire says 'model' and the board
+      // on the device keeps its own word. Test 194e.
+      if ((state.goals || []).some(g => g && g.source === "user")) {
+        state = Object.assign({}, state, { goals: state.goals.map(g =>
+          g && g.source === "user" ? Object.assign({}, g, { source: "model" }) : g) });
+      }
       let res = await sbc.rpc("save_board", { board: state, seen: cloudSeen, saved_day: todayKey() });
       if (notThere(res)) res = await sbc.rpc("save_board", { board: state, seen: cloudSeen });
       if (notThere(res)) res = await sbc.rpc("save_board", { board: state });
