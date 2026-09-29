@@ -7916,21 +7916,11 @@
      with the marks centred in it. */
   /* (The rock collection's styles stood here until 2026-09-28, when the
      pile under the week came off; a finished stone stays on its day.) */
-  /* THE LINE KEEPS ITS PLACE WHETHER OR NOT IT SPEAKS (2026-09-07, owner:
-     "the page is insanely jumping, like the page flickers up and down and
-     up and down"). An empty paragraph is no paragraph at all: the line was
-     0px tall until a hover, a tap or a collected stone gave it words and a
-     line's height, and back to 0px the moment the choice cleared, so the
-     page's own length changed with every name it said. Standing at the
-     foot, each clear shrank the page and the scroll was clamped to the
-     shorter one, the content slid down a row, the pointer landed on the
-     next row up, which named itself, and so on down the sheet. The ruling
-     is "nothing moves" (DECISIONS, 2026-09-02): the line is exactly one
-     lead tall, words or none, and a name long enough to wrap spills into
-     the sheet's own bottom padding rather than lengthening the page. */
-  .tw-col-line { text-align: center; font-family: var(--voice-hand); font-style: italic;
-    font-size: var(--t-label); color: var(--ink-muted); line-height: var(--lead); margin: 0;
-    height: var(--lead); overflow: visible; }
+  /* (The naming line at the foot, .tw-col-line, stood here until
+     2026-09-29, when the owner took it off: the highlight already says
+     what was chosen. Its fixed one-lead box, the 2026-09-07 cure for a page
+     that jumped a row per name, went with it; nothing appears there now,
+     so nothing can move.) */
   .tw-turn-row { display: flex; justify-content: space-between; align-items: center;
     height: var(--lead); margin-top: 0; }
   .tw-turn { background: none; border: none; padding: 0 4px; cursor: pointer;
@@ -15767,33 +15757,10 @@
       el.classList.toggle("lit", !!sel && on);
       el.classList.toggle("quiet", !!sel && !on);
     });
-    // THE NAMING LINE ANSWERS EVERY SELECTION (2026-09-02, owner: "when i
-    // click on a rock idk which task its pointing me too"). The lit row
-    // wears the swash, but a stone tapped at the strip can have its row a
-    // screen away — so the line at the foot says what was chosen, in
-    // place, for every kind of choosing: a stone or a row names its task,
-    // a day sums itself up. A collected stone's own tap writes a richer
-    // line after this one (", done wednesday") — later wins, by design.
-    // Nothing chosen, nothing said.
-    const colLine0 = mount.querySelector("#twColLine");
-    if (colLine0) {
-      if (!sel) colLine0.textContent = "";
-      else if (day != null) {
-        const wkS = twViewWk(), wd = weekDates(wkS);
-        const si = twStripItems(wkS);
-        const items = day === "any" ? si.flex : (si.days[wd.indexOf(day)] || []);
-        const mins = items.reduce((n, it) => n + (Number(it.mins) || 0), 0);
-        const name = day === "any" ? "any day"
-          : String(TW_DAYS[wd.indexOf(day)] || "").toLowerCase();
-        colLine0.textContent = items.length
-          ? name + " · " + items.length + (items.length === 1 ? " thing" : " things")
-            + (mins ? ", " + minsText(mins) : "")
-          : name + " · nothing yet";
-      } else if (mid != null) {
-        const litRow = mount.querySelector(".tw-row.tw-lit .tw-row-label");
-        colLine0.textContent = litRow ? litRow.textContent.trim() : "";
-      } else colLine0.textContent = "";
-    }
+    // (THE NAMING LINE at the foot said what was chosen, a stone's task or
+    // a day's sum, from 2026-09-02 to 2026-09-29. The owner took it off:
+    // "It already highlights it so i dont need the black text descriptor
+    // below the week". The lit row and the lit stones say it.)
     // THE DAY WORD ITSELF SAYS WHICH DAY IS BEING ASKED ABOUT. It is the
     // control, so it has to show its own state — otherwise the sheet dims
     // and nothing on the page says why.
@@ -24647,7 +24614,7 @@
   // line, the corner. What is not on this list is sand.
   const TW_WORDS_ON_THE_SAND = "#thisWeekMount .tw-head > *, #thisWeekMount .tw-topline, #thisWeekMount .tw-row, "
     + "#thisWeekMount .tw-sec-head, #thisWeekMount .tw-sec-label, #thisWeekMount .tw-unplaced, #thisWeekMount .tw-parked-line, "
-    + "#thisWeekMount .tw-catchup, #twStripMount, #twColLine, #twCorner, #twCornerAdd";
+    + "#thisWeekMount .tw-catchup, #twStripMount, #twCorner, #twCornerAdd";
   function roamWorld() {
     const vp = { w: innerWidth, h: innerHeight };
     let sheet = null;
@@ -24665,7 +24632,7 @@
       // able to move anywhere except on the words or graphics"): the rows,
       // the strip, the pile and its line, the corner. What is not sand is
       // not ground.
-      ["#twStripMount", "#twColLine", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
+      ["#twStripMount", "#twCorner", "#twCornerAdd"].forEach(s => take(document.querySelector(s)));
       document.querySelectorAll(TW_WORDS_ON_THE_SAND).forEach(take);
       // AND THE GROUND ENDS WHERE THE SAND ENDS (2026-09-07): no target
       // below the garden's foot, which would stretch the page past it.
@@ -29358,10 +29325,10 @@
               aria-label="the week after">${DRAWN_TURN("fwd")}</button>` : `<span class="tw-turn-gap"></span>`}
           </div>
           <!-- THE ROCK COLLECTION CAME OFF (owner, 2026-09-28: "I dont
-               want the pebbles to go under the week anymore"). A finished
-               stone stays on its day and fills in, so nothing lands down
-               here; the naming line stays, for a chosen day or stone. -->
-          <p class="tw-col-line" id="twColLine" data-type-area="thisweek/colline"></p>
+               want the pebbles to go under the week anymore"), and the
+               naming line under it followed (2026-09-29: "It already
+               highlights it so i dont need the black text descriptor below
+               the week"). The page ends at its turning arrows. -->
         </div></div>
       </div>
     </div>`;
