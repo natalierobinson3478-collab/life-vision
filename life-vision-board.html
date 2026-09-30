@@ -5149,6 +5149,134 @@
     .av-doors { justify-content: flex-start; column-gap: var(--lead); }
   }
 
+  /* ---- THE ADD PAGE IS TAIGA'S SCROLL (2026-09-30, owner) ----
+     The page is the painting, and what she writes on or taps floats in it
+     (see the markup's banner). Everything above this, from `.av-page` to
+     the phone's margin study, styled the torn ruled sheet this page was
+     until today; it matches nothing now and waits in CLAUDE.md's list of
+     the known dead. The rules that still reach a kept class (the doors,
+     the query mark, the chips, the review's words) are met here by name.
+     The page stands on its own ground, as the Atlas and the keeping page
+     do: the silk of the scroll, a shade lighter up where the sky is, no
+     blur, no scrollbar, and the window's reserved strip painted the same. */
+  :root { --add-silk: #d7c0ac; }
+  html:has(#addOverlay.open) { background-color: var(--add-silk); }
+  #addOverlay { --x-in-top: 8px; --x-in-right: 4px; padding: 0;
+    background-color: var(--add-silk);
+    background-image: radial-gradient(circle at 30% 4%, rgba(236, 224, 210, 0.55), transparent 55%),
+      radial-gradient(circle at 80% 96%, rgba(120, 104, 88, 0.08), transparent 60%);
+    backdrop-filter: none; overscroll-behavior: contain;
+    scrollbar-width: none; scrollbar-gutter: auto; }
+  #addOverlay::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  /* The world is a grid: the title, then the sky (the goal, or phase 2 in
+     its place), then the painting, with the floats that sit ON the painting
+     laid over it in the same cell. Its width is the painting's: the whole
+     window on a phone, where the scroll is almost the screen's own shape,
+     and a column the page scrolls down at the desk, like unrolling it. */
+  #addOverlay > .add-world { --rule: 18px; --lead: calc(var(--rule) * 1.5);
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
+    width: 100%; margin: 0 auto; }
+  /* on a phone the world is the window, and a float near its edge must not
+     make the page scroll sideways; at the desk the clouds may reach past
+     the painting's edge onto the silk, which ties the two together */
+  @media (max-width: 699px) { #addOverlay > .add-world { overflow-x: clip; } }
+  #addOverlay #addPhase1 { display: contents; }
+  /* the title's size, weight and face are the one shared title role; the
+     page only says where it stands */
+  #addOverlay .av-title { grid-row: 1; grid-column: 1; position: relative; z-index: 2;
+    margin: 0; padding: 22px 52px 12px 22px; }
+  #addOverlay .add-goal-fl, #addOverlay #addPhase2 { grid-row: 2; grid-column: 1;
+    position: relative; z-index: 2; justify-self: stretch; margin: 0 14px; }
+  #addOverlay .add-painting, #addOverlay .add-over { grid-row: 3; grid-column: 1; margin-top: -26px; }
+  #addOverlay .add-painting img { display: block; width: 100%; height: auto;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 7%);
+            mask-image: linear-gradient(to bottom, transparent 0, #000 7%); }
+  #addOverlay .add-over { position: relative; z-index: 1; align-self: stretch; }
+  #addOverlay .add-over > * { position: absolute; }
+
+  /* A FLOAT: the keeping page's oval, drawn to the measured box by
+     paintAddPage, an inline svg behind the words, never a pseudo element.
+     isolation keeps the oval inside the float's own stacking. */
+  #addOverlay .add-fl { position: relative; isolation: isolate; box-sizing: border-box;
+    width: fit-content; max-width: 100%; }
+  #addOverlay .add-over > .add-fl { position: absolute; }
+  #addOverlay .add-oval { position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none; z-index: -1; }
+
+  /* the words she writes: the prompt lives in the line (pm-ghost), the
+     line grows with what she writes and the float grows with it */
+  #addOverlay .add-line { display: block; position: relative; margin: 0; }
+  #addOverlay .add-line textarea { display: block; width: 100%; box-sizing: border-box;
+    background: none; border: none; outline: none; resize: none; padding: 0; margin: 0;
+    overflow: hidden; font-family: var(--voice-hand); color: var(--ink);
+    caret-color: rgb(var(--accent)); }
+  /* ONE INK FOR THE WORDS AND ONE FOR THE PROMPTS: this page's budget is
+     three inks (review/design-budgets.json) and a prompt is the ink at half
+     strength, whichever line it sits in */
+  #addOverlay .add-line .pm-ghost { font-weight: 400; color: rgba(58, 58, 46, 0.5); }
+  #addOverlay .add-line.has-ink .pm-ghost { display: none; }
+  #addOverlay .add-goal-fl { width: auto; padding: 13px 24px 13px 22px; }
+  #addOverlay .add-goal-fl textarea, #addOverlay .add-goal-fl .pm-ghost {
+    font-size: var(--t-read); line-height: 1.53; }
+  #addOverlay .add-goal-fl textarea { min-height: 1.53em; }
+  /* while the line is empty the ghost's own caret blinks where the first
+     letter lands, and the native one stays out of its way */
+  #addOverlay .add-goal-fl textarea:placeholder-shown { caret-color: transparent; }
+  #addOverlay .add-why-fl { left: 49%; top: 8.5%; width: 49%; padding: 9px 16px 9px 15px; }
+  #addOverlay .add-why-fl textarea, #addOverlay .add-why-fl .pm-ghost {
+    font-size: var(--t-label); line-height: 1.43; font-style: italic; }
+  #addOverlay .add-why-fl textarea { min-height: 1.43em; }
+
+  /* THE SIX AREAS ARE STONES ON THE RIVER. Each chip is a stone (its svg)
+     and its word on a float, placed by paintAddPage at the stone's spot on
+     the water; the word sits on the side the page has room on. The picked
+     stone takes its area's colour, the others stay bare stone, and their
+     floats keep a dashed edge. No word takes the colour. */
+  #addOverlay .add-over > #newCategoryChips { position: static; }
+  #addOverlay #newCategoryChips .cat-chip { position: absolute; display: inline-flex; align-items: center;
+    height: auto; margin: 0; padding: 0 0 0 40px; border: none; border-radius: 0;
+    background: none; box-shadow: none; transform: translate(-20px, -50%);
+    font-size: var(--t-read); line-height: 1.3; color: var(--ink);
+    -webkit-tap-highlight-color: transparent; }
+  #addOverlay #newCategoryChips .cat-chip.add-left { padding: 0 40px 0 0;
+    transform: translate(calc(-100% + 20px), -50%); }
+  #addOverlay #newCategoryChips .cat-chip::before { content: none; display: none; }
+  #addOverlay .add-stone { position: absolute; left: 4px; top: 50%; width: 32px; height: 22.7px;
+    transform: translateY(-46%); overflow: visible; z-index: 1; pointer-events: none; }
+  #addOverlay .add-left .add-stone { left: auto; right: 4px; }
+  #addOverlay .add-word { display: inline-block; padding: 3px 14px 3px 12px; white-space: nowrap; }
+
+  /* THE DOORS FLOAT ON THE LAKE, just above the boat (70 to 72 per cent
+     down the painting), which stays in view. */
+  #addOverlay .add-doors { left: 1.5%; top: 60.6%; width: 90%; display: flex;
+    flex-direction: column; align-items: flex-start; gap: 6px; }
+  #addOverlay .add-doors .av-lead-wrap { display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px 4px 16px; }
+  #addOverlay .add-doors .av-door { font-size: var(--t-read); line-height: 1.41; padding: 0 2px;
+    white-space: nowrap; }
+  #addOverlay .add-doors #asWrittenAdd { margin-left: 64px; padding: 4px 18px 4px 16px; }
+  /* the query mark keeps its 44px of target; the margins give the float
+     back the room, so the mark still reads at the doors' own height */
+  #addOverlay .add-doors .av-why { width: 44px; height: 44px; padding: 11px; margin: -10px -10px -10px -6px; }
+  #addOverlay .add-over > .add-coach-note { left: 36%; top: 70.5%; width: 60%;
+    padding: 8px 16px; margin: 0; font-size: var(--t-label); line-height: 1.43; font-style: italic; }
+
+  /* PHASE 2 (the coach's wait, questions and draft) is one cloud in the
+     sky in the goal's place, the painting still under it */
+  #addOverlay #addPhase2 { width: auto; padding: 20px 30px 30px 24px; }
+  #addOverlay #addPhase2 .modal-actions { margin-top: calc(var(--lead) * 0.6); }
+
+  /* the desk: a column the width of a good reading, the painting's sides
+     dissolved in bands of mist into the silk it hangs on */
+  @media (min-width: 700px) {
+    #addOverlay > .add-world { width: min(600px, calc(100vw - 48px)); }
+    #addOverlay .av-title { padding: 34px 20px 14px 8px; }
+    #addOverlay .add-goal-fl, #addOverlay #addPhase2 { margin: 0 -24px; }
+    #addOverlay .add-painting img { -webkit-mask-image: url(assets/add/taiga-edge-mask.png);
+      mask-image: url(assets/add/taiga-edge-mask.png);
+      -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+  }
+
   /* ---- this week: the weekly work page ---- */
   /* Built from the same materials as the welcome note and the journal page:
      the watercolour stays visible behind a light wash (the check-in's
@@ -11451,122 +11579,62 @@
   </div>
 </div>
 
-<!-- ---- THE ADD PAGE IS A BOOK (2026-08-27) ----
-     "lessons in LIFE VISION" stands on the shelf between the weekly book,
-     the atlas and the journal, and it was the one door up there that did
-     not open onto a page: a 480px card on the modal band's dark scrim.
-     It is a book page now, on the ONE shared wash every read book stands
-     on, and the card's `.modal` went with the scrim — so the sheet IS the
-     page, torn, with the title in the hand at --t-title beside the others.
-     WHAT CHANGED IS THE MATERIAL, NOT THE FLOW: three fields, two doors,
-     the same phase 2 behind them. Nothing was added, moved or renamed, and
-     no new type size entered the page — 17px left with the card's h2. -->
-<!-- ---- THE ADD PAGE (reworked 2026-08-27: weight and rhythm) ----
-     Nothing it DOES changed. What changed is that everything on it used to
-     sit at one pale value with nowhere to land, and the darkest, busiest
-     object on the sheet was an ornament — so the eye arrived at the drawing
-     before the heading. Four moves: the ground goes dark so the paper has
-     somewhere to sit, the two doors weigh the same, every gap is a whole
-     number of ruled lines, and the drawing moves onto its own scrap of
-     paper at a fraction of its old contrast. -->
+<!-- ---- THE ADD PAGE IS TAIGA'S SCROLL (2026-09-30, owner) ----
+     "I love the idea of painted rivers and mountains. symbolizing the
+     persons goal at the top and the steps to get there." Then, of a first
+     sketch that set the painting BESIDE the words: "its not just a
+     picture. Its a part of the page and the interactive parts where the
+     user writes is layered into it", like the keeping page, where "the
+     things are floating on the water".
+     So the page IS the painting: Ike Taiga's Fishing in a Springtime Valley
+     (1700s, Cleveland Museum of Art 1961.47, CC0), whole and uncut, in a
+     warm grade matched to the copy she sent. Cut pieces of a painting laid
+     among drawn ones read as pasted (the Goshun round, 29 Sep), so nothing
+     is drawn into it but the floats. Everything she writes on or taps is
+     one of the keeping page's floats, its cream and its pen: the goal is a
+     cloud in the sky above the summit, why it matters drifts beside the
+     summit, the six areas are stones set on the river itself (traced off
+     the painting by colour) with each word on its own float, and the two
+     doors float on the lake just above the boat, which nothing covers.
+     THE WORLD IS A GRID so phase 1's parts can stand in the sky and on the
+     painting at once: #addPhase1 is display: contents, so hiding it (as
+     every phase 2 road already does) hides all of them, and #addPhase2
+     takes the sky in the goal's place. The ids are the ones every road
+     into and out of this page already reads. -->
 <div class="book-page" id="addOverlay">
     <button class="checkin-close" id="addX" aria-label="close" title="close"></button>
-    <div class="av-page">
-      <div class="av-paper torn-paper"><div class="av-sheet torn-sheet">
-      <!-- THE RULING NEEDS ITS OWN LAYER. On the sheet element's own
-           background it was painted and then buried: .torn-sheet::before is
-           the paper, it is opaque, and a negative-z-index pseudo paints
-           OVER its element's background. This div is a sibling of that
-           pseudo at the same depth, so it lands on the paper and under
-           every word. -->
-      <div class="av-flecks" id="addFlecks" aria-hidden="true"></div>
-      <!-- THE DRAWING IS ON A DIFFERENT PIECE OF PAPER, which is the whole
-           reason it is allowed to be a different weight from the writing.
-           Laid on the sheet at an angle, overlapping the fore-edge and the
-           rules it covers, in the app's own torn-paper motif. ONE scrap:
-           the second (a magnified detail) was mine, added to fill a void
-           that the rhythm below now closes properly, and two scraps would
-           have been two things competing with neither load-bearing. -->
-      <div class="av-head" data-type-area="add/head">
-        <h2 class="av-title">add to your life vision.</h2>
-        <p class="av-sub">something you want your life to add up to, in your own words.</p>
-      </div>
+    <div class="add-world">
+      <h2 class="av-title" data-type-area="add/head">add a goal to your board.</h2>
+      <div class="add-painting" aria-hidden="true"><img src="assets/add/taiga-springtime-valley.jpg" alt="" decoding="async"></div>
       <div id="addPhase1">
-        <div class="field av-where" data-type-area="add/where">
-          <label>what part of your life?</label>
-          <!-- Phase 4: no native select — drawn chips that firm when
-               picked; the hidden input keeps the old read path honest.
-               A GRID OF THREE, not a wrapping row: wrapping put 3/2/1 on
-               the six, and the last chip alone on its own line read as a
-               different control rather than as one of six. -->
-          <div class="cat-chip-row" id="newCategoryChips" role="radiogroup" aria-label="what part of your life?"></div>
+        <div class="add-fl add-goal-fl" data-type-area="add/goal">
+          <label class="pm-line add-line"><textarea id="newTitle" rows="1" placeholder=" " aria-label="your goal"></textarea><span class="pm-ghost"><i class="pm-caret"></i>write your goal</span></label>
+        </div>
+        <div class="add-over">
+          <div class="add-fl add-why-fl" data-type-area="add/why">
+            <label class="pm-line add-line"><textarea id="newDesc" rows="1" placeholder=" " aria-label="why it matters to you"></textarea><span class="pm-ghost add-hint">why it matters to you</span></label>
+          </div>
+          <div class="cat-chip-row" id="newCategoryChips" role="radiogroup" aria-label="which part of your life?" data-type-area="add/areas"></div>
           <input type="hidden" id="newCategory" value="health">
+          <!-- THE COACH DOOR LEADS (owner, 2026-08-27): first, and wearing the
+               app's one brush mark; "add it myself" is a full door in the
+               same ink. Both float, so neither needs an underline to say it
+               can be pressed. -->
+          <div class="add-doors" data-type-area="add/doors">
+            <span class="add-fl av-lead-wrap">
+              <button class="av-door av-door-lead" id="shapeAdd">shape it with coach</button>
+              <button class="av-why" id="addWhy" type="button" aria-controls="addCoachNote"
+                aria-expanded="false" aria-label="what does coach do?"
+                title="what does coach do?"></button>
+            </span>
+            <button class="add-fl av-door" id="asWrittenAdd">add it myself</button>
+          </div>
+          <!-- What the coach door does waits behind the mark that asks it,
+               `hidden` rather than removed so a reader can still reach it. -->
+          <p class="add-fl add-coach-note" id="addCoachNote" data-type-area="add/coach-note" hidden>drafts the goal, its quarter-by-quarter steps, and weekly habits, every piece yours to edit</p>
         </div>
-        <div class="field av-write" data-type-area="add/vision">
-          <label>what's your life vision you'd like to add?</label>
-          <span class="av-write-box"><span class="av-field-wash" aria-hidden="true"></span><textarea id="newTitle" rows="2" data-ph-rotate='["I want to be a successful screenwriter with a film produced by Netflix","I want to garden seriously and show my work at the county fair","I want more time with my grandkids than my inbox"]'
-            placeholder="I want to be a successful screenwriter with a film produced by Netflix"></textarea></span>
-        </div>
-        <div class="field av-write" data-type-area="add/behind">
-          <label>anything behind it? (optional)</label>
-          <span class="av-write-box"><span class="av-field-wash" aria-hidden="true"></span><textarea id="newDesc" rows="2" data-ph-rotate='["I love film and creating them, it&apos;s my life&apos;s goal. I don&apos;t want to be in the corporate world anymore.","The tomatoes actually came up this year. I want a real plot, and something worth entering at the fair.","They&apos;re growing up fast and I&apos;m always working. I want to be the grandparent who&apos;s actually there."]' placeholder="I love film and creating them, it's my life's goal. I don't want to be in the corporate world anymore."></textarea></span>
-        </div>
-        <!-- ---- TWO DOORS OF EQUAL WEIGHT ----
-             The accent one was a brush swash in solid moss under bold type
-             and the other was unstyled text, so the AI route was the visual
-             default and the person's own words were the afterthought. That
-             inverts law 1: the person's word always wins, and AI output is
-             a proposal until accepted. Both are words on a drawn underline
-             now, at the same size, weight and ink — the treatment This-week
-             and the Atlas use for every door they carry. The person's own
-             words are stated FIRST, which is the only tilt left.
-             The ★ is gone. It is not, as it happens, an unused vocabulary:
-             DRAWN_STAR is the app's FOCUS mark, worn by the focus tag, the
-             deadline pill and the park list — which is the better reason to
-             take it off this button, because here it meant nothing and
-             borrowed a mark that means something else three rooms over. -->
-        <!-- ---- THE COACH DOOR LEADS (owner, 2026-08-27) ----
-             This REVERSES the brief of a few hours earlier, which had the
-             two doors at equal weight with the person's own words read
-             first, on the footing that law 1 puts the person's word above
-             AI inference. The owner has since asked for the coach door to
-             be larger, highlighted, and first. Recorded rather than
-             absorbed: law 1 is about whose words WIN — nothing here
-             overwrites or outranks what the person typed, and "add it
-             exactly as written" is still a full door in the same ink, not
-             the unstyled text it was before the rework. What moved is
-             which route the page offers first. See DECISIONS.
-             The swash is the app's ONE brush mark, the same ::before the
-             other accent actions wear; it is not a second highlight. -->
-        <div class="av-doors" data-type-area="add/doors">
-          <span class="av-lead-wrap">
-            <button class="av-door av-door-lead" id="shapeAdd">let coach shape it</button>
-            <button class="av-why" id="addWhy" type="button" aria-controls="addCoachNote"
-              aria-expanded="false" aria-label="what does coach do?"
-              title="what does coach do?"></button>
-          </span>
-          <button class="av-door brushed-link" id="asWrittenAdd">add it exactly as written</button>
-        </div>
-        <!-- The line that used to stand on the page permanently. It says
-             what the coach door does, which is a question a person asks
-             once — so it waits behind the mark that asks it. Present in the
-             DOM either way; `hidden` rather than removed, so the words are
-             still the page's and a reader can still reach them. -->
-        <!-- The page's painted scene, at the foot of the sheet where the
-             FAQ keeps its pond. It is the drawing that carries this page at
-             narrow widths, where the margin study has no margin to lie in. -->
-        <div class="av-bed" id="addBed" aria-hidden="true"></div>
-        <p class="add-coach-note" id="addCoachNote" data-type-area="add/coach-note" hidden>drafts the goal, its quarter-by-quarter steps, and weekly habits, every piece yours to edit</p>
       </div>
-      <div id="addPhase2" style="display:none;"></div>
-      </div></div>
-      <!-- OUTSIDE the sheet, not inside it. The sheet is a masked shape and
-           a mask clips its children, so a scrap laid over the fore-edge had
-           its overhang cut off at exactly the edge it was meant to cross.
-           It is a child of the page instead, positioned against the same
-           box, and it can lie across the tear the way a real one would. -->
-      <div class="av-plate av-scrap torn-paper" id="addPlate" aria-hidden="true"
-        ><div class="av-scrap-sheet torn-sheet"></div></div>
+      <div id="addPhase2" class="add-fl add-review-fl" style="display:none;"></div>
     </div>
   </div>
 
@@ -12476,117 +12544,9 @@
       <g class="dk-grain" filter="url(#granulate)">${body}</g></svg>`;
   }
 
-  // ---- THE WRITING AREA IS A WASH, NOT A BAND (2026-08-28) ----
-  // Owner: "make the areas where I type still have that background colour,
-  // but more of a watercolour splash like the pond, in the colour of
-  // whatever category you're on."
-  // It was a flat rectangle of the ruling's ink — the right first answer to
-  // "show me where to write" and the wrong material for this page, which
-  // paints everything else. So it is a puddle now, in the picked area's
-  // colour, drawn with the pond's materials: a lobed shape rather than an
-  // oval, a pooled rim where the water stopped, and the paper's tooth
-  // through the pigment.
-  // DRAWN AT THE FIELD'S REAL PIXEL SIZE, and repainted when the field
-  // grows. A stretched viewBox would pull the wash filter's bite along one
-  // axis — these boxes are five times wider than they are tall, so it would
-  // be a smear rather than a spill. Same rule the stains learned.
-  function fieldWash(W, H, seed) {
-    // the water's edge: sampled around the box, kept clear of the corners
-    // so it reads as a spill that happens to lie under the writing rather
-    // than as a filled rectangle with a rough edge
-    const pts = [];
-    const N = 16;
-    for (let i = 0; i < N; i++) {
-      const a = (i / N) * Math.PI * 2;
-      const lobe = 0.8 + 0.26 * Math.abs(Math.sin(i * 1.9 + seed));
-      const k = lobe * (0.88 + SPEC_R(i, seed) * 0.22);
-      pts.push([W / 2 + Math.cos(a) * (W / 2 - 2) * k,
-                H / 2 + Math.sin(a) * (H / 2 + 3) * k]);
-    }
-    const body = specBlob(pts, seed, Math.min(W, H) * 0.05);
-    // where it ran twice — a back-run, off to one side
-    const pool = specBlob([0,1,2,3,4,5,6,7,8,9].map(i => {
-      const a = (i / 10) * Math.PI * 2;
-      return [W * (0.3 + SPEC_R(i, seed + 5) * 0.06) + Math.cos(a) * W * 0.2,
-              H * 0.56 + Math.sin(a) * H * 0.3];
-    }), seed + 11, Math.min(W, H) * 0.06);
-    return `<svg class="av-field-wash-svg" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-      <g class="fw-wash" filter="url(#wash-fine)">
-        <path class="fw-body" d="${body}"/><path class="fw-pool" d="${pool}"/>
-        <path class="fw-rim" d="${body}"/></g>
-      <g class="fw-grain" filter="url(#granulate)"><path d="${body}"/></g></svg>`;
-  }
-  // Every writing field, at whatever size it currently is.
-  function paintFieldWashes() {
-    document.querySelectorAll("#addPhase1 .av-write .av-write-box").forEach((box, i) => {
-      const w = Math.max(60, Math.round(box.clientWidth));
-      const h = Math.max(24, Math.round(box.clientHeight));
-      const host = box.querySelector(".av-field-wash");
-      if (!host) return;
-      if (host.dataset.painted === w + "x" + h) return;
-      host.innerHTML = fieldWash(w, h, 23 + i * 17);
-      host.dataset.painted = w + "x" + h;
-    });
-  }
-
-  // ---- THE SEEDBED (2026-08-28, owner: "maintain the watercolour theme,
-  // do something different to enhance this page, like the koi pond") ----
-  //
-  // The board came off this page and a painted scene goes on it, at the
-  // foot of the sheet where the FAQ's pond sits — same materials, same
-  // order of work: ink drawn LAST over the wash, so the pen line shows
-  // through the paint the way it does on paper. That single ordering is
-  // what the pond's own note says joined it to the specimen beside it.
-  //
-  // WHY A SEEDBED. The pond is a place, and a place is what this had to be
-  // — not a second specimen, which the scrap already is. This page is where
-  // a new thing gets planted, so it is a bed with the earth open, three
-  // seedlings up and one still breaking the surface. The seedlings take the
-  // PICKED AREA'S colour, which is the same footing every other coloured
-  // mark on this page stands on: it identifies the life this one is going
-  // into, and it changes when that answer changes.
-  const AV_BED_W = 300, AV_BED_H = 104;
-  function avBedHtml(rgb) {
-    const W = AV_BED_W, H = AV_BED_H, soilY = 74;
-    // the open earth: one shallow wandering trough, wider than it is deep
-    const bed = specBlob([[20, soilY], [70, soilY - 5], [140, soilY - 3],
-      [212, soilY - 6], [276, soilY - 1], [268, 96], [180, 100], [96, 98], [30, 94]], 3, 5);
-    // and the line where the soil meets the air — drawn twice, lifted in
-    // the middle, because a contour laid in one unbroken stroke is the one
-    // thing a hand never produces
-    const lip = `<path class="av-bed-line" d="${specCurve([[18, soilY + 1], [86, soilY - 6],
-      [190, soilY + 2], [280, soilY - 4]])}" stroke-dasharray="104 7 62 9 140"/>`;
-    // four seedlings: a stem and its first pair of leaves, the last one
-    // barely up — the one that has just been planted
-    const sprouts = [[62, 30, 1], [110, 40, -1], [166, 26, 1], [222, 47, -1], [258, 62, 1]]
-      .map(([x, top, sd], i) => {
-        const S = [[x, soilY - 2], [x - sd * 3, soilY - (soilY - top) * 0.45],
-                   [x + sd * 5, top + (soilY - top) * 0.3], [x + sd * 2, top]];
-        const p = specBez(S, 0.62);
-        let g = `<path d="${specCurve(S)}" stroke-width="${(1.5 - i * 0.08).toFixed(2)}"/>`;
-        // the seed leaves, one either side, the smaller pair on the newest
-        [1, -1].forEach((side, k) => {
-          const len = (17 - i * 1.6) * (0.82 + SPEC_R(i, k + 2) * 0.4);
-          g += `<path d="${specLeaf(p.x, p.y, p.a + side * (1.05 + SPEC_R(i, k) * 0.25),
-            len, len * 0.34, side * len * 0.18)}" stroke-width="1.05"/>`;
-        });
-        return g;
-      }).join("");
-    // stones at one end, the way the pond keeps them
-    const stones = `<path class="av-bed-stone" d="${specRing(34, 84, 9, 71, 0.16, 0.62)}" stroke-width="1.15"/>`
-      + `<path class="av-bed-stone" d="${specRing(52, 89, 6, 73, 0.2, 0.66)}" stroke-width="1.05"/>`
-      + `<path class="av-bed-stone" d="${specRing(283, 86, 7, 77, 0.18, 0.6)}" stroke-width="1.1"/>`;
-    return `<svg class="av-bed-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
-      aria-hidden="true" style="--cat:${rgb}">
-      <g class="av-bed-wash" filter="url(#wash)" transform="translate(-3 2.5)">
-        <path class="av-bed-earth" d="${bed}"/>
-        <path class="av-bed-rim" d="${bed}"/>
-      </g>
-      <g class="av-bed-grain" filter="url(#granulate)"><path d="${bed}"/></g>
-      <g class="av-bed-ink" filter="url(#rough)" fill="none"
-         stroke-linecap="round" stroke-linejoin="round">${sprouts}${lip}${stones}</g>
-    </svg>`;
-  }
+  // fieldWash, paintFieldWashes and avBedHtml (the writing areas' washes
+  // and the seedbed at the foot of the sheet) went with the add page's
+  // torn sheet on 2026-09-30, when the page became Taiga's scroll.
 
   // ---- THE STAINS ARE GONE (owner, 2026-08-28) ----
   // "Let's get rid of the two smudges that look like amoebas."
@@ -19396,7 +19356,7 @@
   //                  roadmap's own overlay, and let the doors go back to
   //                  the list rather than out to another book.
   // THE CHAPTER'S PLATE, AND THE PAGE'S PAINT WITH IT. The same two moves
-  // paintAddPlate makes on the add-a-goal page, for the same reason: the
+  // the add-a-goal page's plate made until 2026-09-30, for the same reason: the
   // drawing answers "what part of your life is this?" in a picture, and the
   // paper it is painted on takes the same pigment, so the page and the plate
   // read as one study rather than an illustration dropped onto a form.
@@ -32926,97 +32886,178 @@
     const row = document.getElementById("newCategoryChips");
     if (!row) return;
     row.innerHTML = Object.entries(CATS).filter(([k]) => k !== "Other").map(([k, cc]) =>
-      `<button type="button" class="ci-chip cat-chip ${cc.cls}${k === "health" ? " on" : ""}" data-cat="${k}">${cc.label}</button>`).join("");
+      `<button type="button" class="ci-chip cat-chip ${cc.cls}${k === "health" ? " on" : ""}" data-cat="${k}">`
+      + `<svg class="add-stone" viewBox="0 0 48 34" aria-hidden="true"></svg><span class="add-fl add-word">${cc.label}</span></button>`).join("");
     row.addEventListener("click", (e) => {
       const b = e.target.closest(".cat-chip");
       if (!b) return;
       row.querySelectorAll(".cat-chip").forEach(x => x.classList.remove("on"));
       b.classList.add("on");
       document.getElementById("newCategory").value = b.dataset.cat;
-      paintAddPlate(b.dataset.cat);
+      paintAddPage();
     });
   })();
-  // The plate is repainted rather than recoloured: a fern is not a thistle
-  // in another ink, and the bloom is the paint arriving on damp paper.
-  function paintAddPlate(area) {
-    const mount = document.getElementById("addPlate");
-    if (!mount) return;
-    const key = area || document.getElementById("newCategory").value;
-    // the drawing goes ON the scrap, not in place of it
-    const leaf = mount.querySelector(".av-scrap-sheet");
-    if (leaf) leaf.innerHTML = specimenSvg(key);
-    mount.classList.remove("bloom");
-    void mount.offsetWidth;          // restart the bloom on every change
-    mount.classList.add("bloom");
-    // ---- AND THE PAGE TAKES THE SAME PAINT ----
-    // The area's triple is READ BACK off the plate that was just drawn,
-    // never looked up in a second table: one source (the CATS tokens in
-    // the stylesheet) reaching everything, so the rules, the flecks, the
-    // stain and the plate cannot drift apart. A private `--av-cat` rather
-    // than the `cat-*` class, because the class carries `--cat`/`--cat-ink`
-    // to EVERY descendant and this page has descendants (bark, slivers,
-    // dots) that already choose their own.
-    const ov = document.getElementById("addOverlay");
-    const svg = mount.querySelector(".av-spec");
-    const cs = svg && getComputedStyle(svg);
-    const cat = (cs && cs.getPropertyValue("--cat").trim()) || "92, 112, 72";
-    const seed = key.length * 11 + key.charCodeAt(0);
-    ov.style.setProperty("--av-cat", cat);
-    // --av-cat-ink is no longer set: the example line was the only thing
-    // that read it, and it is the app's ink now. The FILL (--av-cat) stays
-    // — the flecks and the seedbed are paint, not type.
-    // The ruling is the app's own now (see .av-sheet's --rule-top), so
-    // nothing here draws lines any more — the sheet paints them with every
-    // other sheet in the app.
-    // the two writing areas are painted in the same colour as everything
-    // else on the page; they are repainted from scratch because the shape
-    // is drawn at the field's real size, not tinted
-    document.querySelectorAll("#addPhase1 .av-field-wash").forEach(h => { delete h.dataset.painted; });
-    paintFieldWashes();
-    const bed = document.getElementById("addBed");
-    if (bed) bed.innerHTML = avBedHtml(cat);
-    const flecks = document.getElementById("addFlecks");
-    const sheet = ov.querySelector(".av-sheet");
-    if (flecks && sheet) {
-      const W = Math.max(240, Math.round(sheet.clientWidth));
-      const H = Math.max(240, Math.round(sheet.clientHeight));
-      flecks.innerHTML = fleckLayer(seed, 17);
+  // ---- THE STONES AND THE FLOATS (2026-09-30, owner) ----
+  // The page is Taiga's scroll and everything on it floats (see the
+  // markup's banner). WHERE EACH AREA'S STONE STANDS, in per cent of the
+  // painting: on the water itself. Placed by eye first, and she saw at
+  // once that they were "not on the river exactly"; so the water was found
+  // by its colour (bluer than the silk round it, and light) and each stone
+  // set at the middle of the water near it, from the stream below the
+  // village down through its three pools. The stream is a pencil line wide
+  // on a phone, so the stones are small enough to leave it showing between
+  // them, and the words take turns left and right so two stones close
+  // together never stack their floats; the long words take the side the
+  // page has room on.
+  const ADD_RIVER = {
+    health: [29.2, 38.3, "L"], finance: [33.1, 40.5, "R"], career: [37.2, 43.1, "L"],
+    relationships: [42.1, 48.2, "R"], meaning: [38.9, 50.9, "L"], growth: [33.5, 52.7, "R"],
+  };
+  // A RIVER STONE, drawn in a 48 by 34 box: lobed like the Atlas's pebbles,
+  // with a side a shade down so it stands out of the water (a top alone
+  // read as a flat disc on the stream), a pale light on its upper left,
+  // grain over both, the keeping page's pen round the top and along the
+  // foot, and two faint ripple arcs in front where the water closes round
+  // it. The picked stone takes its area's colour, the rest are bare stone.
+  function addStoneSvg(key, on) {
+    const rnd = keepRnd((keepHash("stone|" + key) % 100000) + 5), sd = (keepHash(key) % 97) / 9;
+    const cx = 24, cy = 13, rx = 15.5, ry = 8.5;
+    const lobe = (ox, oy, sx, sy, a0 = 0, a1 = 6.283, n = 30) => Array.from({ length: n }, (_, i) => {
+      const a = a0 + i / (a1 === 6.283 ? n : n - 1) * (a1 - a0);
+      const w = 1 + 0.13 * Math.sin(a + sd) + 0.07 * Math.sin(a * 2 + sd * 1.9) + 0.03 * Math.sin(a * 3.7 + sd * 2.6);
+      return [ox + Math.cos(a) * sx * w, oy + Math.sin(a) * sy * w];
+    });
+    const d = pts => "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
+    const top = lobe(cx, cy, rx, ry), side = lobe(cx + 0.6, cy + 6, rx * 1.01, ry * 0.98);
+    const lit = lobe(cx - 4.5, cy - 2.6, rx * 0.5, ry * 0.42);
+    const foot = lobe(cx + 0.6, cy + 6, rx * 1.01, ry * 0.98, -0.15, 3.3, 36);
+    const rip = (dx, dy) => Array.from({ length: 44 }, (_, i) => {
+      const a = 0.2 + i / 43 * 2.74;
+      return [cx + Math.cos(a) * (rx + dx), cy + 8 + Math.sin(a) * (ry * 0.62 + dy)];
+    });
+    const topFill = on ? "rgb(var(--cat))" : "#bcb09e", sideFill = on ? "rgb(var(--cat-ink))" : "#76695a";
+    return `<g fill="#56707a" opacity="0.5" filter="url(#rough)">${keepPen(rnd, rip(5, 3), 0.85, 20, 44)}</g>`
+      + `<g fill="#56707a" opacity="0.28" filter="url(#rough)">${keepPen(rnd, rip(11, 6.5), 0.75, 20, 44)}</g>`
+      + `<g filter="url(#wash-fine)"><path d="${d(side)}" style="fill:${sideFill}" opacity="0.85"/>`
+      + `<path d="${d(top)}" style="fill:${topFill}" opacity="0.97"/>`
+      + `<path d="${d(lit)}" fill="#efe6d6" opacity="${on ? 0.28 : 0.45}"/></g>`
+      + `<g filter="url(#granulate)" opacity="0.32"><path d="${d(side)}" fill="#4d443a"/><path d="${d(top)}" fill="#5f574b"/></g>`
+      + `<g fill="${KEEP_INK}" opacity="0.85" filter="url(#rough)">${keepPen(rnd, top.concat([top[0], top[1], top[2]]), 1.1, 34, 80)}`
+      + `${keepPen(rnd, foot, 1.2, 30, 60)}</g>`;
+  }
+  // A CLOUD FOR A BOX OF SEVERAL LINES: the keeping page's bubble (a
+  // superellipse, so the corners of a paragraph stay inside it), its cream
+  // and its pen, without the pool of water it rests on there, since these
+  // float in the sky.
+  function addBubbleSvg(w, h, hash) {
+    const rnd = keepRnd((hash % 100000) + 29), snug = window.innerWidth < 640;
+    const cx = w / 2, cy = h / 2, ax = w / 2 + (snug ? 1 : 4), ay = h / 2 + (snug ? 2 : 5);
+    const shape = (rx, ry, k) => Array.from({ length: k }, (_, i) => {
+      const a = i / k * 6.283, c = Math.cos(a), sn = Math.sin(a);
+      return [cx + Math.sign(c) * Math.pow(Math.abs(c), 2 / 3) * rx, cy + Math.sign(sn) * Math.pow(Math.abs(sn), 2 / 3) * ry];
+    });
+    const edge = specBlob(shape(ax, ay, 16), (hash % 89) + 5, 3 + Math.min(w, h) * 0.03);
+    const line = (dx, dy) => { const pts = shape(ax + dx, ay + dy, Math.max(80, Math.round((w + h) / 3))); pts.push(pts[0], pts[1]); return pts; };
+    return `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${edge}" fill="#efe8d6" opacity="0.97"/>`
+      + `<path d="${edge}" fill="none" stroke="#d6cdb2" stroke-width="3" opacity="0.4"/></g>`
+      + `<g fill="${KEEP_INK}" filter="url(#rough)">${keepPen(rnd, line(0, 0), 1.3, 40, 140)}</g>`
+      + `<g fill="${KEEP_INK}" opacity="0.34" filter="url(#rough)">${keepPen(rnd, snug ? line(7, 6) : line(12, 10), 0.9, 40, 110)}</g>`;
+  }
+  // A FLOAT'S OVAL, this page's own: the keeping page's oval as she
+  // approved it here on 30 Sep (paper cream laid a little off a pen edge,
+  // now and then a ripple ring, the dashed edge for an area not picked).
+  // Its own copy rather than a call into keepOvalSvg, because that one
+  // belongs to the keeping page and follows that page's water: the same
+  // evening it took on a blue grey pool, see-through paper and drifting
+  // petals, which are the keeping page's and have no place on a mountain.
+  function addOvalSvg(w, h, dashed, hash) {
+    const rnd = keepRnd((hash % 100000) + 11);
+    const cx = w / 2, cy = h / 2, rx = Math.max(8, w / 2 - 3), ry = Math.max(6, h / 2 - 2);
+    const oval = specBlob(Array.from({ length: 12 }, (_, i) => { const a = i / 12 * 6.283; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; }),
+      (hash % 89) + 3, 3 + h * 0.06);
+    const ring = (dx, dy) => { const ax = rx + dx, ay = ry + dy, n = Math.max(40, Math.round((ax + ay) * 3.14 / 3));
+      return Array.from({ length: n + 1 }, (_, i) => { const a = -0.4 + i / n * 6.283; return [cx + Math.cos(a) * ax, cy + Math.sin(a) * ay]; }); };
+    let out = `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${oval}" fill="#efe8d6" opacity="0.94"/>`
+      + `<path d="${oval}" fill="none" stroke="#d6cdb2" stroke-width="3" opacity="0.4"/></g>`;
+    out += `<g fill="${KEEP_INK}" filter="url(#rough)">${keepPen(rnd, ring(0, 0), 1.3, dashed ? 6 : 40, dashed ? 14 : 120, dashed)}</g>`;
+    if (!dashed && rnd() < 0.4) {
+      out += `<g fill="${KEEP_INK}" opacity="0.42" filter="url(#rough)">${keepPen(rnd, ring(9, 7), 1.0, 30, 90)}`
+        + `${rnd() < 0.5 ? keepPen(rnd, ring(18, 13), 0.9, 30, 90) : ""}</g>`;
     }
+    return out;
   }
-  // ---- THE TWO DOORS ARE DRAWN THE SAME ----
-  // One underline each, in the control's OWN ink rather than the accent
-  // brush, so neither reads as the primary. They get DIFFERENT strokes from
-  // the underline family for the same reason the board's two controls do —
-  // a matched pair reads as one control split in half.
-  // ---- THE FIELD GROWS WITH WHAT YOU WRITE ----
-  // It was a fixed height with `overflow: hidden`, which is the right
-  // treatment for a ruled field and the wrong one on its own: past two
-  // lines on a phone (three at the frame width) the person's OWN WORDS ran
-  // off the bottom of the box with no scrollbar and nothing to say they
-  // were there. In an app whose first law is that the person's word wins,
-  // their sentence disappearing under the fold is not a layout nit.
-  // It grows in WHOLE RULES, never in pixels, so the writing keeps landing
-  // on the ruling as the box gets taller — the reason the height was fixed
-  // in the first place is preserved rather than traded away.
-  function growAddField(ta) {
-    if (!ta) return;
-    const cs = getComputedStyle(ta);
-    const lead = parseFloat(cs.lineHeight) || 27;
-    const floor = Math.max(1, Math.round((parseFloat(cs.minHeight) || lead * 3) / lead));
+  // Everything that floats is measured after layout and given its oval or
+  // its cloud; every stone is set on its spot on the river and painted.
+  // Runs on opening, on a pick, on the query mark, when a line grows, when
+  // phase 2 changes and when the window does. A float that is not showing
+  // (hidden, or phase 1 while phase 2 stands) keeps the oval it had.
+  function paintAddPage() {
+    if (!addOverlay.classList.contains("open")) return;
+    addOverlay.querySelectorAll("#newCategoryChips .cat-chip").forEach(b => {
+      const at = ADD_RIVER[b.dataset.cat];
+      if (at) {
+        b.style.left = at[0] + "%"; b.style.top = at[1] + "%";
+        b.classList.toggle("add-left", at[2] === "L");
+      }
+      const st = b.querySelector(".add-stone");
+      if (st) st.innerHTML = addStoneSvg(b.dataset.cat, b.classList.contains("on"));
+    });
+    addOverlay.querySelectorAll(".add-fl").forEach(el => {
+      if (el.hidden || !el.getClientRects().length) return;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (!w || !h) return;
+      let svg = el.querySelector(":scope > .add-oval");
+      if (!svg) {
+        el.insertAdjacentHTML("afterbegin", `<svg class="add-oval" aria-hidden="true"></svg>`);
+        svg = el.firstElementChild;
+      }
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      const chip = el.closest(".cat-chip");
+      const key = keepHash("add|" + (chip ? chip.dataset.cat : el.id || el.className));
+      svg.innerHTML = el.matches(".add-goal-fl, .add-why-fl, .add-coach-note, .add-review-fl")
+        ? addBubbleSvg(w, h, key)
+        : addOvalSvg(w, h, !!chip && !chip.classList.contains("on"), key);
+    });
+  }
+  // THE LINE GROWS WITH WHAT SHE WRITES, and its float with it: the prompt
+  // steps aside at the first letter (has-ink, the name page's own
+  // mechanism) and the cloud is redrawn to the new box. Says whether the
+  // line changed height, so a keystroke that did not move it redraws
+  // nothing.
+  function fitAddLine(ta) {
+    if (!ta) return false;
+    const line = ta.closest(".add-line");
+    if (line) line.classList.toggle("has-ink", !!ta.value);
+    const h0 = ta.offsetHeight;
     ta.style.height = "auto";
-    ta.style.height = (Math.max(floor, Math.ceil(ta.scrollHeight / lead)) * lead) + "px";
-    // the spill is drawn to the box, so it is redrawn when the box changes
-    paintFieldWashes();
+    ta.style.height = ta.scrollHeight + "px";
+    return ta.offsetHeight !== h0;
   }
-  (function wireAddGrowth() {
-    document.querySelectorAll("#addPhase1 .av-write textarea").forEach(ta =>
-      ta.addEventListener("input", () => growAddField(ta)));
-  })();
+  ["newTitle", "newDesc"].forEach(id => {
+    const ta = document.getElementById(id);
+    if (ta) ta.addEventListener("input", () => { if (fitAddLine(ta)) paintAddPage(); });
+  });
+  // Phase 2 is written by several roads (the wait, the questions, the
+  // draft, the error, a choice that opens a pick), so its cloud follows the
+  // box rather than each road remembering to redraw it. The oval's own
+  // redraw is a change too, and is not one to answer.
+  new MutationObserver(recs => {
+    const ours = n => n.nodeType === 1 && n.classList.contains("add-oval");
+    if (recs.some(r => !(r.target.closest && r.target.closest(".add-oval"))
+        && ![...r.addedNodes, ...r.removedNodes].every(ours))) setTimeout(paintAddPage, 0);
+  }).observe(addPhase2, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "hidden"] });
+  let addResizeTimer = null;
+  window.addEventListener("resize", () => {
+    if (!addOverlay.classList.contains("open")) return;
+    clearTimeout(addResizeTimer);
+    addResizeTimer = setTimeout(() => {
+      ["newTitle", "newDesc"].forEach(id => fitAddLine(document.getElementById(id)));
+      paintAddPage();
+    }, 120);
+  });
   (function inkAddDoors() {
-    // ONLY the second door takes an underline now: the lead door's emphasis
-    // is the brush mark behind it, and both marks on one control is the
-    // same thing said twice.
-    inkUnderline(document.getElementById("asWrittenAdd"), 1, "currentColor");
+    // The coach door's emphasis is the brush mark behind it; both doors
+    // float, so neither needs an underline to say it can be pressed.
     const why = document.getElementById("addWhy");
     const note = document.getElementById("addCoachNote");
     if (why && note) {
@@ -33025,49 +33066,24 @@
         const open = why.getAttribute("aria-expanded") === "true";
         why.setAttribute("aria-expanded", String(!open));
         note.hidden = open;
+        paintAddPage();
       });
     }
   })();
   function openAdd() {
-    // G2v (155): each opening shows a different life. H3: the description
-    // rotates in lockstep, so the pair never reads as two different people.
-    const ta = document.getElementById("newTitle");
-    if (ta && ta.dataset.phRotate) {
-      try {
-        const pool = JSON.parse(ta.dataset.phRotate);
-        const idx = ((Number(ta.dataset.phIdx) || 0) + 1) % pool.length;
-        ta.dataset.phIdx = String(idx);
-        ta.placeholder = pool[idx];
-        const de = document.getElementById("newDesc");
-        if (de && de.dataset.phRotate) {
-          const dpool = JSON.parse(de.dataset.phRotate);
-          de.placeholder = dpool[idx % dpool.length];
-        }
-      } catch (e) {}
-    }
     addOut = null; addRaw = null;
     addPhase1.style.display = ""; addPhase2.style.display = "none"; addPhase2.innerHTML = "";
     // the question is asked once; every opening starts with it unasked
     const why = document.getElementById("addWhy"), note = document.getElementById("addCoachNote");
     if (why && note) { why.setAttribute("aria-expanded", "false"); note.hidden = true; }
-    // and the fields come back to their floor, not to the last entry's size
-    document.querySelectorAll("#addPhase1 .av-write textarea").forEach(ta => { ta.style.height = ""; });
-
-    // No tornify: the card it used to wrap is gone and the page's sheet is
-    // in the markup, so the paper exists before the page is ever opened.
     openBookPage(addOverlay);
-    // ---- PAINTED AFTER THE PAGE IS ON THE SCREEN, NOT BEFORE ----
-    // This ran a line above `openBookPage`, while the overlay was still
-    // `display: none` — so every measurement it takes was ZERO: the sheet's
-    // width and height, the board's box, and the strip of bare paper the
-    // lower stain is placed in. The fallbacks kept it from throwing and
-    // `preserveAspectRatio="none"` stretched the undersized drawings over
-    // the real boxes, so it LOOKED right and was being computed against a
-    // 240px square. The bare-paper strip is what exposed it: measured as
-    // zero it came out negative, and the stain that depends on it simply
-    // never drew. Anything that measures the page has to run after the page
-    // exists.
-    paintAddPlate();
+    // MEASURED AFTER THE PAGE IS ON THE SCREEN: while the overlay is still
+    // display: none every box is zero, and an oval drawn to a zero box is
+    // no oval. The lines come back to one line, not the last entry's size.
+    ["newTitle", "newDesc"].forEach(id => fitAddLine(document.getElementById(id)));
+    paintAddPage();
+    const img = addOverlay.querySelector(".add-painting img");
+    if (img && !img.complete) img.addEventListener("load", paintAddPage, { once: true });
   }
   function closeAdd() {
     closeBookPage(addOverlay);
@@ -33864,7 +33880,6 @@
     // and silence on failure — their pick simply stands. Either way it is a
     // suggestion with a one-click switch, never an override.
     addCategory = CATS[draft.category] ? draft.category : "Other";
-    barkify(addPhase2, ".add-proposal", true);
     const catMount = addPhase2.querySelector("#catSuggestMount");
     const suggestCat = (suggested, why) => {
       const picked = addCategory;
@@ -43117,7 +43132,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The specimen plates: exported so the six can be drawn and measured
     // without driving six clicks, and so a plate that stops taking its
     // area's colour fails a test rather than being noticed by eye.
-    specimenSvg, paintAddPlate, areaPrintSvg,
+    specimenSvg, paintAddPage, addRiver: ADD_RIVER, areaPrintSvg,
     releaseWishesGet: () => releaseWishes,
     // TOMORROW, AND TOMORROW: the pools, the chooser and its inverse, the page.
     tomorrowPools: () => ({ tells: TM_TELLS, feels: TM_FEELS, readings: TM_READINGS, moves: TM_MOVES,
