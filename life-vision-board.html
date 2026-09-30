@@ -848,16 +848,19 @@
     -webkit-mask-image: var(--swash); mask-image: var(--swash);
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-  .lv-col-name { font-family: var(--voice-body); font-weight: 600; font-size: var(--t-read);
-    line-height: 1.32; color: var(--ink); margin: 0; }
+  /* THE GOAL IS WRITTEN IN HER HAND (2026-09-30, owner, shown three faces
+     on her board: "i like 2"). It was the body sans at 600, which read as an
+     app's label under a print. It is the hand in italic now, the vision
+     line's own voice, under the italic law's first reading: these are her
+     own words for what she wants. */
+  .lv-col-name { font-family: var(--voice-hand); font-style: italic; font-weight: 400;
+    font-size: var(--t-read); line-height: 1.32; color: var(--ink); margin: 0; }
   .lv-col.parked { opacity: 0.55; }
   .lv-col.parked .lv-plate-spec { filter: saturate(0.5); }
-  /* THE LEDGE — the Atlas's brush, drawn narrow and stretched so the stroke
-     thickens with it. Drawn at full width it thinned to a hairline. */
-  .lv-ledge { position: relative; z-index: 3; opacity: 0.8;
-    margin: calc(14px * var(--lv-fit, 1)) auto 0;
-    max-width: 1180px; padding: 0 40px; }
-  .lv-ledge svg { display: block; width: 100%; height: auto; }
+  /* THE LEDGE CAME OFF (2026-09-30, owner, shown it whole, a third as long
+     and gone: "b", gone). The Atlas's brush ran the width of the board under
+     the goals; with the goals standing as prints on an even ground it was a
+     ruler laid across the page, and the shelf is its own edge. */
   /* THE VISION LOSES ITS PLATE. It was a pinned white panel on a paper page —
      the one element that read as UI. The quote sits on the sheet now, with
      the inky line under it doing the work the border did. */
@@ -7347,22 +7350,13 @@
   /* Three leads tall, so the first quarter below starts on a rule. */
   .ch-head { display: flex; align-items: center; gap: 16px; margin: 0;
     min-height: calc(var(--lead) * 3); }
-  /* THE PLATE IS A PAINTING, NOT A LINE DRAWING (owner, 2026-08-28: "can you
-     put the colour back here? i think you got rid of it"). The colour was
-     never removed: the shared .spec-ink is 0.74 of the app's ink, and at the
-     84px this page draws the plate that line work sits ON TOP of the flood
-     and reads as a grey sketch with a smudge behind it. The add page hit the
-     same wall and answered it for itself (.av-scrap's overrides above); this
-     page holds it down too, for the same reason.
-     THE PAINT IS NOT TOUCHED, and the four overrides that were briefly here
-     lifting it are gone. They were compensating for a bug, not for this
-     page: the wash was not being drawn at all (see specimenSvg's uid), and
-     raising a number that changes nothing feels exactly like raising one
-     that does. With the mask fixed, the shared strengths read correctly here
-     and this page needs no exception to the palette. */
+  /* THE CHAPTER'S PLATE IS THE AREA'S PRINT (2026-09-30), the same drawing
+     the board stands above the goal, so a chapter and its goal read as one
+     thing. The specimen it replaced needed its ink held down here to stop
+     reading as a grey sketch; a print carries its own pen and needs no
+     exception. */
   .ch-plate { flex: 0 0 84px; line-height: 0; }
-  .ch-plate .spec-ink { opacity: 0.38; }
-  .ch-plate .av-spec { display: block; width: 100%; height: auto; overflow: visible; }
+  .ch-plate .ap-print { display: block; width: 100%; height: auto; overflow: visible; }
   .ch-head-words { flex: 1 1 auto; min-width: 0; }
   /* --t-display was never defined anywhere, so this font-size was invalid and
      the heading silently INHERITED its parent's size — the same shape as the
@@ -11525,7 +11519,6 @@
 
     <div class="lv-vision hidden" id="lvVision"></div>
     <div class="lv-grid hidden" id="lvGrid"></div>
-    <div class="lv-ledge" id="lvLedge" aria-hidden="true"></div>
     <div class="lv-rest hidden" id="lvRestShelf" aria-label="resting goals">
       <div class="lv-rest-label">resting, sequencing, not giving up</div>
       <div class="lv-rest-row" id="lvRestRow"></div>
@@ -19457,13 +19450,16 @@
     const slot = document.getElementById("chPlate");
     if (!slot) return;
     const key = (CATS[g.category] ? g.category : "growth");
-    slot.innerHTML = specimenSvg(key);
+    // the area's print, as on the board, wearing the area's class so the
+    // page below still reads its pigment off the drawing
+    slot.innerHTML = areaPrintSvg(key);
+    slot.firstElementChild.classList.add(CATS[key].cls);
     slot.classList.remove("bloom");
     void slot.offsetWidth;            // the bloom restarts on every chapter
     slot.classList.add("bloom");
     const page = slot.closest(".ch-page") || document.getElementById("chaptersMount");
     if (!page) return;
-    const svg = slot.querySelector(".av-spec");
+    const svg = slot.querySelector(".ap-print");
     const cat = (svg && getComputedStyle(svg).getPropertyValue("--cat").trim()) || "92, 112, 72";
     const seed = key.length * 11 + key.charCodeAt(0);
     // NO --ch-rules ANY MORE: the sheet wears the app's own lined paper (see
@@ -21363,11 +21359,6 @@
       if (shelfRow.children.length) firstEncounter("parked", shelf.querySelector(".lv-rest-label"));
     }
 
-
-    // THE LEDGE the whole row stands on — added after the goals so it can be
-    // measured against the grid rather than guessed at.
-    const ledge = document.getElementById("lvLedge");
-    if (ledge) ledge.innerHTML = active.length ? buildQuarterRule(430, 1.2) : "";
 
     // Owner ruling (24 Aug, supersedes the quiet line and 144's ghosts):
     // unopened areas say NOTHING on the board. Opening one happens through
