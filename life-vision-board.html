@@ -244,8 +244,8 @@
     -webkit-font-smoothing: antialiased; }
   body { background: var(--bg); position: relative; overflow-x: hidden; }
 
-  /* The painted sheet: a canvas watercolor (washes, tide-lines, granulation,
-     spatter) distorted by the #fiber displacement filter, under everything. */
+  /* The ground: one even pale sage painted on a canvas, under everything
+     (the painter is the "THE GROUND IS SAGE" script near the end). */
   .paper-canvas { position: fixed; inset: -1.5%; width: 103vw; height: 103vh; z-index: 0;
     pointer-events: none; filter: url(#fiber); }
   /* Paper grain over everything, modals included — it is the sheet, not a tint. */
@@ -818,19 +818,11 @@
     width: calc(262px * (0.58 + 0.42 * var(--lv-fit, 1)));
     --pl: calc(152px * var(--lv-fit, 1)); }
   .lv-col.parked { --pl: calc(104px * var(--lv-fit, 1)); }
-  /* THE BLOOM. The wash the specimen is painted into — not a shape behind it.
-     It takes #wash AND #granulate, the same two filters the plate itself
-     takes, because a bloom that skipped them read as a grey shadow under a
-     drawing rather than as the paint the drawing is sitting in. */
-  .lv-bloom { position: absolute; left: 50%; transform: translateX(-50%);
-    pointer-events: none; mix-blend-mode: multiply; z-index: 0;
-    width: calc(var(--pl) * 1.57); height: calc(var(--pl) * 1.57);
-    top: calc(var(--pl) * -0.25); }
-  .lv-bloom svg { display: block; overflow: visible; width: 100%; height: 100%; }
-  .lv-bl-body { fill: rgb(var(--cat, var(--accent))); opacity: 0.20; }
-  .lv-bl-pool { fill: rgb(var(--cat, var(--accent))); opacity: 0.26; }
-  .lv-bl-rim { fill: none; stroke: rgb(var(--cat, var(--accent))); stroke-width: 2.6; opacity: 0.16; }
-  .lv-bl-grain { fill: rgb(var(--cat, var(--accent))); opacity: 0.16; }
+  /* THE AREA PRINTS STAND ON THE PAGE ITSELF (2026-09-30, owner: "i dont
+     really like the art designs for each of the different categories"). The
+     bloom under each specimen went with the specimens: a round blot of the
+     area's colour in the middle read as a spill, and six of them were six
+     accents on one page. Each print carries its own muted wash. */
   /* A CONSTANT LANE for the drawing, so four specimens of four different
      heights still put their four names on one line. Without it the row read
      as four things that had been dropped rather than laid out. */
@@ -898,7 +890,10 @@
   #boardTitle.mg-named { position: absolute; width: 1px; height: 1px;
     margin: -1px; padding: 0; overflow: hidden; white-space: nowrap;
     clip-path: inset(50%); border: 0; }
-  .mg-halo ellipse { fill: #FCF5E0; opacity: 0.55; filter: url(#wash); }
+  /* ON SAGE THE GLOW IS PALER (2026-09-30). A cream glow at half strength
+     read as a cream oval pasted on the sage ground; this one lifts the words
+     as much and lets the ground through. */
+  .mg-halo ellipse { fill: #EEF0E1; opacity: 0.32; filter: url(#wash); }
   /* A LIGHTER HAND ON THE RING (owner, 2026-09-02: "the line is way too
      intense compared to the background ... more like an ink drawin line").
      Near-full ink read as a frame dropped on the painting. The same ink
@@ -5812,24 +5807,6 @@
   /* The dabs fade with the water, or they are the one unfaded thing on it. */
   .kp-float .kp-mark { filter: saturate(0.6) sepia(0.12); }
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
-  /* THE STONE THAT CARRIES A LINE TO THE WEEK (2026-09-30, keepPinButton).
-     Hollow and out of sight until a mouse is over the line; filled with the
-     page's ink, and always there, on the line that stands on the week. A
-     finger has no hover, so on a phone only the carried line shows one and
-     the swipe right is the way; an unseen stone takes no taps there. */
-  .kp-pin { flex: 0 0 auto; align-self: center; background: none; border: none;
-    padding: 4px; margin: -4px -10px -4px 0; line-height: 0; cursor: pointer;
-    opacity: 0; transition: opacity 0.15s ease; }
-  .kp-pin svg { display: block; width: 22px; height: 18px; overflow: visible; }
-  .kp-pin path { fill: rgba(71, 67, 61, 0.06); stroke: #47433d; stroke-width: 1.1; }
-  .kp-pin.on { opacity: 1; }
-  .kp-pin.on path { fill: rgba(71, 67, 61, 0.7); }
-  .kp-pin:focus-visible { opacity: 1; outline: none /* A1: the drawn ring */; }
-  @media (hover: hover) and (pointer: fine) {
-    .kp-item:hover .kp-pin { opacity: 0.55; }
-    .kp-item:hover .kp-pin:hover, .kp-item:hover .kp-pin.on { opacity: 1; }
-  }
-  @media not all and (hover: hover) { .kp-pin:not(.on) { visibility: hidden; } }
   /* A LINE IS WRITTEN ON WHERE IT IS READ (owner, 2026-09-30: "just click
      and edit"). The words take a text cursor, and while one is being
      written on the caret is the only sign: no focus ring and no patch
@@ -5849,6 +5826,12 @@
     filter: drop-shadow(0 8px 12px rgba(63, 58, 48, 0.22)); }
   /* carried off the left edge, it fades: let go there and it is let go */
   .kp-item.kp-lifted.kp-leaving { opacity: 0.45; }
+  /* carried off the right edge, it says where it is going: let go there
+     and it goes to the week, or comes off it, and returns to its place */
+  .kp-item.kp-to-week::after { content: attr(data-week-word); position: absolute;
+    left: 0; right: 0; top: 100%; margin-top: 2px; text-align: center; pointer-events: none;
+    font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
+    color: var(--ink-muted); line-height: 1.3; }
   .kp-item.kp-editing, .kp-item.kp-editing .kp-text { -webkit-user-select: text; user-select: text; }
   .kp-item.kp-editing .kp-text { outline: none; }
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
@@ -8169,9 +8152,6 @@
     touch-action: pan-y; transition: transform 0.18s ease; }
   .tw-pin.tw-pin-swiping { transition: none; }
   .tw-pin:focus-visible { outline: none /* A1: the drawn ring */; }
-  .tw-pin-stone { flex: 0 0 auto; align-self: center; width: 22px; height: 18px; overflow: visible; }
-  .tw-pin-stone path { fill: rgba(71, 67, 61, 0.7); stroke: #47433d; stroke-width: 1.1; }
-  .tw-pin[class*="cat-"] .tw-pin-stone path { fill: rgba(var(--cat), 0.8); stroke: rgb(var(--cat-ink)); }
   .tw-cap-x { background: none; border: none; padding: 0 0 0 4px; cursor: pointer;
     font-family: inherit; font-size: inherit; font-style: inherit; color: var(--ink); }
 
@@ -11262,6 +11242,17 @@
     <feDisplacementMap in="SourceGraphic" in2="n" scale="5.5" xChannelSelector="R" yChannelSelector="G"/>
     <feGaussianBlur stdDeviation="0.7"/>
   </filter>
+  <!-- THE AREA PRINTS' SUN FADE AND MISTS (2026-09-30): the keeping page's
+       fade, and the downward fades a range, a hill or a bank dissolves into,
+       so nothing in a print ends in a hard edge. -->
+  <filter id="apFade" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0.8"/>
+    <feColorMatrix type="matrix" values="0.951 0.062 0.015 0 0  0.028 0.975 0.013 0 0  0.022 0.043 0.930 0 0  0 0 0 1 0"/>
+  </filter>
+  <linearGradient id="apMistFar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d2d9d3"/><stop offset="0.55" stop-color="#d2d9d3"/><stop offset="1" stop-color="#d2d9d3" stop-opacity="0"/></linearGradient>
+  <linearGradient id="apMistMt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3c3c4"/><stop offset="0.55" stop-color="#b3c3c4"/><stop offset="1" stop-color="#b3c3c4" stop-opacity="0"/></linearGradient>
+  <linearGradient id="apMistHill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#aebb9f"/><stop offset="0.55" stop-color="#aebb9f"/><stop offset="1" stop-color="#aebb9f" stop-opacity="0"/></linearGradient>
+  <linearGradient id="apMistBank" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6c2ae"/><stop offset="0.55" stop-color="#b6c2ae"/><stop offset="1" stop-color="#b6c2ae" stop-opacity="0"/></linearGradient>
   <filter id="granulate" x="-25%" y="-25%" width="150%" height="150%">
     <feTurbulence type="fractalNoise" baseFrequency="0.13" numOctaves="3" seed="9" result="t"/>
     <!-- ALPHA ONLY. The matrix must leave the colour channels alone and
@@ -20808,27 +20799,328 @@
     const total = yrs * 4;
     return { yrs, total, done: Math.max(0, Math.min(total, Math.round((g.progress || 0) * total))) };
   }
-  // THE BLOOM — one wash per goal, in its area's colour. Two rings off the
-  // same wobble (a body and a pooled centre) plus a tide line where the
-  // pigment stopped, which is the .av-stain vocabulary the app already uses.
-  function boardBloom(w, h, seed) {
-    const ring = (rw, rh, wob, ph) => {
-      const pts = [], N = 30;
-      for (let k = 0; k < N; k++) {
-        const a = k / N * 6.283;
-        const f = 1 + wob * Math.sin(a * 2 + seed + ph)
-                    + wob * 0.7 * Math.sin(a * 3.3 + seed * 1.7)
-                    + wob * 0.4 * Math.sin(a * 5.1 + seed);
-        pts.push(((w / 2) + Math.cos(a) * rw * f).toFixed(1) + " "
-               + ((h / 2) + Math.sin(a) * rh * f).toFixed(1));
+  // ---- THE AREA PRINTS (2026-09-30, owner: "i dont really like the art
+  // designs for each of the different categories", then "i love the
+  // bamboo!", and shown all six, "love!") ----
+  // Each life area on the board is drawn from one of her own prints
+  // (review/aesthetic/), flat as a woodblock, in the keeping page's pen and
+  // its sun fade: health the bamboo (08), meaning a far mountain with the
+  // sun going down behind it (04), relationships two swallows on a blossom
+  // branch (06), career an ochre sail and its reflection (09), finance lotus
+  // pads veined in gold (07), growth stepping stones across water (11). They
+  // replace the specimen plates ON THE BOARD ONLY: the add page and the
+  // chapter read their page's colour back off the specimen, so they change
+  // in a round of their own.
+  // WHAT MADE THEM READ AS PRINTS AND NOT STICKERS, found drawing them:
+  //   nothing ends in a straight edge. Water, a bank or a range tapers, or
+  //   fades into mist (the apMist gradients); a hard end is a cut out.
+  //   No bloom of the area's colour behind them. Each carries its own muted
+  //   wash and at most one small warm thing: a rust throat, an ochre sail,
+  //   gold veins, a low sun.
+  //   The five after the bamboo are drawn at twice the detail (`U`), because
+  //   the pen drifts a unit or two off the line it follows, on purpose, and
+  //   at the plate's own 120 by 150 that walked the outline off a swallow.
+  //   The bamboo keeps the scale it was approved at.
+  // One seed each, so every board draws the same six, and each is drawn
+  // once per page (apMemo). keepPen, keepBlob and keepRnd are the keeping
+  // page's; the board's first paint is after they exist.
+  const apF1 = n => n.toFixed(1);
+  const apPoly = pts => "M " + pts.map(p => apF1(p[0]) + " " + apF1(p[1])).join(" L ") + " Z";
+  const apLerp = (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u];
+  // a smooth run through key points (Catmull Rom), resampled for the pen
+  function apThrough(keys, per) {
+    const out = [];
+    for (let i = 0; i < keys.length - 1; i++) {
+      const p0 = keys[Math.max(0, i - 1)], p1 = keys[i], p2 = keys[i + 1], p3 = keys[Math.min(keys.length - 1, i + 2)];
+      for (let j = 0; j < per; j++) {
+        const t = j / per, t2 = t * t, t3 = t2 * t;
+        out.push([0, 1].map(k => 0.5 * ((2 * p1[k]) + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3)));
       }
-      return "M " + pts.join(" L ") + " Z";
-    };
-    const body = ring(w / 2.2, h / 2.2, 0.15, 0), pool = ring(w / 3.3, h / 3.3, 0.2, 1.4);
-    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
-      <g filter="url(#wash)"><path class="lv-bl-body" d="${body}"/>
-        <path class="lv-bl-pool" d="${pool}"/><path class="lv-bl-rim" d="${pool}"/></g>
-      <g filter="url(#granulate)"><path class="lv-bl-grain" d="${body}"/></g></svg>`;
+    }
+    out.push(keys[keys.length - 1]);
+    return out;
+  }
+  const apClosed = (keys, per) => apThrough(keys.concat([keys[0], keys[1]]), per).slice(0, -per);
+  // a ridge: key points with a little rock in between
+  function apRidge(rnd, keys, jag) {
+    const out = [];
+    for (let i = 0; i < keys.length - 1; i++) {
+      for (let j = 0; j < 7; j++) { const p = apLerp(keys[i], keys[i + 1], j / 7); out.push([p[0] + (rnd() - 0.5) * jag * 0.6, p[1] + (j ? (rnd() - 0.5) * jag : 0)]); }
+    }
+    out.push(keys[keys.length - 1]);
+    return out;
+  }
+  // The paint goes down as the keeping page lays it: the wash a little off
+  // the drawing, its dried rim, the grain, then gold and ink over the top,
+  // all under the one sun fade.
+  function apCompose(L, order, ops, U) {
+    const body = order.map((n, i) => { const o = L[n] || { paint: "", rims: "", ink: "", gold: "" }; return `<g opacity="${ops[i]}">
+        <g transform="translate(${-1.2 * U} ${U})" filter="url(#wash-fine)" opacity="0.92">${o.paint}</g>
+        <g filter="url(#wash-fine)">${o.rims}</g>
+        <g filter="url(#granulate)" opacity="0.2">${o.paint}</g>
+        <g fill="#b0914f" filter="url(#rough)" opacity="0.85">${o.gold || ""}</g>
+        <g fill="${KEEP_INK}" filter="url(#rough)" opacity="0.78">${o.ink}</g></g>`; }).join("");
+    return `<svg class="ap-print" viewBox="0 0 ${120 * U} ${150 * U}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g filter="url(#apFade)">${body}</g></svg>`;
+  }
+  // The drawing kit: a flat shape with its wash, rim, pooled pigment and
+  // (usually) the pen round it; the pen alone; a gold line; a dot; a blob.
+  function apKit(seed, U) {
+    const rnd = keepRnd(seed), L = {};
+    const up = pts => pts.map(p => [p[0] * U, p[1] * U]);
+    const lay = n => (L[n] = L[n] || { paint: "", rims: "", ink: "", gold: "" });
+    function shape(layer, pts, tone, deep, o = {}) {
+      const g = lay(layer), P = up(pts), d = apPoly(P);
+      g.paint += `<path d="${d}" fill="${tone}" opacity="${apF1((o.op ?? 0.84) + rnd() * 0.1)}"/>`;
+      if (deep) g.rims += `<path d="${d}" fill="none" stroke="${deep}" stroke-width="${apF1((o.rim ?? 1.6) * U)}" opacity="${apF1(0.28 + rnd() * 0.16)}" stroke-linejoin="round"/>`;
+      if (o.pool) g.paint += `<path d="${keepBlob(rnd, o.pool[0] * U, o.pool[1] * U, o.pool[2] * U, o.pool[3] * U, 7, 0.4)}" fill="${deep}" opacity="${apF1(0.18 + rnd() * 0.14)}"/>`;
+      if (o.pen !== 0 && rnd() < (o.penP ?? 0.9)) g.ink += keepPen(rnd, P.concat([P[0], P[1]]), (o.pen ?? 0.5) * U, 12, 30, false, true);
+    }
+    const pen = (layer, pts, w, r0 = 10, r1 = 24) => { lay(layer).ink += keepPen(rnd, up(pts), w * U, r0, r1, false, true); };
+    const goldPen = (layer, pts, w) => { lay(layer).gold += keepPen(rnd, up(pts), w * U, 8, 18, false, true); };
+    const dot = (layer, x, y, r, what) => { lay(layer)[what || "ink"] += `<circle cx="${apF1(x * U)}" cy="${apF1(y * U)}" r="${apF1(r * U)}"/>`; };
+    const blob = (layer, x, y, rx, ry, fill, op, rimCol) => { const d = keepBlob(rnd, x * U, y * U, rx * U, ry * U, 7, 0.45), g = lay(layer);
+      g.paint += `<path d="${d}" fill="${fill}" opacity="${op}"/>`; if (rimCol) g.rims += `<path d="${d}" fill="none" stroke="${rimCol}" stroke-width="${apF1(0.7 * U)}" opacity="0.4"/>`; };
+    return { rnd, shape, pen, goldPen, dot, blob, lay, U, svg: (order, ops) => apCompose(L, order, ops, U) };
+  }
+  // ---- HEALTH: bamboo, from the bamboo and birds print. Approved as drawn;
+  // its own hand, at the plate's own scale. ----
+  function apBamboo() {
+    const rnd = keepRnd(41), F = apF1;
+    const L = { back: { paint: "", rims: "", ink: "" }, front: { paint: "", rims: "", ink: "" } };
+    function culm(layer, x0, y0, y1, lean, w, tone, deep, penW) {
+      const H = y0 - y1, at = t => [x0 + lean * Math.pow(t, 1.4), y0 - H * t];
+      const ts = [0]; let t = 0, k = 0;
+      const segs = [0.13, 0.17, 0.2, 0.22, 0.24, 0.26];
+      while (t < 1) { t += segs[Math.min(k, segs.length - 1)] * (0.9 + rnd() * 0.2); k++; ts.push(Math.min(1.02, t)); }
+      for (let i = 0; i < ts.length - 1; i++) {
+        const ta = ts[i] + (i ? 0.014 : 0), tb = ts[i + 1] - 0.014, N = 16, Lp = [], Rp = [];
+        for (let j = 0; j <= N; j++) {
+          const tt = ta + (tb - ta) * j / N, [cx, cy] = at(tt), [cx2, cy2] = at(tt + 0.01);
+          const dx = cx2 - cx, dy = cy2 - cy, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+          const u = j / N, ww = w / 2 * (1 - 0.12 * Math.sin(Math.PI * u)) * (1 - 0.3 * tt) * (u > 0.94 ? 1.08 : 1);
+          Lp.push([cx + nx * ww, cy + ny * ww]); Rp.push([cx - nx * ww, cy - ny * ww]);
+        }
+        const d = apPoly(Lp.concat(Rp.slice().reverse()));
+        L[layer].paint += `<path d="${d}" fill="${tone}" opacity="${F(0.8 + rnd() * 0.15)}"/>`;
+        L[layer].rims += `<path d="${d}" fill="none" stroke="${deep}" stroke-width="${F(w * 0.24)}" opacity="${F(0.28 + rnd() * 0.16)}"/>`;
+        if (rnd() < 0.85) L[layer].ink += keepPen(rnd, Lp, penW, 7, 16, false, true);
+        if (rnd() < 0.6) L[layer].ink += keepPen(rnd, Rp, penW * 0.85, 7, 16, false, true);
+        if (i < ts.length - 2) {
+          const [cx, cy] = at(ts[i + 1]), ww = w / 2 * (1 - 0.3 * ts[i + 1]) * 1.4;
+          const pts = Array.from({ length: 10 }, (_, j) => { const u = j / 9 * 2 - 1; return [cx + u * ww, cy + 0.7 - 1.1 * (1 - u * u)]; });
+          L[layer].ink += keepPen(rnd, pts, penW * 2.4, 10, 10, false, true);
+        }
+      }
+      return at;
+    }
+    const twig = (layer, pts, penW) => { L[layer].ink += keepPen(rnd, pts, penW, 8, 18, false, true); };
+    const line = (a, b, n, sag) => Array.from({ length: n }, (_, j) => { const u = j / (n - 1); return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u + sag * Math.sin(Math.PI * u)]; });
+    function leaf(layer, x, y, ang, len, wid, tone, deep, penW) {
+      const N = 18, top = [], bot = [];
+      for (let j = 0; j <= N; j++) {
+        const u = j / N;
+        const prof = u < 0.26 ? Math.sin(u / 0.26 * Math.PI / 2) : Math.pow(1 - (u - 0.26) / 0.74, 0.85);
+        const hw = wid / 2 * prof * (u < 0.06 ? 0.35 + u / 0.06 * 0.65 : 1);
+        const droop = len * 0.07 * u * u;
+        top.push([u * len, -hw * (1.05) + droop]); bot.push([u * len, hw * 0.95 + droop]);
+      }
+      const c = Math.cos(ang), s = Math.sin(ang), T = p => [x + p[0] * c - p[1] * s, y + p[0] * s + p[1] * c];
+      const ring = top.map(T).concat(bot.map(T).reverse());
+      const d = apPoly(ring);
+      L[layer].paint += `<path d="${d}" fill="${tone}" opacity="${F(0.78 + rnd() * 0.18)}"/>`;
+      L[layer].rims += `<path d="${d}" fill="none" stroke="${deep}" stroke-width="${F(wid * 0.22)}" opacity="${F(0.3 + rnd() * 0.18)}"/>`;
+      const pc = T([len * 0.28, 0]);
+      L[layer].paint += `<path d="${keepBlob(rnd, pc[0], pc[1], len * 0.14, wid * 0.28, 7, 0.4)}" fill="${deep}" opacity="${F(0.22 + rnd() * 0.16)}"/>`;
+      if (rnd() < 0.82) L[layer].ink += keepPen(rnd, ring, penW, 9, 22, false, true);
+      if (rnd() < 0.35) L[layer].ink += `<g opacity="0.45">${keepPen(rnd, [0.1, 0.25, 0.4, 0.55, 0.7, 0.8, 0.88].map(u => T([u * len, len * 0.07 * u * u])), penW * 0.7, 7, 7, false, true)}</g>`;
+    }
+    function cluster(layer, x, y, base, n, len, tones, deep, penW) {
+      for (let i = 0; i < n; i++) {
+        const a = base + (i - (n - 1) / 2) * (0.42 + rnd() * 0.12) + (rnd() - 0.5) * 0.15;
+        leaf(layer, x, y, a, len * (0.78 + rnd() * 0.32), len * (0.2 + rnd() * 0.04), tones[i % tones.length], deep, penW);
+      }
+    }
+    // the back: one pale culm, further away, its leaves thinner
+    const backTone = "#c6cdb8", backDeep = "#9ea993";
+    const bat = culm("back", 74, 146, -6, -12, 5.2, backTone, backDeep, 0.36);
+    const b1 = bat(0.58), b2 = bat(0.82);
+    twig("back", line(b1, [b1[0] + 26, b1[1] - 12], 9, -2), 0.36);
+    cluster("back", b1[0] + 26, b1[1] - 12, 0.5, 4, 34, [backTone, "#bcc5ae"], backDeep, 0.36);
+    twig("back", line(b2, [b2[0] - 20, b2[1] - 8], 8, -2), 0.34);
+    cluster("back", b2[0] - 20, b2[1] - 8, 2.4, 3, 28, [backTone], backDeep, 0.34);
+    // the front: two culms, the near one darker
+    const fTone = "#a9b893", fTone2 = "#98aa83", fTone3 = "#8c9f78", fDeep = "#6f8262";
+    const fat = culm("front", 38, 148, -10, 8, 8.4, fTone, fDeep, 0.62);
+    const sat = culm("front", 20, 148, 62, 4, 6.2, "#b4c09f", fDeep, 0.55);
+    const n1 = fat(0.4), n2 = fat(0.62), n3 = fat(0.84), s1 = sat(0.86);
+    twig("front", line(n1, [n1[0] + 34, n1[1] - 16], 10, -3), 0.55);
+    cluster("front", n1[0] + 34, n1[1] - 16, 0.62, 5, 44, [fTone, fTone2, fTone3], fDeep, 0.6);
+    twig("front", line(n2, [n2[0] + 24, n2[1] - 22], 9, -2), 0.5);
+    cluster("front", n2[0] + 24, n2[1] - 22, 0.2, 4, 40, [fTone2, fTone, fTone3], fDeep, 0.58);
+    twig("front", line(n3, [n3[0] - 16, n3[1] - 14], 8, -2), 0.5);
+    cluster("front", n3[0] - 16, n3[1] - 14, 2.55, 4, 36, [fTone, fTone3], fDeep, 0.56);
+    cluster("front", s1[0] + 1, s1[1] - 1, 1.95, 3, 30, [fTone2, fTone], fDeep, 0.52);
+    return apCompose(L, ["back", "front"], [0.75, 1], 1);
+  }
+  // ---- MEANING: a far mountain, from the misty ranges ----
+  function apMountain() {
+    const k = apKit(7, 2), r = k.rnd;
+    // the sun going down behind the mountain's shoulder
+    k.shape("far", apClosed([[50, 50], [57, 44], [65, 49], [63, 57], [54, 58]], 5), "#e0b8a2", "#c9967e", { op: 0.6, pen: 0, rim: 1 });
+    // the furthest range, pale, rising out of the mist and back into it
+    const r0 = apRidge(r, [[2, 116], [14, 98], [26, 88], [36, 96], [46, 90], [60, 110], [66, 116]], 2);
+    k.shape("far", r0, "url(#apMistFar)", null, { op: 0.9, pen: 0 });
+    k.pen("far", r0.slice(2, -2), 0.3);
+    // the mountain, off to the right, its foot lost in mist
+    const r1 = apRidge(r, [[30, 122], [46, 102], [60, 84], [70, 64], [78, 46], [84, 52], [92, 64], [100, 78], [108, 92], [116, 110], [120, 122]], 2.4);
+    k.shape("mid", r1, "url(#apMistMt)", null, { op: 0.95, pen: 0 });
+    k.shape("mid", apRidge(r, [[70, 64], [78, 46], [84, 52], [92, 64], [84, 70], [78, 66]], 1.2), "#9fb2b5", null, { op: 0.35, pen: 0 });
+    k.pen("mid", r1.slice(2, -3), 0.48);
+    k.pen("mid", apThrough([[78, 50], [75, 64], [77, 78], [73, 92]], 5), 0.26);
+    k.pen("mid", apThrough([[92, 66], [90, 80], [94, 94]], 5), 0.22);
+    // the near hill, a low mound in sage
+    const r2 = apThrough([[6, 152], [16, 138], [34, 130], [56, 131], [78, 138], [96, 146], [108, 152]], 6);
+    k.shape("near", r2, "url(#apMistHill)", null, { op: 0.95, pen: 0 });
+    k.pen("near", r2.slice(3, -6), 0.46);
+    // birds, far off
+    [[94, 24, 3.2], [101, 30, 2.6], [88, 32, 2]].forEach(([x, y, s]) => k.pen("near", [[x - s, y - s * 0.3], [x - s * 0.4, y - s * 0.55], [x, y], [x + s * 0.4, y - s * 0.6], [x + s, y - s * 0.35]], 0.34, 5, 5));
+    return k.svg(["far", "mid", "near"], [0.8, 1, 1]);
+  }
+  // ---- RELATIONSHIPS: two swallows on a branch, from the swallows print ----
+  function apSwallows() {
+    const k = apKit(11, 2), r = k.rnd;
+    function bird(layer, hx, hy, ang, s, flip) {
+      const c = Math.cos(ang), sn = Math.sin(ang), T = ([x, y]) => { y = flip ? -y : y; return [hx + (x * c - y * sn) * s, hy + (x * sn + y * c) * s]; };
+      const P = keys => apClosed(keys, 4).map(T);
+      // the tail, long and forked, under everything
+      k.shape(layer, P([[18, 2.4], [36, 3.4], [56, 3.6], [54.5, 5], [34, 5.4], [18, 5.2]]), "#4a5061", "#343a48", { op: 0.9, pen: 0.35, rim: 0.8 });
+      k.shape(layer, P([[18, 5], [34, 7.4], [51, 10.4], [49, 11.4], [32, 9.2], [17, 7]]), "#4a5061", "#343a48", { op: 0.9, pen: 0.35, rim: 0.8 });
+      // back and wing, dark slate
+      k.shape(layer, P([[-6.6, -0.6], [-4.6, -4.6], [0, -6.8], [7, -6.8], [15, -5.8], [24, -4.2], [33, -2], [43, 0.6], [39, 2.4], [28, 2.2], [20, 3.8], [12, 4.6], [3, 3.2], [-2.4, 2.4]]), "#4a5061", "#343a48", { op: 0.92, pen: 0.42, rim: 1.1, pool: [T([12, -3])[0], T([12, -3])[1], 5 * s, 3.4 * s] });
+      // the pale breast
+      k.shape(layer, P([[-2.6, 3.6], [2.4, 7.6], [9, 9.6], [16.5, 9], [22, 6.2], [17, 4.2], [9, 4.6], [2, 3.2]]), "#efe7d4", "#cfc3a8", { op: 0.95, pen: 0.3, rim: 0.9, penP: 0.7 });
+      // the rust throat and brow, the one warm thing
+      k.shape(layer, P([[-6.2, 0.8], [-4, -1.6], [-1, 1.6], [0.6, 4.6], [-2.6, 5.4], [-5.4, 3.4]]), "#c47d5c", "#9e5c40", { op: 0.9, pen: 0, rim: 0.8 });
+      // beak and eye
+      k.shape(layer, [T([-6.4, 0.2]), T([-10.4, 1.6]), T([-6.2, 2.2])], "#3a3f4c", null, { op: 0.95, pen: 0.3 });
+      const e = T([-2.2, -2.2]);
+      k.dot(layer, e[0], e[1], 0.95 * s);
+      return { foot: T([12, flip ? -9.4 : 9.4]), foot2: T([15, flip ? -9 : 9]) };
+    }
+    // the birds first, so the branch can run through where their feet are;
+    // the layers still lay it behind them
+    const bA = bird("back", 74, 30, 1.04, 1.18, false);
+    const bB = bird("front", 44, 48, 1.12, 1.3, false);
+    const keys = [[118, 20], [bA.foot[0] + 4, bA.foot[1] - 1], [bA.foot[0] - 6, bA.foot[1] + 3], [bB.foot[0] + 2, bB.foot[1] + 1], [bB.foot[0] - 12, bB.foot[1] + 8], [22, 148]];
+    const br = apThrough(keys, 8);
+    k.shape("branch", br.map(p => [p[0] - 1.1, p[1]]).concat(br.slice().reverse().map(p => [p[0] + 1.1, p[1]])), "#6b5f52", "#4e443a", { op: 0.8, pen: 0, rim: 0.6 });
+    k.pen("branch", br, 0.9, 10, 26);
+    // feet
+    [bA, bB].forEach(b => { k.pen("front", [b.foot, [b.foot[0] - 0.6, b.foot[1] + 2.4]], 0.5, 3, 3); k.pen("front", [b.foot2, [b.foot2[0] - 0.4, b.foot2[1] + 2.2]], 0.5, 3, 3); });
+    // side twigs with a few soft blossom clumps and buds
+    const twigs = [[[br[14][0], br[14][1]], [br[14][0] - 20, br[14][1] - 6], [br[14][0] - 30, br[14][1] - 2]], [[br[30][0], br[30][1]], [br[30][0] + 18, br[30][1] + 4], [br[30][0] + 26, br[30][1] + 14]]];
+    twigs.forEach(t => k.pen("branch", apThrough(t, 6), 0.45, 8, 14));
+    const clumps = [[br[5][0] - 4, br[5][1] + 3], [twigs[0][2][0] + 2, twigs[0][2][1]], [twigs[0][1][0] + 2, twigs[0][1][1] - 3], [twigs[1][2][0], twigs[1][2][1]], [br[34][0] + 3, br[34][1]], [br[22][0] + 5, br[22][1] - 2]];
+    clumps.forEach(([x, y], i) => {
+      const R = 3.4 + r() * 1.6;
+      for (let p = 0; p < 4; p++) { const a = r() * 6.283, d = R * 0.5; k.blob("bloom", x + Math.cos(a) * d, y + Math.sin(a) * d, R * 0.7, R * 0.6, p % 2 ? "#f0d3d6" : "#e8bcc4", 0.9, "#c98f9b"); }
+      k.lay("bloom").paint += `<circle cx="${apF1(x * k.U)}" cy="${apF1(y * k.U)}" r="${apF1(0.9 * k.U)}" fill="#b85a70" opacity="0.6"/>`;
+    });
+    return k.svg(["branch", "bloom", "back", "front"], [1, 1, 0.9, 1]);
+  }
+  // ---- CAREER: a sailboat and its reflection, from Yoshida's boats ----
+  function apSailboat() {
+    const k = apKit(23, 2), r = k.rnd;
+    const W0 = 98;                                  // the waterline
+    // water, flat strips with pen edges, tapering at their ends and narrowing as they go down
+    const strips = [[W0 + 1, 10, 112, 5.5, "#c3cfcf"], [W0 + 9, 4, 104, 6, "#b1c0c2"], [W0 + 19, 16, 110, 5, "#c8d2cc"], [W0 + 28, 8, 92, 5.5, "#a9b9bd"], [W0 + 38, 26, 84, 4.5, "#bccac8"], [W0 + 46, 38, 72, 3.5, "#b1c0c2"]];
+    strips.forEach(([y, x0, x1, h, col], i) => {
+      const n = 10, top = [], bot = [];
+      for (let j = 0; j <= n; j++) {
+        const u = j / n, x = x0 + (x1 - x0) * u, taper = Math.pow(Math.sin(Math.PI * u), 0.5);
+        top.push([x, y - h * 0.5 * taper + Math.sin(u * 6 + i) * 0.7]); bot.push([x, y + h * 0.5 * taper + Math.sin(u * 5 + i * 2) * 0.6]);
+      }
+      k.shape("water", top.concat(bot.reverse()), col, null, { op: 0.82, pen: 0 });
+      k.pen("water", top.slice(1, -1), 0.3, 6, 12);
+    });
+    // the reflection, the sail again upside down, broken by the water
+    for (let y = W0 + 6, i = 0; y < W0 + 42; y += 5.5, i++) {
+      const u = (y - W0) / 60, x0 = 51 + (r() - 0.5) * 2, x1 = 51 + 28 * (1 - u) + (r() - 0.5) * 3;
+      k.shape("refl", [[x0, y], [x1, y - 0.6], [x1 - 1, y + 2.4], [x0 + 1, y + 2.6]], "#d9c08e", null, { op: 0.55, pen: 0 });
+      if (i % 2 === 0) { const xx = 51 - 16 * (1 - u); k.shape("refl", [[xx, y + 1], [49, y + 0.6], [49, y + 3], [xx + 1, y + 3.2]], "#e6ddc6", null, { op: 0.5, pen: 0 }); }
+    }
+    k.pen("refl", [[50, W0 + 4], [50.6, W0 + 14], [49.6, W0 + 24], [50.4, W0 + 32]], 0.35, 4, 6);
+    // hull, mast, the ochre sail and a pale jib
+    k.shape("boat", apClosed([[28, W0 - 3], [74, W0 - 3.4], [68, W0 + 3], [36, W0 + 3.2]], 3), "#5c5448", "#3f382f", { op: 0.92, pen: 0.45, rim: 1 });
+    k.pen("boat", [[50, W0 - 3], [50.4, 70], [50, 44], [50.6, 24]], 0.55, 10, 14);
+    k.shape("boat", apClosed([[52, 26], [66, 32], [80, 50], [84, 72], [82, 90], [52, 92]], 4), "#d5b57c", "#a8854c", { op: 0.9, pen: 0.45, pool: [66, 62, 9, 16] });
+    k.pen("boat", [[53, 44], [72, 46], [80, 48]], 0.28, 5, 5);
+    k.pen("boat", [[53, 66], [76, 66], [83, 67]], 0.28, 5, 5);
+    k.shape("boat", apClosed([[48, 36], [48, 90], [30, 90], [38, 66]], 4), "#ece4cf", "#c9bda0", { op: 0.95, pen: 0.4 });
+    // another sail far off, for the distance
+    k.shape("far", [[104, W0 - 1], [104, W0 - 13], [110, W0 - 2]], "#d9c7a0", "#b9a27a", { op: 0.7, pen: 0.28, rim: 0.6 });
+    k.pen("far", [[101, W0 - 0.5], [112, W0 - 0.5]], 0.3, 4, 4);
+    return k.svg(["water", "refl", "far", "boat"], [1, 1, 0.8, 1]);
+  }
+  // ---- FINANCE: lotus pads with gold veins, from the lotus print ----
+  function apLotus() {
+    const k = apKit(31, 2), r = k.rnd;
+    function pad(layer, cx, cy, rx, ry, notchA, tone, deep, penW) {
+      const pts = [];
+      const N = 44;
+      for (let i = 0; i <= N; i++) {
+        const a = notchA + 0.2 + (6.283 - 0.4) * i / N;
+        const f = 1 + 0.035 * Math.sin(a * 5 + cx) + 0.02 * Math.sin(a * 9);
+        pts.push([cx + Math.cos(a) * rx * f, cy + Math.sin(a) * ry * f]);
+      }
+      pts.push([cx + Math.cos(notchA) * rx * 0.12, cy + Math.sin(notchA) * ry * 0.12]);
+      k.shape(layer, pts, tone, deep, { op: 0.88, pen: penW, rim: 1.8, pool: [cx + rx * 0.1, cy - ry * 0.1, rx * 0.35, ry * 0.4] });
+      // the veins, in gold, from the heart out
+      const vn = 11;
+      for (let i = 0; i < vn; i++) {
+        const a = notchA + 0.35 + (6.283 - 0.7) * i / (vn - 1);
+        const end = [cx + Math.cos(a) * rx * 0.92, cy + Math.sin(a) * ry * 0.92];
+        const mid = [cx + Math.cos(a + 0.06) * rx * 0.5, cy + Math.sin(a + 0.06) * ry * 0.5];
+        k.goldPen(layer, apThrough([[cx, cy], mid, end], 5), penW * 0.9);
+      }
+      k.dot(layer, cx, cy, rx * 0.05, "gold");
+    }
+    // water lines, faint
+    [[8, 128, 40], [70, 138, 44], [4, 62, 30]].forEach(([x, y, w]) => k.pen("water", apThrough([[x, y], [x + w * 0.5, y - 1], [x + w, y + 0.5]], 6), 0.3, 6, 14));
+    pad("back", 92, 58, 22, 9, 1.9, "#c8d3bf", "#9fb09c", 0.36);
+    pad("front", 56, 104, 46, 21, 1.35, "#aebfa6", "#7f9a84", 0.5);
+    pad("back", 26, 44, 13, 5, 2.2, "#d0d9c6", "#a8b8a3", 0.3);
+    return k.svg(["water", "back", "front"], [1, 0.85, 1]);
+  }
+  // ---- GROWTH: stepping stones across water, from the stepping stones print ----
+  function apStones() {
+    const k = apKit(43, 2), r = k.rnd;
+    // the far bank, pale, and the water's lines
+    const bankTop = apThrough([[4, 27], [22, 20], [48, 17], [78, 19], [104, 16], [118, 21]], 6);
+    const bankShore = apThrough([[118, 21], [100, 28], [70, 31], [40, 29], [16, 31], [4, 27]], 6);
+    k.shape("water", bankTop.concat(bankShore), "url(#apMistBank)", null, { op: 0.8, pen: 0 });
+    k.pen("water", bankShore.slice(2, -2), 0.4);
+    [[44, 12, 30], [96, 20, 40], [118, 6, 22], [134, 30, 30]].forEach(([y, x, w]) => k.pen("water", apThrough([[x, y], [x + w * 0.5, y - 0.8], [x + w, y + 0.4]], 6), 0.28, 6, 12));
+    const S = [[30, 132, 17, 6.6], [60, 112, 13.5, 5.2], [79, 90, 10.5, 4.1], [92, 71, 8, 3.1], [101, 56, 6, 2.3], [107, 45, 4.4, 1.7]];
+    S.forEach(([x, y, rx, ry], i) => {
+      const top = apClosed(Array.from({ length: 8 }, (_, j) => { const a = j / 8 * 6.283; const m = 0.86 + r() * 0.26; return [x + Math.cos(a) * rx * m, y + Math.sin(a) * ry * m]; }), 4);
+      // the stone's dark flank under its lit top
+      const flank = top.map(([px, py]) => [px, py + ry * 0.55]);
+      k.shape("stones", flank, "#5d615c", "#43463f", { op: 0.9, pen: 0 });
+      k.shape("stones", top, i < 2 ? "#8e948a" : "#9ea497", "#6b7068", { op: 0.92, pen: 0.3 + rx * 0.02, pool: [x - rx * 0.2, y, rx * 0.4, ry * 0.5] });
+      // a ripple round it
+      const rr = Array.from({ length: 16 }, (_, j) => { const a = 0.3 + j / 15 * 2.6; return [x + Math.cos(a) * rx * 1.35, y + ry * 0.5 + Math.sin(a) * ry * 1.5]; });
+      k.pen("water", rr, 0.28 + rx * 0.008, 6, 14);
+    });
+    return k.svg(["water", "stones"], [1, 1]);
+  }
+  const AREA_PRINTS = { health: apBamboo, meaning: apMountain, relationships: apSwallows,
+    career: apSailboat, finance: apLotus, growth: apStones };
+  const apMemo = {};
+  function areaPrintSvg(area) {
+    const key = AREA_PRINTS[area] ? area : "growth";
+    return apMemo[key] || (apMemo[key] = AREA_PRINTS[key]());
   }
   // THE STONES CAME OFF THE BOARD (owner ruling, 2026-08-28, four hours after
   // they went on). Not a matter of taste: THEY COULD NEVER MOVE. They were
@@ -20905,9 +21197,8 @@
     // goals sit on and became a desk the goals are written on, and the
     // person's own handwriting does not belong on wood.
     card.innerHTML = `
-        <span class="lv-bloom" aria-hidden="true">${boardBloom(240, 240, g.id * 2.3)}</span>
         <div class="lv-platebox">
-          <span class="lv-plate-spec">${specimenSvg(g.category)}</span>
+          <span class="lv-plate-spec">${areaPrintSvg(g.category)}</span>
         </div>
         <div class="lv-col-cat"><em class="${
           !parked && g.id === focusGoalId ? "on" : ""}"${
@@ -29967,8 +30258,7 @@
             ${twPin ? `<p class="tw-pin-line"><button type="button" class="tw-pin ${twPin.cls}" id="twPin"
               data-type-area="thisweek/pin" data-pin="${escHtml(twPin.key)}"
               aria-label="${escHtml(twPin.text)}, from keeping in mind, swipe right to take it off your week"
-              ><svg class="tw-pin-stone" viewBox="0 0 22 18" aria-hidden="true"><path d="${
-                twStonePath(11, 9.5, 5.4, 5, 7.6)}"/></svg><span class="tw-pin-words">${escHtml(twPin.text)}</span></button></p>` : ``}
+              ><span class="tw-pin-words">${escHtml(twPin.text)}</span></button></p>` : ``}
             <div class="tw-strip-mount" id="twStripMount"></div>
             ${profileSeen["tw-cap-station"] ? `` : `<p class="tw-caption" data-type-area="thisweek/caption"
               >one mark for each thing, on the day it's due · drag one to move it <button type="button"
@@ -42823,7 +43113,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The specimen plates: exported so the six can be drawn and measured
     // without driving six clicks, and so a plate that stops taking its
     // area's colour fails a test rather than being noticed by eye.
-    specimenSvg, paintAddPlate,
+    specimenSvg, paintAddPlate, areaPrintSvg,
     releaseWishesGet: () => releaseWishes,
     // TOMORROW, AND TOMORROW: the pools, the chooser and its inverse, the page.
     tomorrowPools: () => ({ tells: TM_TELLS, feels: TM_FEELS, readings: TM_READINGS, moves: TM_MOVES,
@@ -43594,26 +43884,21 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       keepWaterPaint();
     }, 120);
   });
-  // THE WAY A LINE GOES TO HER WEEK (2026-09-30): a small stone at the
-  // line's end, the week's own mark. Hollow, and shown only under a mouse,
-  // until the line is carried; filled, and always shown, while it stands on
-  // the week. A mouse clicks it, because a mouse dragging a line right is
-  // already moving it across the water; a finger swipes the line right,
-  // which on this page meant nothing until now. Either way again takes it
-  // off. No words on it: the label is for a reader.
-  function keepPinButton(key, onWeek) {
-    const on = key === onWeek;
-    return `<button type="button" class="kp-pin${on ? " on" : ""}" data-pin="${escHtml(key)}"
-      aria-pressed="${on}" aria-label="${on ? "take it off your week" : "carry it to your week"}"><svg
-      viewBox="0 0 22 18" aria-hidden="true"><path d="${twStonePath(11, 9.5, 5.4, 5, 7.6)}"/></svg></button>`;
-  }
+  // THE WAY A LINE GOES TO HER WEEK (2026-09-30), and NO STONE FOR IT
+  // (owner, same day, of the stone at each line's end: "its kinda ugly imo.
+  // its a grey rock randomly. i think id rather just have i can swipe right
+  // or click right"). A finger swipes the line right. A MOUSE CARRIES IT
+  // OFF THE RIGHT EDGE of the water (owner, next: "cant we do it if it goes
+  // off the page it does what we do for the left delete?"): a mouse
+  // dragging a line right is moving it across, so the week is past the
+  // edge, as letting go is past the left one. Either way again takes it
+  // off, and the breath says which it was. Nothing on the page marks the
+  // carried line: This Week shows it.
   function openKeepings(opts) {
     const writing = !!(opts && opts.writing);
     const mount = document.getElementById("keepMount");
     if (!mount) return;
     let above = -1;
-    // the line on her week, if any (keepOnWeek), wears its stone filled
-    const onWeek = (keepOnWeek() || {}).key || null;
     const row = (k) => {
       let m = keepMarkOf(k.id);
       if (m === above) m = (m + 1) % KEEP_MARKS.length;
@@ -43622,7 +43907,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       return `<div data-type-area="keep/row" class="kp-item kp-float" data-keep="${escHtml(k.id)}">
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
-        ${keepPinButton("keep:" + k.id, onWeek)}
       </div>`;
     };
     // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
@@ -43642,7 +43926,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
-        ${d.id != null ? keepPinButton("dir:" + g.id + ":" + d.id, onWeek) : ``}
       </div>`)));
     const fromGoals = [...dirRows.values()];
     // THREE TO BEGIN WITH (2026-09-30, owner: "for users who dont have any
@@ -43848,8 +44131,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // line moved left could be thrown away by it. So with a mouse every
     // drag picks the line up, and a line carried off the left edge of the
     // water, 72px past the column (the swipe's own number), is let go when
-    // it is dropped there, with the same undo. A finger keeps the swipe:
-    // quick and flat to the left takes a line off, a hold picks it up.
+    // it is dropped there, with the same undo. Off the RIGHT edge, the same
+    // 72px past, it goes to her week (or comes off it) and returns to its
+    // place. A finger keeps the swipes: quick and flat to the left takes a
+    // line off, to the right carries it to the week, a hold picks it up.
     const list = mount.querySelector(".kp-list"), ov = document.getElementById("keepOverlay");
     const rowKey = el => el.dataset.keep ? "keep:" + el.dataset.keep : "dir:" + el.dataset.dropGoal + ":" + el.dataset.dropDir;
     let lift = null;
@@ -43865,6 +44150,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       const dx0 = parseFloat(rowEl.style.getPropertyValue("--kp-dx")) || 0;
       lift = { rowEl, rows, from, to: from, at: y + top, mids, step, x0: x, dx0, room, tx: 0 };
       rowEl.classList.add("kp-lifted");
+      rowEl.dataset.weekWord = (keepOnWeek() || {}).key === rowKey(rowEl) ? "off your week" : "to your week";
       return true;
     };
     const liftMove = (x, y) => {
@@ -43878,13 +44164,18 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       lift.to = to;
       const raw = x - lift.x0;
       lift.leaving = lift.dx0 + raw < -72;
+      lift.toWeek = !lift.leaving && lift.dx0 + raw > lift.room + 72;
       rowEl.classList.toggle("kp-leaving", lift.leaving);
-      lift.tx = lift.leaving ? raw : Math.max(-lift.dx0, Math.min(lift.room - lift.dx0, raw));
+      rowEl.classList.toggle("kp-to-week", lift.toWeek);
+      // past the right edge it follows the hand a little way, never far
+      // enough to push the page sideways
+      lift.tx = lift.leaving ? raw : lift.toWeek ? Math.min(raw, lift.room - lift.dx0 + 96)
+        : Math.max(-lift.dx0, Math.min(lift.room - lift.dx0, raw));
       rowEl.style.transform = "translate(" + lift.tx + "px, " + dy + "px) scale(1.02)";
-      // a line on its way off makes no room among the others
+      // a line on its way off, or to the week, makes no room among the others
       rows.forEach((r, i) => {
         if (i === from) return;
-        const shift = lift.leaving ? 0 : from < to && i > from && i <= to ? -step : to < from && i >= to && i < from ? step : 0;
+        const shift = lift.leaving || lift.toWeek ? 0 : from < to && i > from && i <= to ? -step : to < from && i >= to && i < from ? step : 0;
         r.style.transform = shift ? "translateY(" + shift + "px)" : "";
       });
     };
@@ -43892,8 +44183,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       const was = lift; lift = null;
       if (!was) return;
       was.rows.forEach(r => { r.style.transform = ""; });
-      was.rowEl.classList.remove("kp-lifted", "kp-leaving");
+      was.rowEl.classList.remove("kp-lifted", "kp-leaving", "kp-to-week");
       if (commit && was.leaving) { takeOff(was.rowEl); return; }
+      if (commit && was.toWeek) { toggleWeek(was.rowEl); return; }
       const across = Math.abs(was.tx) >= 2;
       if (!commit || (was.to === was.from && !across)) return;
       const keys = was.rows.map(rowKey);
@@ -43902,8 +44194,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         ? { key: rowKey(was.rowEl), x: (was.dx0 + was.tx) / was.room } : null);
       openKeepings();
     };
-    // CARRIED TO THE WEEK, OR TAKEN OFF IT (2026-09-30): the stone's click
-    // and a finger's swipe right both come here. The page is drawn again
+    // CARRIED TO THE WEEK, OR TAKEN OFF IT (2026-09-30): a line carried off
+    // the right edge and a finger's swipe right both come here. The page is drawn again
     // with the stone's new state, and the way back is the breath's undo.
     const toggleWeek = rowEl => {
       const key = rowKey(rowEl);
@@ -43964,8 +44256,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         swiped = false;
         // a line being written on is a line, not a row to swipe
         if (rowEl.classList.contains("kp-editing")) return;
-        // a press on the stone is its click, never a drag of the line
-        if (e.target && e.target.closest && e.target.closest(".kp-pin")) return;
         sw = { x: e.clientX, y: e.clientY, dx: 0, on: false,
           mouse: e.pointerType !== "touch" && e.pointerType !== "pen" };
         document.addEventListener("pointermove", onMove, true);
@@ -43987,8 +44277,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         if (swiped) { swiped = false; return; }
         writeOn(rowEl, e.clientX, e.clientY);
       });
-      const stone = rowEl.querySelector(".kp-pin");
-      if (stone) stone.addEventListener("click", e => { e.stopPropagation(); toggleWeek(rowEl); });
     });
     openBookPage(document.getElementById("keepOverlay"));
     // open first: a page that is display none measures every float at zero
@@ -45077,186 +45365,32 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   renderAll();
 </script>
 <script>
-// The watercolor sheet. Procedural — washes with fractal edges, dried tide-lines,
-// fiber fringe, granulation, paper-tooth erosion, corner toasting, spatter —
-// painted once per resize, then distorted by the #fiber displacement filter.
-// Deterministic seed so the sheet is the same painting on every visit.
+// THE GROUND IS SAGE (2026-09-30, owner: "idk what but something feels off
+// about the design of this page", then, shown four grounds on her own board,
+// "i prefer the sage background"). The sheet was a procedural watercolour,
+// washes with fractal edges, tide lines, spatter and toasted corners, and on
+// the board it had become the loudest thing there: dark blotches everywhere
+// and a pale road down the middle, where every one of her prints keeps its
+// ground calm and lets it show through. Now it is one even pale sage, the
+// ground of the swallows print, deepened a breath in three wide soft places
+// and at the corners, with no edge anywhere. The grain overlay is the paper.
 (function(){
   const canvas = document.getElementById('paperCanvas');
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
-  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-
-  const SAGE = [[125,138,99],[102,117,76],[141,152,114],[88,104,66]];
-  const OAK  = [[138,114,80],[112,90,62],[158,132,94],[96,76,52]];
-  const TEA  = [184,152,104];
-
-  const rgba = (c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`;
-  const dk   = (c,f)=>[c[0]*f,c[1]*f,c[2]*f];
-
-  // fractal blob outline: low-freq shape + two scales of jagged fiber noise, no smoothing
-  function blobPts(rng,cx,cy,R,rough){
-    const n=110, pts=[];
-    const f1=2+((rng()*3)|0), f2=5+((rng()*4)|0);
-    const p1=rng()*6.28, p2=rng()*6.28;
-    // per-vertex jitter arrays so adjacent points are independent (jagged, not wavy)
-    for(let i=0;i<n;i++){
-      const a=i/n*Math.PI*2;
-      let m=0.55*Math.sin(a*f1+p1)+0.30*Math.sin(a*f2+p2);
-      m += (rng()-0.5)*0.42;          // coarse fiber jitter
-      m += (rng()-0.5)*0.18;          // fine fiber jitter
-      const r=R*(1+m*rough);
-      pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r*0.9, a]);
-    }
-    return pts;
-  }
-  function trace(ctx,pts){
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
-    ctx.closePath();
-  }
-
-  // fiber wicking: tiny tendrils straddling the boundary, pulled outward
-  function fringe(ctx,rng,pts,cx,cy,color,alpha){
-    for(let i=0;i<pts.length;i++){
-      if(rng()<0.45) continue;
-      const [px,py,a]=pts[i];
-      const reach=1+rng()*9;
-      const fx=px+Math.cos(a)*reach*rng();
-      const fy=py+Math.sin(a)*reach*rng()*0.9;
-      const fr=0.5+rng()*2.4;
-      const g=ctx.createRadialGradient(fx,fy,0,fx,fy,fr*2.2);
-      g.addColorStop(0,rgba(dk(color,0.8),alpha*(0.25+rng()*0.3)));
-      g.addColorStop(1,rgba(color,0));
-      ctx.fillStyle=g;
-      ctx.beginPath();
-      ctx.ellipse(fx,fy,fr*(1+rng()),fr*0.6, a, 0, 6.29);
-      ctx.fill();
-    }
-  }
-
-  function wash(ctx,rng,cx,cy,R,color,alpha){
-    const layers=3+(rng()<0.5?1:0);
-    for(let L=0;L<layers;L++){
-      const rr=R*(1-L*0.14+(rng()-0.5)*0.06);
-      const ox=cx+(rng()-0.5)*R*0.16, oy=cy+(rng()-0.5)*R*0.16;
-      const pts=blobPts(rng,ox,oy,rr,0.26);
-      trace(ctx,pts);
-      const g=ctx.createRadialGradient(ox,oy,rr*0.08,ox,oy,rr*1.05);
-      g.addColorStop(0,   rgba(color,alpha*0.55));
-      g.addColorStop(0.55,rgba(color,alpha*0.75));
-      g.addColorStop(0.88,rgba(dk(color,0.72),alpha*1.15));
-      g.addColorStop(1,   rgba(color,0));
-      ctx.fillStyle=g; ctx.fill();
-      if(L===0){
-        // dried tide-line, drawn segment-by-segment so weight varies along the edge
-        for(let i=0;i<pts.length;i++){
-          if(rng()<0.2) continue;
-          const p=pts[i], q=pts[(i+1)%pts.length];
-          ctx.strokeStyle=rgba(dk(color,0.5),alpha*(0.5+rng()*0.6));
-          ctx.lineWidth=0.5+rng()*1.8;
-          ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke();
-        }
-        fringe(ctx,rng,pts,ox,oy,color,alpha);
-      }
-    }
-    // granulation
-    const blots=34+(rng()*22|0);
-    for(let i=0;i<blots;i++){
-      const a=rng()*6.28, d=Math.sqrt(rng())*R*0.72;
-      const bx=cx+Math.cos(a)*d, by=cy+Math.sin(a)*d*0.9;
-      const br=2+rng()*R*0.09;
-      const g=ctx.createRadialGradient(bx,by,0,bx,by,br);
-      const bc=rng()<0.5?dk(color,0.7):color;
-      g.addColorStop(0,rgba(bc,0.06+rng()*0.09));
-      g.addColorStop(1,rgba(bc,0));
-      ctx.fillStyle=g;
-      ctx.beginPath(); ctx.arc(bx,by,br,0,6.29); ctx.fill();
-    }
-  }
-
-  // paper tooth: eat speckled holes + short fiber streaks out of the pigment layer
-  function erode(ctx,rng,w,h){
-    ctx.globalCompositeOperation='destination-out';
-    const n=(w*h)/900;
-    for(let i=0;i<n;i++){
-      const x=rng()*w, y=rng()*h;
-      ctx.fillStyle=`rgba(0,0,0,${0.05+rng()*0.22})`;
-      if(rng()<0.72){
-        ctx.beginPath(); ctx.arc(x,y,0.4+rng()*1.6,0,6.29); ctx.fill();
-      }else{
-        // short streak along a loose horizontal fiber grain
-        const ang=(rng()-0.5)*0.6;
-        const len=2+rng()*7;
-        ctx.save(); ctx.translate(x,y); ctx.rotate(ang);
-        ctx.fillRect(0,0,len,0.5+rng()*0.9);
-        ctx.restore();
-      }
-    }
-    ctx.globalCompositeOperation='source-over';
-  }
-
-  function toast(ctx,rng,w,h){
-    ctx.globalCompositeOperation='multiply';
-    [[0,0],[w,0],[0,h],[w,h]].forEach(([x,y])=>{
-      const r=Math.max(w,h)*(0.34+rng()*0.18);
-      const g=ctx.createRadialGradient(x,y,0,x,y,r);
-      g.addColorStop(0,rgba(dk(OAK[1],0.9),0.16+rng()*0.10));
-      g.addColorStop(0.6,rgba(TEA,0.07));
-      g.addColorStop(1,'rgba(0,0,0,0)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
-    });
-    const g=ctx.createLinearGradient(0,0,w*0.3,h);
-    g.addColorStop(0,rgba(TEA,0.07)); g.addColorStop(0.5,rgba(TEA,0.035)); g.addColorStop(1,rgba(TEA,0.08));
-    ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
-    ctx.globalCompositeOperation='source-over';
-  }
-
-  function spatter(ctx,rng,w,h){
-    for(let i=0;i<30;i++){
-      const c=(rng()<0.5?SAGE:OAK)[rng()*4|0];
-      const x=rng()*w, y=rng()*h, r=0.6+rng()*2.6;
-      ctx.fillStyle=rgba(dk(c,0.8),0.15+rng()*0.2);
-      ctx.beginPath(); ctx.arc(x,y,r,0,6.29); ctx.fill();
-      // occasional satellite droplet, like a flicked brush
-      if(rng()<0.4){
-        ctx.beginPath(); ctx.arc(x+(rng()-0.5)*14,y+(rng()-0.5)*14,r*0.35,0,6.29); ctx.fill();
-      }
-    }
-  }
-
   function paintSheet(ctx,w,h){
-    const rng=mulberry32(20260820);
-
-    // base sheet
     const base=ctx.createLinearGradient(0,0,0,h);
-    base.addColorStop(0,'#F0E9D6'); base.addColorStop(0.5,'#F2ECDC'); base.addColorStop(1,'#EDE4CE');
+    base.addColorStop(0,'#DEDFCD'); base.addColorStop(0.5,'#DADCC8'); base.addColorStop(1,'#D3D6C0');
     ctx.fillStyle=base; ctx.fillRect(0,0,w,h);
-    toast(ctx,rng,w,h);
-
-    // paint pigment on its own layer so paper tooth can erode it
-    const wl=document.createElement('canvas');
-    wl.width=w; wl.height=h;
-    const wctx=wl.getContext('2d');
-
-    const edge=[
-      [w*0.06,h*0.04],[w*0.94,h*0.02],[w*0.02,h*0.55],
-      [w*0.98,h*0.5],[w*0.1,h*0.97],[w*0.9,h*0.95],[w*0.5,h*1.02]
-    ];
-    edge.forEach((p,i)=>{
-      const c=(i%2===0?SAGE:OAK)[rng()*4|0];
-      wash(wctx,rng,p[0],p[1],Math.min(w,h)*(0.26+rng()*0.16),c,0.16+rng()*0.07);
-    });
-    wash(wctx,rng,w*0.3,h*0.35,Math.min(w,h)*0.2,OAK[2],0.07);
-    wash(wctx,rng,w*0.72,h*0.68,Math.min(w,h)*0.18,SAGE[2],0.07);
-    spatter(wctx,rng,w,h);
-
-    erode(wctx,rng,w,h);
-
-    // stain the sheet
     ctx.globalCompositeOperation='multiply';
-    ctx.drawImage(wl,0,0);
+    const soft=(x,y,r,rgb,a)=>{
+      const g=ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,`rgba(${rgb},${a})`); g.addColorStop(1,`rgba(${rgb},0)`);
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+    };
+    const M=Math.max(w,h);
+    [[0.15,0.3,0.5],[0.85,0.55,0.45],[0.4,0.9,0.55]].forEach(([fx,fy,fr])=>soft(w*fx,h*fy,M*fr,'150,160,128',0.10));
+    [[0,0],[w,0],[0,h],[w,h]].forEach(([x,y])=>soft(x,y,M*0.4,'150,130,95',0.10));
     ctx.globalCompositeOperation='source-over';
   }
 
