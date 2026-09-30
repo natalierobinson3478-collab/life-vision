@@ -5172,14 +5172,13 @@
      its place), then the painting, with the floats that sit ON the painting
      laid over it in the same cell. Its width is the painting's: the whole
      window on a phone, where the scroll is almost the screen's own shape,
-     and a column the page scrolls down at the desk, like unrolling it. */
+     and the whole window at the desk too (owner, 30 Sep: "i was expecting
+     the painting to fill the screen"), where it is taller than the window
+     and the page scrolls down it, summit first, like unrolling the scroll.
+     A float near the window's edge must never make the page scroll sideways. */
   #addOverlay > .add-world { --rule: 18px; --lead: calc(var(--rule) * 1.5);
     position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
-    width: 100%; margin: 0 auto; }
-  /* on a phone the world is the window, and a float near its edge must not
-     make the page scroll sideways; at the desk the clouds may reach past
-     the painting's edge onto the silk, which ties the two together */
-  @media (max-width: 699px) { #addOverlay > .add-world { overflow-x: clip; } }
+    width: 100%; margin: 0; overflow-x: clip; }
   #addOverlay #addPhase1 { display: contents; }
   /* the title's size, weight and face are the one shared title role; the
      page only says where it stands */
@@ -5266,15 +5265,17 @@
   #addOverlay #addPhase2 { width: auto; padding: 20px 30px 30px 24px; }
   #addOverlay #addPhase2 .modal-actions { margin-top: calc(var(--lead) * 0.6); }
 
-  /* the desk: a column the width of a good reading, the painting's sides
-     dissolved in bands of mist into the silk it hangs on */
+  /* the desk: the painting is the window's width, so the clouds keep a
+     reading measure rather than stretching into long thin lines across it.
+     The goal's cloud and phase 2's stand centred over the summit, the title
+     starts where they start, and the words beside the summit and the coach
+     note keep to their own width. */
   @media (min-width: 700px) {
-    #addOverlay > .add-world { width: min(600px, calc(100vw - 48px)); }
-    #addOverlay .av-title { padding: 34px 20px 14px 8px; }
-    #addOverlay .add-goal-fl, #addOverlay #addPhase2 { margin: 0 -24px; }
-    #addOverlay .add-painting img { -webkit-mask-image: url(assets/add/taiga-edge-mask.png);
-      mask-image: url(assets/add/taiga-edge-mask.png);
-      -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+    #addOverlay .av-title { padding: 34px 60px 14px max(22px, calc(50% - 352px)); }
+    #addOverlay .add-goal-fl, #addOverlay #addPhase2 { justify-self: center;
+      width: min(720px, calc(100% - 28px)); margin: 0; }
+    #addOverlay .add-why-fl { width: min(49%, 400px); }
+    #addOverlay .add-over > .add-coach-note { width: min(60%, 440px); }
   }
 
   /* ---- this week: the weekly work page ---- */
@@ -8234,6 +8235,17 @@
   /* WHICH WEEK, under the title, in the same quiet tier as everything else
      that describes rather than instructs. It is a button because it is the
      way back, and it looks like the line it is. */
+  /* THE PLANNER'S LINE UNDER ITS TITLE (2026-09-30): keeping in mind's own
+     sub-line, the caption size on a phone and the reading size at the desk,
+     on a line of its own under the title and above the week's name. */
+  .tw-head .tw-plan-sub { flex: 1 1 100%; order: 2; }
+  @media (min-width: 641px) { .tw-head .tw-plan-sub { font-size: var(--t-read); } }
+  /* ON A PHONE IT KEEPS OUT OF THE FIGURE'S COLUMN. The companion's column
+     begins 80px inside the head's own seat (the right of the head is its
+     seat, and the column is wider than the seat so the bubble over the
+     figure has two lines of room), and the title happens to wrap short of
+     it; a longer line would run under the figure's voice. */
+  @media (max-width: 640px) { #thisWeekMount .tw-head .tw-plan-sub { padding-right: 80px; } }
   .tw-week-name { flex: 1 1 100%; order: 3; text-align: left; margin: 1px 0 0;
     background: none; border: none; padding: 0; cursor: pointer;
     font-family: var(--voice-body); font-size: var(--t-label); letter-spacing: 0.04em;
@@ -11615,7 +11627,7 @@
     <button class="checkin-close" id="addX" aria-label="close" title="close"></button>
     <div class="add-world">
       <h2 class="av-title" data-type-area="add/head">add a goal to your board.</h2>
-      <div class="add-painting" aria-hidden="true"><img src="assets/add/taiga-springtime-valley.jpg" alt="" decoding="async"></div>
+      <div class="add-painting" aria-hidden="true"><img src="assets/add/taiga-springtime-valley.jpg" srcset="assets/add/taiga-springtime-valley.jpg 1200w, assets/add/taiga-springtime-valley-2400.jpg 2400w" sizes="100vw" alt="" decoding="async"></div>
       <div id="addPhase1">
         <div class="add-fl add-goal-fl" data-type-area="add/goal">
           <label class="pm-line add-line"><textarea id="newTitle" rows="1" placeholder=" " aria-label="your goal"></textarea><span class="pm-ghost"><i class="pm-caret"></i>write your goal</span></label>
@@ -28180,7 +28192,13 @@
   // The day-count header ("Day one.", "Nine days in.") retired by owner
   // ruling: the page title is static. The notebook on the board keeps its
   // small "day N" tag — that object is where the count lives now.
-  const TW_TITLE = "your week at a glance.";
+  // HER PLANNER, IN HER VOICE (2026-09-30, owner: 'change "your week at a
+  // glance." to "my weekly planner." and then add a subtitle that says in
+  // the same font and size as the sub-title in the keeping in mind book').
+  // The line under it is keeping in mind's own (.fq-sub-line), first person
+  // like "reminders to keep close to my heart".
+  const TW_TITLE = "my weekly planner.";
+  const TW_SUBTITLE = "where i can set and update my habits and tasks.";
 
   // ONE row per mechanism (item 38): check circle (one-offs only, item 41) ·
   // label · the day-dots inline at the right with M T W T F S S beneath ·
@@ -29895,6 +29913,7 @@
           <div class="tw-head${twSeatWasFree ? " tw-seat-free" : ""}" data-type-area="thisweek/head">
             <!-- T2: the title is display only — no click, no hover door. -->
             <h1 class="tw-title">${escHtml(TW_TITLE)}</h1>
+            <p class="fq-sub-line tw-plan-sub">${escHtml(TW_SUBTITLE)}</p>
             <!-- THE UNSPOKEN HOURS SIT UNDER THE TITLE, not in a strip below
                  the rose. Down there the line read as SELECTED TEXT — a
                  centred band of type between two drawings — and it broke the

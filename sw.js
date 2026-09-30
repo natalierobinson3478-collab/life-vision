@@ -27,7 +27,7 @@
    editing the board never sees a copy of it. publish-app.sh stamps VERSION
    with the commit it ships, which is what makes a browser notice a new
    worker and refresh the drawings it keeps. */
-const VERSION = "786a21c";
+const VERSION = "dfaa249";
 const CACHE = "life-vision-" + VERSION;
 const APP = "life-vision-board.html";
 const PAGE_WAIT_MS = 4000;
@@ -41,8 +41,8 @@ const SHELL = [
   "assets/app-icon-64.png", "assets/app-icon-180.png",
   "assets/app-icon-192.png", "assets/app-icon-512.png", "assets/app-icon.svg",
   "assets/bark-tile.png",
-  // the add page's painting, Taiga's scroll, and the mist its sides dissolve in
-  "assets/add/taiga-springtime-valley.jpg", "assets/add/taiga-edge-mask.png",
+  // the add page's painting, Taiga's scroll, at a phone's size and the desk's
+  "assets/add/taiga-springtime-valley.jpg", "assets/add/taiga-springtime-valley-2400.jpg",
   "narrator/script.json",
   "assets/companions/props/book.svg", "assets/companions/props/keys.svg",
   "assets/companions/props/pages.svg", "assets/companions/props/postcard.svg",
