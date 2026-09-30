@@ -5717,13 +5717,52 @@
      underneath: same proximity, same total, and it holds at any line count.
      -0.3 rather than -0.4 keeps the caption's ascenders clear of the
      title's descenders. */
-  /* KEEPING IN MIND: the Facts sheet's own parts, plus the three this page
-     needs. A row here is not a control, it is a line with a mark beside it,
-     so it reads as writing on paper rather than as a list of buttons. */
+  /* KEEPING IN MIND FLOATS ON THE WATER (2026-09-30, owner: "I want to have
+     all my reminders floating in the water. Even the add a new task. And i
+     can add as many tasks to the water like I want"). The torn sheet is
+     gone. The page is water, by the Atlas's own recipe: the overlay's
+     background is the ground, no scrollbar, the strip the window reserves
+     painted the same, the ✕ seated on the mount by the two insets. The water
+     itself is drawn by keepWaterPaint into #keepWaterGround, the length of
+     the page, and baked to an image the way This Week's sand is. */
+  :root { --keep-water: #d3d2c1; }
+  html:has(#keepOverlay.open) { background-color: var(--keep-water); }
+  #keepOverlay { --x-in-top: 8px; --x-in-right: 4px; padding-top: 12px;
+    background-color: var(--keep-water);
+    background-image: radial-gradient(circle at 22% 8%, rgba(246,248,238,0.4), transparent 60%),
+      radial-gradient(circle at 86% 88%, rgba(58,86,104,0.08), transparent 58%);
+    backdrop-filter: none; overscroll-behavior: contain;
+    scrollbar-width: none; scrollbar-gutter: auto; }
+  #keepOverlay::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  #keepOverlay > #keepMount { margin-top: 0; }
+  #keepWaterGround { position: absolute; top: 0; left: 0; right: 0; z-index: -1;
+    pointer-events: none; overflow: hidden; }
+  #keepWaterGround svg, #keepWaterGround canvas { display: block; width: 100%; }
+  /* The page's own rhythm, which the FAQ sheet used to lend it. */
+  .kp-page { position: relative; max-width: var(--bf-w); margin: 0 auto;
+    --rule: 20px; --lead: calc(var(--rule) * 1.5); line-height: var(--lead);
+    /* the title stands where This Week's does (owner, 30 Sep: "the title is
+       a bit too high. like near the edge"): 40px from the top on a desk,
+       22px on a phone, the overlay's 12 plus this */
+    padding-top: 28px; }
+  @media (max-width: 640px) { .kp-page { padding-top: 10px; } }
+  .kp-head { margin-bottom: calc(var(--lead) * 0.5); }
+  /* A FLOAT: the water's own oval, paper cream, with a pen edge, and the
+     words inside it. Each is drifted a little by its own two numbers
+     (--kp-dx, --kp-gap, written by keepFloatOvals), and the oval is an
+     inline svg drawn to the measured box, never a pseudo element, so the
+     swash roster can see it and it rides the row when the row swipes.
+     isolation keeps the oval's z-index inside the row; without it the oval
+     falls behind the ground. */
+  .kp-float { position: relative; isolation: isolate; width: fit-content; max-width: 100%;
+    margin-left: var(--kp-dx, 0px); margin-top: calc(var(--lead) * var(--kp-gap, 0.8));
+    padding: calc(var(--lead) * 0.3) 24px calc(var(--lead) * 0.3) 16px; }
+  .kp-oval { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+    pointer-events: none; z-index: -1; }
   .kp-item { display: flex; align-items: baseline; justify-content: space-between;
-    gap: 10px; margin-top: calc(var(--lead) * 0.5);
+    gap: 10px;
     /* SWIPE LEFT TO LET ONE GO (2026-09-29), This Week's row recipe: pan-y
-       keeps the sheet scrolling under a thumb while a sideways drag stays
+       keeps the page scrolling under a thumb while a sideways drag stays
        the row's own, and the transition is the snap home when a swipe lets
        go short. A drag is not a text selection. */
     touch-action: pan-y; transition: transform 0.18s ease;
@@ -5731,21 +5770,19 @@
   .kp-item.kp-swiping { transition: none; }
   .kp-line { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
   .kp-mark { flex: 0 0 auto; width: 26px; height: 20px; align-self: center; }
+  /* The dabs fade with the water, or they are the one unfaded thing on it. */
+  .kp-float .kp-mark { filter: saturate(0.6) sepia(0.12); }
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
-  /* ONE LIST UNDER THE TITLE (2026-09-29): it starts where the chapter
-     heading used to, a lead below the subtitle. */
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
-  .kp-empty { opacity: 0.7; margin-top: calc(var(--lead) * 0.5); }
-  /* The foot's line, the corner's own field on the page's paper: a line to
-     write on and the arrow that keeps it, nothing else. It waits behind the
-     app's own "+ add" line until that is tapped.
-     IN THE LIST'S OWN COLUMNS (2026-09-29, owner: "can we align the text
-     though? i dont like that its different than the tasks"). The foot is
-     the next line waiting: spaced like a line, the + in the column the
-     marks stand in, and the words, then the field's, starting where a
-     line's words start, at a line's size in the softer ink. Opening it
-     moves nothing: the + stays put and the field takes the words' place. */
-  .kp-add { margin-top: calc(var(--lead) * 0.5); }
+  .kp-empty { opacity: 0.7; }
+  .kp-empty-float .kp-empty { margin: 0; padding: 0; }
+  /* THE ADD FLOAT: a dashed oval reading "+ add a reminder" (2026-09-29,
+     owner: "usually i have a + sign or someting where i want to add so lets
+     keep that consistent"), which opens into the line to write on inside
+     the same oval, the + in the column the marks stand in and the words,
+     then the field, starting where a line's words start. Full width while
+     it is open, so there is room to type on a phone. */
+  .kp-add-float.writing { width: 100%; }
   .kp-add-row { display: flex; align-items: baseline; gap: 8px; }
   .kp-add-row[hidden], .kp-open[hidden] { display: none; }
   .kp-open { display: flex; align-items: baseline; gap: 8px; width: 100%;
@@ -11618,6 +11655,10 @@
   <div id="keepOverlay" class="book-page">
     <button class="checkin-close" id="keepClose" aria-label="close" title="close"></button>
     <div id="keepMount"></div>
+    <!-- THE WATER (2026-09-30). After the mount, as the Atlas's ground is,
+         so pageSheetOf's ':scope > div' fallback still finds the mount and
+         the ✕ seats against the page's content, never against the water. -->
+    <div id="keepWaterGround" aria-hidden="true"></div>
   </div>
 
   <!-- AN OVERLAY, NOT A BOOK PAGE (2026-08-28, owner: "I need the how this
@@ -42781,6 +42822,423 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   ];
   const keepMarkOf = id => [...String(id || "x")]
     .reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261) % KEEP_MARKS.length;
+  // ---- KEEP WATER (2026-09-30, owner: "I want to have all my reminders
+  // floating in the water. Even the add a new task. And i can add as many
+  // tasks to the water like I want") ----
+  // The keeping page's ground and its floats, lifted from the sketch she
+  // approved on the 29th after five rounds that were not this. Read off her
+  // print close up: the water has no gaps. Band lies under band, sage and
+  // cream mostly, then blue grey, a little lavender and beige, and the line
+  // where two meet waves and then rolls back on itself in rounded lobes.
+  // Every edge is drawn in pen, a few closed ovals float inside a band, and
+  // the whole print has sat in the sun. Blossoms float loose on it, no
+  // twigs, at her word. Each reminder floats as the water's own kind of
+  // oval, paper cream so the words read, with a pen edge and now and then a
+  // ripple ring; the add row floats the same way with a dashed edge.
+  const KEEP_WATER_SEED = 3, KEEP_BLOSSOM_SEED = 17, KEEP_INK = "#47433d";
+  const keepRnd = seed0 => { let seed = seed0 || 1; return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; };
+  const keepF1 = n => n.toFixed(1);
+  const keepHash = s => [...String(s || "x")].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+  const keepPick = (rnd, a) => a[Math.floor(rnd() * a.length)];
+  const keepLineOf = pts => pts.map((p, i) => (i ? "L" : "M") + keepF1(p[0]) + " " + keepF1(p[1])).join(" ");
+  const keepDeeper = (hex, k) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * k).toString(16).padStart(2, "0")).join("");
+  // THE PEN: a line drawn by a hand, not traced. It swells and thins with
+  // pressure, tapers where the nib lifts, drifts a little off the edge it
+  // follows, starts again with a small overlap a hair to one side, and now
+  // and then leaves a blot where the nib first touched. `dashed` lifts the
+  // nib after every run instead, for the add float's edge.
+  function keepPen(rnd, pts, w0, run0, run1, dashed, fine) {
+    let out = "", i = 0;
+    while (i < pts.length - 4) {
+      const n = Math.min(pts.length - i, Math.floor(run0 + rnd() * (run1 - run0)));
+      const seg = pts.slice(i, i + n);
+      const side = (rnd() - 0.5) * 2.2, lam = 20 + rnd() * 40, ph = rnd() * 6.3, D = 0.6 + rnd() * 1.4;
+      const pk = 3 + rnd() * 5, pph = rnd() * 6.3, wk = w0 * (0.8 + rnd() * 0.5);
+      const L = seg.length, lft = [], rgt = [];
+      for (let j = 0; j < L; j++) {
+        const a = seg[Math.max(0, j - 1)], b = seg[Math.min(L - 1, j + 1)];
+        const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len;
+        const t = j / (L - 1);
+        const off = side + D * Math.sin(j / lam * 6.283 + ph) + (rnd() - 0.5) * 0.3;
+        const taper = Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.05 + 0.02)), 0.45);
+        const w = Math.max(0.15, wk * taper * (0.7 + 0.35 * Math.sin(t * pk + pph))) / 2;
+        const cx = seg[j][0] + nx * off, cy = seg[j][1] + ny * off;
+        lft.push([cx + nx * w, cy + ny * w]); rgt.push([cx - nx * w, cy - ny * w]);
+      }
+      const ring = lft.concat(rgt.reverse());
+      out += `<path d="M ${ring.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ")} Z" opacity="${keepF1(0.55 + rnd() * 0.35)}"/>`;
+      if (!dashed && !fine && rnd() < 0.22) { const p = lft[1]; out += `<ellipse cx="${keepF1(p[0])}" cy="${keepF1(p[1])}" rx="${keepF1(wk * 0.75)}" ry="${keepF1(wk * 0.55)}" opacity="0.7"/>`; }
+      // the pen lifts, and comes down again a little way back, or leaves a small gap
+      if (dashed) i += n + 3 + Math.floor(rnd() * 4);
+      else i += n - (rnd() < 0.6 ? 2 + Math.floor(rnd() * 4) : -(1 + Math.floor(rnd() * 3)));
+    }
+    return out;
+  }
+  // a damp irregular shape, smoothed through its midpoints
+  function keepBlob(rnd, cx, cy, rx, ry, k, j) {
+    const p = Array.from({ length: k }, (_, i) => {
+      const a = i / k * Math.PI * 2, m = 1 - j / 2 + rnd() * j;
+      return [cx + Math.cos(a) * rx * m, cy + Math.sin(a) * ry * m];
+    });
+    const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    let d = `M ${keepF1(mid(p[k - 1], p[0])[0])} ${keepF1(mid(p[k - 1], p[0])[1])}`;
+    for (let i = 0; i < k; i++) { const m = mid(p[i], p[(i + 1) % k]); d += ` Q ${keepF1(p[i][0])} ${keepF1(p[i][1])} ${keepF1(m[0])} ${keepF1(m[1])}`; }
+    return d + " Z";
+  }
+  // THE EDGE between two bands is a trochoid: it runs along x while
+  // circling, and where the circling is wider than the step forward the line
+  // doubles back into a loop. A slow envelope decides where it rolls and
+  // where it only waves.
+  function keepEdge(rnd, W, y0) {
+    const lam = 150 + rnd() * 130, om = 6.283 / lam, ph = rnd() * 6.3;
+    const B = 7 + rnd() * 9, lamE = 260 + rnd() * 360, phE = rnd() * 6.3;
+    const lamD = 380 + rnd() * 380, C = 5 + rnd() * 10, phD = rnd() * 6.3;
+    const lamM = 90 + rnd() * 120, M = 0.6 + rnd() * 0.8, phM = rnd() * 6.3;
+    const Amax = (1.5 + rnd() * 0.7) / om;
+    const dir = rnd() < 0.5 ? 1 : -1;
+    const pts = [];
+    for (let sx = -140; sx <= W + 140; sx += 2) {
+      const env = Math.max(0, Math.sin(sx / lamE * 6.283 + phE));
+      const A = Amax * env * env, th = om * sx + ph + M * Math.sin(sx / lamM * 6.283 + phM);
+      pts.push([sx + dir * A * Math.sin(th), y0 + B * (0.5 + env) * Math.cos(th) + C * Math.sin(sx / lamD * 6.283 + phD)]);
+    }
+    return pts;
+  }
+  // weighted as the print is: mostly sage and cream, then blue grey, a little lavender and beige
+  const KEEP_BANDS = ["#c9d2bd", "#c9d2bd", "#d7d1ba", "#d7d1ba", "#dcdccb", "#a3b3b4", "#aebbb0", "#b7c3c0", "#98a8ad", "#a6a8bb", "#c7ba9e"];
+  function keepBandsSvg(rnd, W, H) {
+    let fills = "", grain = "", rims = "", lines = "";
+    let y = -60, last = null;
+    while (y < H + 80) {
+      const col = keepPick(rnd, KEEP_BANDS.filter(c => c !== last)); last = col;
+      const pts = keepEdge(rnd, W, y);
+      const d = keepLineOf(pts) + ` L ${W + 160} ${H + 120} L -160 ${H + 120} Z`;
+      fills += `<path d="${d}" fill="${col}"/>`;
+      // the pigment walks to where the water leaves, so a band dries darker
+      // along its edge than in its middle, and the grain is its own colour deepened
+      grain += `<path d="${d}" fill="${keepDeeper(col, 0.9)}"/>`;
+      rims += `<path d="${keepLineOf(pts.map(p => [p[0], p[1] + 3]))}" stroke="${keepDeeper(col, 0.8)}" stroke-width="${keepF1(4 + rnd() * 4)}" opacity="${keepF1(0.28 + rnd() * 0.2)}"/>`;
+      lines += keepPen(rnd, pts.filter(p => p[0] > -40 && p[0] < W + 40), 1.3 + rnd() * 0.5, 30, 110);
+      if (rnd() < 0.45) {
+        const cx = rnd() * W, cy = y + 16 + rnd() * 12, rx = 40 + rnd() * 80, ry = 5 + rnd() * 5;
+        const oc = keepPick(rnd, KEEP_BANDS.filter(c => c !== col));
+        fills += `<ellipse cx="${keepF1(cx)}" cy="${keepF1(cy)}" rx="${keepF1(rx)}" ry="${keepF1(ry)}" fill="${oc}"/>`;
+        const ring = Array.from({ length: 90 }, (_, j) => { const a = -0.3 + j / 84 * 6.283; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
+        lines += keepPen(rnd, ring, 1.2, 60, 90);
+      }
+      y += 26 + rnd() * 34;
+    }
+    return { fills, grain, rims, lines };
+  }
+  // pale floods with a faint tide line round them, the way a backrun dries
+  function keepBloomsSvg(rnd, W, H) {
+    let out = "";
+    const n = Math.max(4, Math.round(H / 60));
+    for (let i = 0; i < n; i++) {
+      const cx = rnd() * W, cy = rnd() * H, r = 30 + rnd() * 90;
+      const d = keepBlob(rnd, cx, cy, r, r * 0.55, 9, 0.6);
+      out += `<path d="${d}" fill="#efe9d8" opacity="${keepF1(0.2 + rnd() * 0.18)}"/><path d="${d}" fill="none" stroke="#8d8a78" stroke-width="1.4" opacity="${keepF1(0.05 + rnd() * 0.06)}"/>`;
+    }
+    return out;
+  }
+  // THE BLOSSOM, painted the way her print paints it (2026-09-30, owner:
+  // "more watercolor ish like the background water with hand drawn pen and
+  // ink. With these mainly two different pink variations and maybe a few
+  // other variations of pink"). Every petal is its own wash, laid a little
+  // off the pen, darker where it dried at its edge and deeper toward the
+  // heart; the pen goes round most petals and not all, and breaks as it
+  // goes. Two pinks carry it, a pale one and a deeper rose, and now and then
+  // a blush, a mauve or a peach pink. Flowers are seen face on or tipped
+  // into a cup, alone, in twos and threes, with the odd bud and loose
+  // petals. Still no twig: they float.
+  const KEEP_PINKS_MAIN = [
+    { base: "#f4d4d8", base2: "#f7e2e3", deep: "#df9eab" },   // the pale pink
+    { base: "#e9b2bf", base2: "#eec3cc", deep: "#c9798f" },   // the deeper rose
+  ];
+  const KEEP_PINKS_MORE = [
+    { base: "#f6e3e1", base2: "#faeeec", deep: "#e3b1b6" },   // a blush
+    { base: "#dfb6c3", base2: "#e8c8d1", deep: "#b98095" },   // a mauve
+    { base: "#f2cbc4", base2: "#f6dcd6", deep: "#d9998f" },   // a peach pink
+  ];
+  const keepPinkOf = rnd => rnd() < 0.72 ? keepPick(rnd, KEEP_PINKS_MAIN) : keepPick(rnd, KEEP_PINKS_MORE);
+  const KEEP_FLOWER_INK = "#5b4548";
+  // the sakura petal's own outline, pointing up from the heart, sampled so
+  // the paint and the pen can both follow it (the notch at the tip included)
+  const KEEP_PETAL_CURVES = [
+    [[0, 0], [-0.58, -0.22], [-0.62, -0.95], [-0.2, -1]],
+    [[-0.2, -1], [-0.067, -0.893], [0.067, -0.893], [0.2, -1]],
+    [[0.2, -1], [0.62, -0.95], [0.58, -0.22], [0, 0]],
+  ];
+  function keepPetalPts(n) {
+    const out = [];
+    KEEP_PETAL_CURVES.forEach(([p0, p1, p2, p3], k) => {
+      const m = k === 1 ? Math.max(3, Math.round(n / 4)) : n;
+      for (let i = (k ? 1 : 0); i <= m; i++) {
+        const t = i / m, u = 1 - t;
+        out.push([u*u*u*p0[0] + 3*u*u*t*p1[0] + 3*u*t*t*p2[0] + t*t*t*p3[0],
+                  u*u*u*p0[1] + 3*u*u*t*p1[1] + 3*u*t*t*p2[1] + t*t*t*p3[1]]);
+      }
+    });
+    return out;
+  }
+  const KEEP_PETAL = keepPetalPts(14);
+  // one flower at (x, y): R its size, rot its turn, squash how far it is
+  // tipped away (1 face on, 0.5 seen from the side). Returns paint and ink.
+  function keepFlower(rnd, x, y, R, rot, squash, pal) {
+    const at = (px, py) => {                         // flower space to page space
+      const yy = py * squash, c = Math.cos(rot), s = Math.sin(rot);
+      return [x + px * c - yy * s, y + px * s + yy * c];
+    };
+    const path = pts => "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
+    let paint = "", ink = "";
+    const n = 5, turn = rnd() * 6.283;
+    const order = Array.from({ length: n }, (_, i) => i).sort((i, j) => Math.sin(turn + i * 1.2566) - Math.sin(turn + j * 1.2566));
+    order.forEach(i => {
+      const a = turn + i * 1.2566 + (rnd() - 0.5) * 0.18;
+      const len = R * (0.9 + rnd() * 0.2), wid = 0.92 + rnd() * 0.16;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const pts = KEEP_PETAL.map(([px, py], k) => {
+        const w = 1 + 0.035 * Math.sin(k * 0.9 + a * 3);        // the hand, not the compass
+        const lx = px * len * wid * w, ly = py * len * w;
+        return at(lx * ca - ly * sa, lx * sa + ly * ca);
+      });
+      const d = path(pts);
+      const tone = rnd() < 0.5 ? pal.base : pal.base2;
+      // the wash, its dried edge, and the pool of pigment toward the heart
+      paint += `<path d="${d}" fill="${tone}" opacity="${keepF1(0.82 + rnd() * 0.14)}"/>`;
+      paint += `<path d="${d}" fill="none" stroke="${pal.deep}" stroke-width="${keepF1(R * 0.1)}" opacity="${keepF1(0.32 + rnd() * 0.2)}" stroke-linejoin="round"/>`;
+      const pc = at(0.32 * R * sa, -0.32 * R * ca);            // a third of the way out along the petal
+      paint += `<path d="${keepBlob(rnd, pc[0], pc[1], R * 0.26, R * 0.2 * squash + R * 0.06, 7, 0.5)}" fill="${pal.deep}" opacity="${keepF1(0.26 + rnd() * 0.18)}"/>`;
+      // the pen goes round most petals, not all, and lifts as it goes
+      if (rnd() < 0.78) ink += keepPen(rnd, pts, 0.42 + rnd() * 0.18, 9, 24, false, true);
+    });
+    // the heart: a deeper stain, then the stamens drawn out of it
+    const hc = at(0, 0);
+    paint += `<path d="${keepBlob(rnd, hc[0], hc[1], R * 0.3, R * 0.3 * squash + R * 0.04, 7, 0.4)}" fill="${pal.deep}" opacity="0.62"/>`;
+    paint += `<path d="${keepBlob(rnd, hc[0], hc[1], R * 0.13, R * 0.13 * squash + R * 0.03, 6, 0.4)}" fill="#b85a70" opacity="0.55"/>`;
+    const st = 5 + Math.floor(rnd() * 3);
+    for (let i = 0; i < st; i++) {
+      const a = rnd() * 6.283, r = R * (0.3 + rnd() * 0.18);
+      const e = at(Math.cos(a) * r, Math.sin(a) * r);
+      const line = Array.from({ length: 7 }, (_, k) => [hc[0] + (e[0] - hc[0]) * k / 6, hc[1] + (e[1] - hc[1]) * k / 6]);
+      ink += keepPen(rnd, line, 0.3, 7, 8, false, true);
+      ink += `<circle cx="${keepF1(e[0])}" cy="${keepF1(e[1])}" r="${keepF1(0.35 + R * 0.015)}" opacity="0.7"/>`;
+    }
+    return { paint, ink };
+  }
+  // a bud: a closed wash with its pen, a little deeper than the open flowers
+  function keepBud(rnd, x, y, R, rot, pal) {
+    const c = Math.cos(rot), s = Math.sin(rot);
+    const pts = Array.from({ length: 30 }, (_, k) => {
+      const a = k / 29 * 6.283, px = Math.cos(a) * R * 0.32, py = Math.sin(a) * R * 0.5 * (a > 3.14 ? 0.9 : 1.1);
+      return [x + px * c - py * s, y + px * s + py * c];
+    });
+    const d = "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
+    return {
+      paint: `<path d="${d}" fill="${pal.base}" opacity="0.9"/><path d="${d}" fill="none" stroke="${pal.deep}" stroke-width="${keepF1(R * 0.12)}" opacity="0.5"/>`
+        + `<path d="${keepBlob(rnd, x + s * R * 0.15, y - c * R * 0.15, R * 0.16, R * 0.24, 6, 0.4)}" fill="${pal.deep}" opacity="0.45"/>`,
+      ink: keepPen(rnd, pts, 0.45, 10, 22, false, true),
+    };
+  }
+  // a loose petal on the water
+  function keepLoosePetal(rnd, x, y, R, rot, pal) {
+    const c = Math.cos(rot), s = Math.sin(rot);
+    const pts = KEEP_PETAL.map(([px, py]) => [x + (px * c - py * s) * R, y + (px * s + py * c) * R * 0.8]);
+    const d = "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
+    return {
+      paint: `<path d="${d}" fill="${pal.base}" opacity="0.88"/><path d="${d}" fill="none" stroke="${pal.deep}" stroke-width="${keepF1(Math.max(0.6, R * 0.12))}" opacity="0.4"/>`,
+      ink: rnd() < 0.4 ? keepPen(rnd, pts, 0.38, 8, 16, false, true) : "",
+    };
+  }
+  function keepBlossomSvg(rnd, W, H) {
+    let paint = "", ink = "";
+    const add = f => { paint += f.paint; ink += f.ink; };
+    const clear = (x, y) => y < 130 && x < W * 0.6;          // the title's corner stays clear
+    // SCATTERED, NOT CLUMPED (2026-09-30, owner: "more scattered over the
+    // water. not way too many more but at least enough to tell oh yes
+    // there's flowers there"). The water is cut into as many patches as
+    // there are blossoms, about one per 300px square plus a few for length,
+    // and each blossom drifts somewhere inside its own patch, so wherever
+    // you look there is one, and none of them line up. A patch now and then
+    // is left empty.
+    const n = Math.max(5, Math.round(W * H / 80000 + H / 400));
+    const cols = Math.max(2, Math.round(Math.sqrt(n * W / H))), rows = Math.ceil(n / cols);
+    const cw = W / cols, ch = H / rows;
+    for (let i = 0; i < cols * rows; i++) {
+      if (rnd() < 0.1) continue;
+      const x = Math.min(W - 24, Math.max(24, (i % cols + 0.12 + rnd() * 0.76) * cw));
+      const y = Math.min(H - 24, Math.max(24, (Math.floor(i / cols) + 0.12 + rnd() * 0.76) * ch));
+      if (clear(x, y)) continue;
+      const kind = rnd();
+      const pal = keepPinkOf(rnd);
+      const R = 15 + rnd() * 6;
+      if (kind < 0.42) {                                     // one flower, face on or tipped
+        add(keepFlower(rnd, x, y, R, rnd() * 6.283, 0.55 + rnd() * 0.45, pal));
+        if (rnd() < 0.35) add(keepBud(rnd, x + R * 1.5, y - R * 0.6, R, rnd() * 6.283, pal));
+      } else if (kind < 0.8) {                               // two or three together, the second a pink of its own
+        const k = kind < 0.64 ? 2 : 3;
+        const spots = [[0, 0], [R * 1.35, R * 0.45], [R * 0.4, R * 1.3]].slice(0, k);
+        spots.slice().reverse().forEach(([dx, dy], j) => {
+          const p = j === 0 && rnd() < 0.6 ? keepPinkOf(rnd) : pal;
+          add(keepFlower(rnd, x + dx, y + dy, R * (0.85 + rnd() * 0.25), rnd() * 6.283, 0.55 + rnd() * 0.45, p));
+        });
+      } else if (kind < 0.9) {                               // buds on their own
+        add(keepBud(rnd, x, y, R, rnd() * 6.283, pal));
+        add(keepBud(rnd, x + R * 0.9, y + R * 0.4, R * 0.8, rnd() * 6.283, pal));
+      } else {
+        add(keepFlower(rnd, x, y, R * 1.15, rnd() * 6.283, 0.9 + rnd() * 0.1, pal));
+      }
+    }
+    for (let i = 0; i < n * 2; i++) {                        // single petals, drifting
+      const x = rnd() * W, y = rnd() * H;
+      if (clear(x, y)) continue;
+      add(keepLoosePetal(rnd, x, y, 6 + rnd() * 3.5, rnd() * 6.283, keepPinkOf(rnd)));
+    }
+    return { paint, ink };
+  }
+  // THE WHOLE PRINT, at W by H. One seed, so the same width always draws
+  // the same top and a longer page only adds water below. The sun fade is a
+  // filter INSIDE the drawing (saturate, then contrast and brightness as one
+  // linear transfer, then a little sepia), so the baked image carries it.
+  // `standalone` inlines the shared filters for the bake, as the sand does.
+  function keepWaterSvg(W, H, standalone) {
+    const rnd = keepRnd(KEEP_WATER_SEED);
+    const b = keepBandsSvg(rnd, W, H);
+    const blooms = keepBloomsSvg(rnd, W, H);
+    const bl = keepBlossomSvg(keepRnd(KEEP_BLOSSOM_SEED), W, H);
+    const defs = standalone ? ["wash", "wash-fine", "washTight", "granulate", "rough"]
+      .map(id => { const f = document.getElementById(id); return f ? f.outerHTML : ""; }).join("") : "";
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"
+      preserveAspectRatio="none" aria-hidden="true">
+      <defs>${defs}
+        <filter id="kpMottle" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035 0.09" numOctaves="3" seed="8"/>
+          <feColorMatrix values="0 0 0 0 0.42  0 0 0 0 0.44  0 0 0 0 0.42  0 0 0 0.3 -0.04"/></filter>
+        <filter id="kpMottle2" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="3" seed="21"/>
+          <feColorMatrix values="0 0 0 0 0.95  0 0 0 0 0.92  0 0 0 0 0.85  0 0 0 0.9 -0.42"/></filter>
+        <filter id="kpFade" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <feColorMatrix type="saturate" values="0.78"/>
+          <feComponentTransfer><feFuncR type="linear" slope="0.936" intercept="0.052"/>
+            <feFuncG type="linear" slope="0.936" intercept="0.052"/><feFuncB type="linear" slope="0.936" intercept="0.052"/></feComponentTransfer>
+          <feColorMatrix type="matrix" values="0.951 0.062 0.015 0 0  0.028 0.975 0.013 0 0  0.022 0.043 0.930 0 0  0 0 0 1 0"/></filter>
+      </defs>
+      <g filter="url(#kpFade)">
+        <rect x="-40" y="-40" width="${W + 80}" height="${H + 80}" fill="#e6dfc9"/>
+        <g transform="translate(-4 3)">
+          <g filter="url(#wash)">${b.fills}</g>
+          <g fill="none" stroke-linecap="round" filter="url(#wash)">${b.rims}</g>
+          <g filter="url(#granulate)" opacity="0.2">${b.grain}</g>
+        </g>
+        <rect x="0" y="0" width="${W}" height="${H}" filter="url(#kpMottle)"/>
+        <rect x="0" y="0" width="${W}" height="${H}" filter="url(#kpMottle2)"/>
+        <g filter="url(#washTight)">${blooms}</g>
+        <g fill="${KEEP_INK}" filter="url(#rough)">${b.lines}</g>
+        <g transform="translate(-1.5 1.2)" filter="url(#wash-fine)" opacity="0.92">${bl.paint}</g>
+        <g filter="url(#granulate)" opacity="0.18">${bl.paint}</g>
+        <g fill="${KEEP_FLOWER_INK}" filter="url(#rough)" opacity="0.72">${bl.ink}</g>
+      </g>
+    </svg>`;
+  }
+  // THE WATER IS PAINTED ONCE PER SIZE, like the sand: the height is taken
+  // in 512px courses so a line added rarely redraws it, and while the page
+  // is open the drawing never shrinks. It is capped at 8192, where a canvas
+  // starts to fail on a phone; past that the live drawing stands unbaked.
+  let keepWaterDims = { W: 0, H: 0 };
+  function keepWaterPaint() {
+    const ov = document.getElementById("keepOverlay"), host = document.getElementById("keepWaterGround");
+    if (!ov || !host || !ov.classList.contains("open")) return;
+    const W = Math.max(320, ov.clientWidth || window.innerWidth);
+    const need = Math.max(ov.clientHeight || 0, Math.round(twPageLength(ov)));
+    host.style.height = need + "px";
+    const H = Math.min(8192, Math.ceil(need / 512) * 512);
+    if (host.firstElementChild && keepWaterDims.W === W && keepWaterDims.H >= H) return;
+    keepWaterDims = { W, H: Math.max(H, keepWaterDims.W === W ? keepWaterDims.H : 0) };
+    host.innerHTML = keepWaterSvg(W, keepWaterDims.H, false);
+    keepWaterBake(host, W, keepWaterDims.H);
+  }
+  // THE PRINT IS BAKED (the sand's recipe, 2026-09-05): filtered SVG as
+  // tall as the page, inside the scrolling content, is re-rasterized under a
+  // moving finger on iOS. So the same drawing is rendered once, as an
+  // image, onto a plain canvas that scrolls like a photograph. Until it
+  // decodes the live SVG stands, and if it never decodes the live SVG stays.
+  function keepWaterBake(host, W, H) {
+    let url = null;
+    try {
+      const blob = new Blob([keepWaterSvg(W, H, true)], { type: "image/svg+xml;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          if (keepWaterDims.W !== W || keepWaterDims.H !== H) return;    // the page moved on
+          const live = host.querySelector("svg");
+          if (!live) return;
+          const c = document.createElement("canvas");
+          c.width = W; c.height = H; c.className = "kp-weather";
+          c.style.height = H + "px";
+          c.setAttribute("aria-hidden", "true");
+          c.getContext("2d").drawImage(img, 0, 0, W, H);
+          host.replaceChild(c, live);
+        } catch (e) { /* the live svg stays */ }
+        finally { if (url) URL.revokeObjectURL(url); }
+      };
+      img.onerror = () => { if (url) URL.revokeObjectURL(url); };
+      img.src = url;
+    } catch (e) { if (url) URL.revokeObjectURL(url); }
+  }
+  // THE FLOAT'S OVAL, drawn to its measured box: the water's own kind of
+  // oval in paper cream, laid a little off a pen edge (the paint runs past
+  // the line on one side and stops short on the other), and on some floats
+  // a ripple ring or two outside the box. The add float's edge is dashed.
+  function keepOvalSvg(w, h, dashed, hash) {
+    const rnd = keepRnd((hash % 100000) + 11);
+    const cx = w / 2, cy = h / 2, rx = Math.max(8, w / 2 - 3), ry = Math.max(6, h / 2 - 2);
+    const oval = specBlob(Array.from({ length: 12 }, (_, i) => { const a = i / 12 * 6.283; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; }),
+      (hash % 89) + 3, 3 + h * 0.06);
+    const ring = (dx, dy) => { const ax = rx + dx, ay = ry + dy, n = Math.max(40, Math.round((ax + ay) * 3.14 / 3));
+      return Array.from({ length: n + 1 }, (_, i) => { const a = -0.4 + i / n * 6.283; return [cx + Math.cos(a) * ax, cy + Math.sin(a) * ay]; }); };
+    let out = `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${oval}" fill="#efe8d6" opacity="0.94"/>`
+      + `<path d="${oval}" fill="none" stroke="#d6cdb2" stroke-width="3" opacity="0.4"/></g>`;
+    out += `<g fill="${KEEP_INK}" filter="url(#rough)">${keepPen(rnd, ring(0, 0), 1.3, dashed ? 6 : 40, dashed ? 14 : 120, dashed)}</g>`;
+    if (!dashed && rnd() < 0.4) {
+      out += `<g fill="${KEEP_INK}" opacity="0.42" filter="url(#rough)">${keepPen(rnd, ring(9, 7), 1.0, 30, 90)}`
+        + `${rnd() < 0.5 ? keepPen(rnd, ring(18, 13), 0.9, 30, 90) : ""}</g>`;
+    }
+    return out;
+  }
+  // Every float is measured after layout (no rAF: it never fires in a
+  // de-prioritised tab), drifted by its own two numbers, and given its oval.
+  // The drift is set before the measure and never pushes a float past the
+  // column's right edge.
+  function keepFloatOvals(mount) {
+    const page = mount.querySelector(".kp-page");
+    if (!page) return;
+    const colW = page.clientWidth || 0, phone = colW < 520;
+    mount.querySelectorAll(".kp-float").forEach(el => {
+      const key = el.dataset.keep || el.dataset.dropDir || (el.classList.contains("kp-add-float") ? "add" : "empty");
+      const h1 = keepHash(key), h2 = keepHash(key + "|drift");
+      el.style.setProperty("--kp-gap", (0.55 + (h1 % 1000) / 1000 * 0.55).toFixed(2));
+      el.style.setProperty("--kp-dx", "0px");
+      const w = el.offsetWidth, h = el.offsetHeight;
+      const want = (h2 % 1000) / 1000 * colW * (phone ? 0.10 : 0.22);
+      el.style.setProperty("--kp-dx", Math.max(0, Math.min(want, colW - w)).toFixed(1) + "px");
+      const svg = el.querySelector(":scope > .kp-oval");
+      if (!svg || !w || !h) return;
+      svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+      svg.innerHTML = keepOvalSvg(w, h, el.classList.contains("kp-add-float"), h1);
+    });
+  }
+  let keepResizeTimer = null;
+  window.addEventListener("resize", () => {
+    const ov = document.getElementById("keepOverlay");
+    if (!ov || !ov.classList.contains("open")) return;
+    clearTimeout(keepResizeTimer);
+    keepResizeTimer = setTimeout(() => {
+      const m = document.getElementById("keepMount");
+      if (m) keepFloatOvals(m);
+      keepWaterPaint();
+    }, 120);
+  });
   function openKeepings(opts) {
     const writing = !!(opts && opts.writing);
     const mount = document.getElementById("keepMount");
@@ -42791,7 +43249,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       if (m === above) m = (m + 1) % KEEP_MARKS.length;
       above = m;
       const sw = paintSwatch(k.id, KEEP_MARKS[m][0], KEEP_MARKS[m][1], "kp-mark");
-      return `<div data-type-area="keep/row" class="fq-item kp-item" data-keep="${escHtml(k.id)}">
+      return `<div data-type-area="keep/row" class="kp-item kp-float" data-keep="${escHtml(k.id)}">
+        <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
       </div>`;
     };
@@ -42805,38 +43264,49 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     const pinned = new Set(keepings.map(k => same(k && k.text)));
     const fromGoals = goals.filter(g => g && g.status !== "parked").flatMap(g =>
       (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
-        .map(d => `<div data-type-area="keep/row" class="fq-item kp-item kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
+        .map(d => `<div data-type-area="keep/row" class="kp-item kp-float kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
+        <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
       </div>`));
     const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
-    mount.innerHTML = `<div class="fq-page kp-page">
-      <div class="fq-sheet torn-paper"><div class="torn-sheet fq-inner">
-        <div data-type-area="keep/header"><h1 class="fq-h1">keeping in mind.</h1>
-          <p class="fq-sub-line">reminders to keep close to your heart</p></div>
-        <div data-type-area="keep/list" class="kp-list">${rows.length ? rows.join("")
-          : `<span class="fq-sub kp-empty">nothing yet. write one below.</span>`}</div>
-        <div data-type-area="keep/add" class="kp-add">
-          <button class="kp-open" id="keepOpen" type="button"${writing ? " hidden" : ""}><span class="kp-plus" aria-hidden="true">+</span>add a reminder</button>
-          <div class="kp-add-row" id="keepRow"${writing ? "" : " hidden"}>
-            <span class="kp-plus" aria-hidden="true">+</span>
-            <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
-              placeholder="something to keep in mind" aria-label="write something to keep">
-            <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
-          </div>
+    // THE LINES FLOAT ON THE WATER (2026-09-30). No sheet: the title and its
+    // line sit on the water, every line is its own float, the empty state
+    // and the add row are floats too. The ovals are drawn once the page is
+    // open and can be measured (keepFloatOvals), and the water is painted
+    // to the page's length after that (keepWaterPaint).
+    mount.innerHTML = `<div class="kp-page">
+      <div data-type-area="keep/header" class="kp-head"><h1 class="fq-h1">keeping in mind.</h1>
+        <p class="fq-sub-line">reminders to keep close to your heart</p></div>
+      <div data-type-area="keep/list" class="kp-list">${rows.length ? rows.join("")
+        : `<div class="kp-float kp-empty-float"><svg class="kp-oval" aria-hidden="true"></svg><span class="fq-sub kp-empty">nothing yet. write one below.</span></div>`}</div>
+      <div data-type-area="keep/add" class="kp-add kp-float kp-add-float${writing ? " writing" : ""}">
+        <svg class="kp-oval" aria-hidden="true"></svg>
+        <button class="kp-open" id="keepOpen" type="button"${writing ? " hidden" : ""}><span class="kp-plus" aria-hidden="true">+</span>add a reminder</button>
+        <div class="kp-add-row" id="keepRow"${writing ? "" : " hidden"}>
+          <span class="kp-plus" aria-hidden="true">+</span>
+          <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
+            placeholder="something to keep in mind" aria-label="write something to keep">
+          <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
         </div>
-      </div></div>
-      <div class="at-margin" id="keepCompanion" data-type-area="keep/margin"></div></div>`;
+      </div>
+    </div>`;
     // THE WAY ON IS THE APP'S OWN "+ add" (2026-09-29, owner: "usually i
     // have a + sign or someting where i want to add so lets keep that
-    // consistent"). The foot reads "+ add a reminder", in the list's own
-    // columns, and a tap turns it into the line to write on, caret in it. A kept line leaves the field open for the next one;
-    // leaving it empty folds it back to the "+".
+    // consistent"). The add float reads "+ add a reminder", and a tap turns
+    // it into the line to write on, caret in it, the float grown to the
+    // column's width for the typing. A kept line leaves the field open for
+    // the next one; leaving it empty folds it back to the "+".
     const input = mount.querySelector("#keepInput");
     const openBtn = mount.querySelector("#keepOpen"), field = mount.querySelector("#keepRow");
-    const fold = () => { field.hidden = true; openBtn.hidden = false; };
+    const addFloat = mount.querySelector(".kp-add-float");
+    const fold = () => {
+      field.hidden = true; openBtn.hidden = false; addFloat.classList.remove("writing");
+      keepFloatOvals(mount); keepWaterPaint();
+    };
     openBtn.addEventListener("click", () => {
-      openBtn.hidden = true; field.hidden = false;
+      openBtn.hidden = true; field.hidden = false; addFloat.classList.add("writing");
+      keepFloatOvals(mount); keepWaterPaint();
       input.focus();
     });
     const file = () => {
@@ -42854,7 +43324,6 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       file();
     });
     input.addEventListener("blur", () => { if (!(input.value || "").trim()) fold(); });
-    if (writing) input.focus();
     // SWIPE LEFT TO LET ONE GO (2026-09-29, owner: "instead of saying take
     // it off for each item id want to be able to just swipe left like in my
     // this week to delete one. an undo can appear for a few seconds after").
@@ -42918,6 +43387,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       });
     });
     openBookPage(document.getElementById("keepOverlay"));
+    // open first: a page that is display none measures every float at zero
+    keepFloatOvals(mount);
+    keepWaterPaint();
+    if (writing) input.focus();
   }
   function closeKeepings() {
     closeBookPage(document.getElementById("keepOverlay"));
