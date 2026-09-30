@@ -1304,6 +1304,14 @@
 
   @media (max-width: 1024px) { .lv-grid { grid-template-columns: repeat(2, 1fr); max-width: 720px; } }
   @media (max-width: 660px) { .lv-grid { grid-template-columns: 1fr; max-width: 500px; } }
+  /* THE BOARD IS ONE PICTURE ON A DESKTOP (2026-09-29, see fitBoardToWindow):
+     laid out at its full column whatever the window, then drawn larger or
+     smaller by the zoom the fit sets. The rules that re-flow it for a
+     narrower window are held at their full-width values here, and the
+     shelf's width is written in the picture's own pixels (shelfWidthCss). */
+  html.lv-picture .app { width: 1180px; max-width: none; }
+  html.lv-picture .lv-grid { max-width: 1180px; }
+  html.lv-picture #boardNotebook.notebook-slot .sb-full { max-width: none; }
 
   .tension-reasoning { font-family: var(--voice-hand); font-size: var(--t-label);
     color: var(--ink-muted); background: var(--paper-tint); border: 1px solid var(--line); border-radius: 10px;
@@ -3453,10 +3461,10 @@
   /* G1j (176): a quarter with nothing written is two quiet rules — label,
      invitation — not four rules of vacancy. */
   .rm-qblock.rm-qb-empty { margin-bottom: 0; }
-  .rm-write-step, .rm-add-work, .rm-add-quarter, .kp-open {
+  .rm-write-step, .rm-add-work, .rm-add-quarter {
     font-style: italic; font-weight: 400; font-size: var(--t-label);
     color: var(--ink-soft); text-decoration: none; }
-  .rm-write-step:hover, .rm-add-work:hover, .rm-add-quarter:hover, .kp-open:hover {
+  .rm-write-step:hover, .rm-add-work:hover, .rm-add-quarter:hover {
     color: var(--ink); }
   .rm-mark-rc { background: none; border: none; padding: 2px 0; cursor: pointer;
     font-family: inherit; font-style: italic; font-size: var(--t-label);
@@ -3547,10 +3555,10 @@
     padding: 5px 2px; border-radius: 8px; }
   .rc-move-opt:hover { color: var(--ink); }
   .rm-add-work-row { margin-top: 2px; }
-  .rm-add-work, .rm-add-quarter, .kp-open { background: none; border: none; padding: 2px 0;
+  .rm-add-work, .rm-add-quarter { background: none; border: none; padding: 2px 0;
     cursor: pointer; font-family: inherit; font-size: var(--t-label); font-weight: 600;
     color: var(--ink-soft); }
-  .rm-add-work:hover, .rm-add-quarter:hover, .kp-open:hover { color: var(--ink); }
+  .rm-add-work:hover, .rm-add-quarter:hover { color: var(--ink); }
   .rm-addq-row { margin: 6px 0 2px; }
   .rm-work-form { margin: 6px 0 10px; display: flex; flex-direction: column; gap: 8px;
     max-width: 420px; }
@@ -5713,27 +5721,45 @@
      needs. A row here is not a control, it is a line with a mark beside it,
      so it reads as writing on paper rather than as a list of buttons. */
   .kp-item { display: flex; align-items: baseline; justify-content: space-between;
-    gap: 10px; margin-top: calc(var(--lead) * 0.5); }
+    gap: 10px; margin-top: calc(var(--lead) * 0.5);
+    /* SWIPE LEFT TO LET ONE GO (2026-09-29), This Week's row recipe: pan-y
+       keeps the sheet scrolling under a thumb while a sideways drag stays
+       the row's own, and the transition is the snap home when a swipe lets
+       go short. A drag is not a text selection. */
+    touch-action: pan-y; transition: transform 0.18s ease;
+    -webkit-user-select: none; user-select: none; }
+  .kp-item.kp-swiping { transition: none; }
   .kp-line { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
   .kp-mark { flex: 0 0 auto; width: 26px; height: 20px; align-self: center; }
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
-  /* The way off is quiet until wanted: it is not the point of the row. */
-  .kp-drop { flex: 0 0 auto; background: none; border: none; padding: 0; cursor: pointer;
-    font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
-    color: var(--ink-muted); opacity: 0.55; -webkit-tap-highlight-color: transparent; }
-  .kp-item:hover .kp-drop, .kp-drop:focus-visible { opacity: 1; color: var(--ink); }
   /* ONE LIST UNDER THE TITLE (2026-09-29): it starts where the chapter
      heading used to, a lead below the subtitle. */
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
   .kp-empty { opacity: 0.7; margin-top: calc(var(--lead) * 0.5); }
   /* The foot's line, the corner's own field on the page's paper: a line to
      write on and the arrow that keeps it, nothing else. It waits behind the
-     app's own "+ add" line (.kp-open, styled with the chapter's "+ add a
-     quarter") until that is tapped. */
-  .kp-add { margin-top: calc(var(--lead) * 1.5); }
-  .kp-add-row { display: flex; align-items: center; gap: 8px; }
+     app's own "+ add" line until that is tapped.
+     IN THE LIST'S OWN COLUMNS (2026-09-29, owner: "can we align the text
+     though? i dont like that its different than the tasks"). The foot is
+     the next line waiting: spaced like a line, the + in the column the
+     marks stand in, and the words, then the field's, starting where a
+     line's words start, at a line's size in the softer ink. Opening it
+     moves nothing: the + stays put and the field takes the words' place. */
+  .kp-add { margin-top: calc(var(--lead) * 0.5); }
+  .kp-add-row { display: flex; align-items: baseline; gap: 8px; }
   .kp-add-row[hidden], .kp-open[hidden] { display: none; }
-  .kp-input { flex: 1 1 auto; min-width: 0; }
+  .kp-open { display: flex; align-items: baseline; gap: 8px; width: 100%;
+    background: none; border: none; padding: 0; cursor: pointer; text-align: left;
+    font-family: inherit; font-size: var(--t-read); line-height: var(--lead);
+    color: var(--ink-soft); -webkit-tap-highlight-color: transparent; }
+  .kp-open:hover { color: var(--ink); }
+  /* 30, not .kp-mark's 26: the mark is drawn at .bs-swatch's width, which
+     comes later in the sheet and wins, and the + has to stand in the
+     column the marks actually take. */
+  .kp-plus { flex: 0 0 30px; width: 30px; text-align: center; color: var(--ink-soft);
+    font-size: var(--t-read); line-height: var(--lead); }
+  .kp-input { flex: 1 1 auto; min-width: 0; padding-left: 0; }
+  .kp-go { align-self: center; }
   .fq-sub { display: block; font-family: var(--voice-hand); font-size: var(--t-label);
     font-style: italic; color: var(--ink-muted);
     line-height: var(--lead);
@@ -15322,9 +15348,30 @@
   // under the max-width, as it always did.
   function shelfWidthCss(L) {
     const share = L.refW ? L.totalW / L.refW : 1;
+    // On a desktop the board is one picture, drawn for a LV_PICTURE_W
+    // window and zoomed to this one, so the shelf is measured against that
+    // window, never the screen's width (a vw here would be zoomed twice).
+    if (goals.length && lvPictureMode()) return `${Math.round(Math.min(L.totalW * 1.35, LV_PICTURE_W * 0.92 * share))}px`;
     const px = innerWidth >= 900 ? Math.round(L.totalW * 1.35) : L.totalW;
     return `min(${px}px, ${(92 * share).toFixed(2)}vw)`;
   }
+  // THE BOARD IS ONE PICTURE ON A DESKTOP (2026-09-29). Owner, with four
+  // windows of it side by side: "it looks good at some views but when i
+  // change different sizes it looks odd. should i just allow one size for
+  // the desktop so there's not this size issue? or should we allow
+  // resizing?" Asked for the verdict, she took "keep resizing, and make the
+  // board act like one picture". Its parts had grown by different rules, the
+  // gate and the shelf off the window's width and only the plates off its
+  // height (--lv-fit), so a wide short window drew a large gate over a board
+  // whose shelf had fallen below the fold. On a desktop (a pointer that
+  // hovers, a window wider than 900) the board is laid out once, at its full
+  // column, with the shelf measured for a 1440 window (the size she liked),
+  // and fitBoardToWindow zooms the whole column to meet the window's foot or
+  // its sides, whichever comes first. A touch screen, and any window of 900
+  // or less, keeps the flowing layout and the plates' own fit, unchanged.
+  const LV_PICTURE_W = 1440;
+  const lvPictureMode = () => { try { return !matchMedia("(max-width: 900px)").matches
+    && matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) { return false; } };
   function shelfSvg(L) {
     const { books, totalW, vbH, baseY } = L || (L = shelfLayout());
     // R5: the phone stack — wide flat bars, titles inline at full size,
@@ -15563,13 +15610,16 @@
           liveSeat.style.setProperty("--seat-px",
             Math.round(Math.min(cur * factor, maxBox)) + "px");
         }
-        // The pile has no right end to stand at, so only the board's seat is
-        // slid into place; the stack keeps the perch the layout gave it.
-        if (L.seatX != null) {
+        // The pile has no right end to stand at, so on the stack the seat
+        // keeps the left the layout gave it. ITS FEET ARE SET DOWN ALL THE
+        // SAME (2026-09-29, the owner's narrow window: the cat stood a
+        // finger's width above the top book), because no drawing fills its
+        // square to the bottom edge, and the box's foot is not the animal's.
+        {
           const stg = stage.getBoundingClientRect();
           const inkLeft = ar.left + (bb.x / 100) * ar.width;
           const inkFoot = ar.top + ((bb.y + bb.height) / 100) * ar.height;
-          const wantLeft = sr.left + (L.seatX / L.totalW) * sr.width;
+          const wantLeft = L.seatX != null ? sr.left + (L.seatX / L.totalW) * sr.width : inkLeft;
           const lift = (SEAT_LIFT[kindNow] || 0) * inkH;
           const wantFoot = sr.top + (L.seat.y / L.vbH) * sr.height - lift;
           const dx = wantLeft - inkLeft, dy = wantFoot - inkFoot;
@@ -15668,6 +15718,9 @@
   }
   // Crossing the 600px line re-lays the shelf as the other furniture.
   try { matchMedia("(max-width: 600px)").addEventListener("change", () => renderAll()); } catch (e) {}
+  // ...and crossing 900 turns the desktop's picture on or off, which
+  // changes what the shelf is measured against (shelfWidthCss).
+  try { matchMedia("(max-width: 900px)").addEventListener("change", () => renderAll()); } catch (e) {}
 
   // ---- wave 3: the atlas — "Your life vision, quarter by quarter." ----
   // One name, everywhere, forever (owner ruling): the first surface to need
@@ -16302,7 +16355,19 @@
     setTimeout(() => { if (g.isConnected) g.remove(); }, 1600);
     return g;
   }
+  // MEASURED AT ITS OWN SIZE (2026-09-29). On a desktop the board may be
+  // drawn zoomed as one picture (fitBoardToWindow), and everything the gate
+  // reads is the screen's pixels while everything it writes is the board's
+  // own: zoomed, it came out sized for the window instead of the page, and
+  // two windows drew two different gates. The zoom comes off for the
+  // measure and goes back on in the same task, so nothing paints between.
   function paintHeaderWash() {
+    const app = document.querySelector(".app");
+    const z = app && app.style.zoom;
+    if (z) app.style.zoom = "";
+    try { paintHeaderWashAtOwnSize(); } finally { if (z) app.style.zoom = z; }
+  }
+  function paintHeaderWashAtOwnSize() {
     const app = document.querySelector(".app");
     const title = document.getElementById("boardTitle");
     const block = document.querySelector(".lv-vision-open");
@@ -21162,11 +21227,24 @@
   // NOT ON A NARROW WINDOW. The 900px rules set their own sizes and override
   // the calcs, so this clears the factor there and leaves that layout alone.
   const LV_FIT_FLOOR = 0.5;
+  // The picture's zoom (see LV_PICTURE_W): never so small the writing is a
+  // smudge, below which the page scrolls, and never more than a quarter up.
+  const LV_ZOOM_MIN = 0.55, LV_ZOOM_MAX = 1.25;
+  let lvZoom = 1;
   function fitBoardToWindow() {
     const root = document.documentElement;
     const shelf = document.querySelector(".notebook-slot .sb-full");
     const clear = () => { root.style.removeProperty("--lv-fit");
       if (shelf) shelf.style.removeProperty("max-width"); };
+    // THE PICTURE, UNDONE FIRST AND ALWAYS, so every road below starts from
+    // the board at its own size and a window that stops being a desktop's
+    // gets the flowing board back.
+    const app = document.querySelector(".app");
+    const picture = !!goals.length && lvPictureMode();
+    if (app) app.style.zoom = "";
+    lvZoom = 1;
+    root.classList.toggle("lv-picture", picture);
+    if (picture) { clear(); fitBoardPicture(root, app); return; }
     if (matchMedia("(max-width: 900px)").matches || !goals.length) { clear(); return; }
     clear();
     if (!document.querySelector(".lv-grid")) return;
@@ -21200,6 +21278,32 @@
     // too small to read is worse than one you scroll, so the floor is a stop,
     // not a target.
     apply(best == null ? LV_FIT_FLOOR : best);
+  }
+  // Measured at the picture's own size, then zoomed until its foot meets
+  // the window's or its widest part (the column, or a shelf wider than it)
+  // meets the sides, whichever comes first. The same shape as This Week's
+  // twFitToScreen, which only ever grows; this one also shrinks.
+  function fitBoardPicture(root, app) {
+    if (!app || !document.querySelector(".lv-grid")) return;
+    const ar = app.getBoundingClientRect();
+    if (!ar.width || !ar.height) return;
+    const sh = document.querySelector("#boardNotebook .sb-full");
+    const wide = Math.max(ar.width, sh ? sh.getBoundingClientRect().width + 48 : 0);
+    const above = ar.top + scrollY;                 // what the zoom does not move
+    const byH = (innerHeight - above - 8) / ar.height;
+    const byW = root.clientWidth / wide;
+    let z = Math.min(byW, Math.max(LV_ZOOM_MIN, Math.min(byH, LV_ZOOM_MAX)));
+    z = Math.floor(z * 100) / 100;
+    if (Math.abs(z - 1) < 0.01) return;
+    const set = v => { lvZoom = v; app.style.zoom = String(v); };
+    set(z);
+    // CHECKED, NOT ASSUMED: anything the measure missed (a wash hanging
+    // below the column, a rounding) steps it down until the page fits or
+    // the floor is reached, where the page scrolls.
+    for (let i = 0; i < 10 && z > LV_ZOOM_MIN && root.scrollHeight > innerHeight + 1; i++) {
+      z = Math.max(LV_ZOOM_MIN, Math.round((z - 0.02) * 100) / 100);
+      set(z);
+    }
   }
   let lvFitTimer = null;
   window.addEventListener("resize", () => {
@@ -42281,7 +42385,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     twEditingGet: () => twEditing, twSetEditing(v) { twEditing = v || null; },
     daysFor, moveThisWeek, openMovePicker, openWhenPicker, whenLineFor, chaptersDepth: () => chapterGoalId,
     twAreaHours, twStripItems, buildWeekStrip, twStoneR, twCairn, TW_STONE_R, TW_STONE_GAP,
-    twFitToScreen, twZoomGet: () => twZoom, twSeatCompanion,
+    twFitToScreen, twZoomGet: () => twZoom, twSeatCompanion, lvZoomGet: () => lvZoom, fitBoardToWindow,
     twQuarterPetals, quarterWeeks, quarterWeekPosition, quarterStandingLine,
     renderBoard, renderAll, boardRose, boardPetals,
     twViewWk, twIsNow, twIsPast, twIsFuture, twReadOnly, twTurn, twWeekBounds,
@@ -42628,10 +42732,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       if (m === above) m = (m + 1) % KEEP_MARKS.length;
       above = m;
       const sw = paintSwatch(k.id, KEEP_MARKS[m][0], KEEP_MARKS[m][1], "kp-mark");
-      return `<div data-type-area="keep/row" class="fq-item kp-item">
+      return `<div data-type-area="keep/row" class="fq-item kp-item" data-keep="${escHtml(k.id)}">
         <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
-        <button class="kp-drop" type="button" data-drop="${escHtml(k.id)}"
-          aria-label="take this off the page">take it off</button>
       </div>`;
     };
     // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
@@ -42644,10 +42746,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     const pinned = new Set(keepings.map(k => same(k && k.text)));
     const fromGoals = goals.filter(g => g && g.status !== "parked").flatMap(g =>
       (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
-        .map(d => `<div data-type-area="keep/row" class="fq-item kp-item kp-goal ${(CATS[g.category] || CATS.Other).cls}">
+        .map(d => `<div data-type-area="keep/row" class="fq-item kp-item kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
+          ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
-        ${d.id != null ? `<button class="kp-drop" type="button" data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"
-          aria-label="take this off the page">take it off</button>` : ``}
       </div>`));
     const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
     mount.innerHTML = `<div class="fq-page kp-page">
@@ -42657,8 +42758,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         <div data-type-area="keep/list" class="kp-list">${rows.length ? rows.join("")
           : `<span class="fq-sub kp-empty">nothing yet. write one below.</span>`}</div>
         <div data-type-area="keep/add" class="kp-add">
-          <button class="kp-open" id="keepOpen" type="button"${writing ? " hidden" : ""}>+ add a reminder</button>
+          <button class="kp-open" id="keepOpen" type="button"${writing ? " hidden" : ""}><span class="kp-plus" aria-hidden="true">+</span>add a reminder</button>
           <div class="kp-add-row" id="keepRow"${writing ? "" : " hidden"}>
+            <span class="kp-plus" aria-hidden="true">+</span>
             <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
               placeholder="something to keep in mind" aria-label="write something to keep">
             <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
@@ -42668,9 +42770,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       <div class="at-margin" id="keepCompanion" data-type-area="keep/margin"></div></div>`;
     // THE WAY ON IS THE APP'S OWN "+ add" (2026-09-29, owner: "usually i
     // have a + sign or someting where i want to add so lets keep that
-    // consistent"). The foot reads "+ add a reminder" in the chapter's own
-    // voice for "+ add a quarter", and a tap turns it into the line to write
-    // on, caret in it. A kept line leaves the field open for the next one;
+    // consistent"). The foot reads "+ add a reminder", in the list's own
+    // columns, and a tap turns it into the line to write on, caret in it. A kept line leaves the field open for the next one;
     // leaving it empty folds it back to the "+".
     const input = mount.querySelector("#keepInput");
     const openBtn = mount.querySelector("#keepOpen"), field = mount.querySelector("#keepRow");
@@ -42695,25 +42796,68 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     });
     input.addEventListener("blur", () => { if (!(input.value || "").trim()) fold(); });
     if (writing) input.focus();
-    // THE WAY BACK IS THE BREATH, the same one the board's deletes use, and
-    // the same scrap: it lives at body level since 11 September precisely so
-    // a page like this one can raise it.
-    mount.querySelectorAll("[data-drop]").forEach(b => b.addEventListener("click", () => {
-      const id = b.dataset.drop;
-      const at = keepings.findIndex(k => k.id === id);
-      const gone = removeKeeping(id);
-      if (!gone) return;
-      openKeepings();
-      twShowUndo("taken off the page", () => restoreKeeping(gone, at), () => openKeepings());
-    }));
-    mount.querySelectorAll("[data-drop-dir]").forEach(b => b.addEventListener("click", () => {
-      const g = goals.find(x => x && String(x.id) === b.dataset.dropGoal);
-      const gone = g && removeGoalDirection(g.id, (g.objectives || []).map(o => o && o.id)
-        .find(id => String(id) === b.dataset.dropDir));
-      if (!gone) return;
-      openKeepings();
-      twShowUndo("taken off the page", () => restoreGoalDirection(gone), () => openKeepings());
-    }));
+    // SWIPE LEFT TO LET ONE GO (2026-09-29, owner: "instead of saying take
+    // it off for each item id want to be able to just swipe left like in my
+    // this week to delete one. an undo can appear for a few seconds after").
+    // This Week's row swipe, its recipe and its numbers: document-level
+    // capture listeners, a sideways drag arms at 36px travelling almost
+    // flat, a mostly vertical one stands down at 10px and lets the page
+    // scroll, the row follows the thumb to 96px, and it lets go at 72 or
+    // snaps home having done nothing. Only left means anything here, so the
+    // row never travels right. The words "take it off" came off every row
+    // at her word: on this page the swipe is the way, with no button
+    // beside it. THE WAY BACK IS THE BREATH, the same body-level scrap the
+    // board's deletes use, and with This Week's word for it.
+    const takeOff = rowEl => {
+      if (rowEl.dataset.keep) {
+        const id = rowEl.dataset.keep;
+        const at = keepings.findIndex(k => k.id === id);
+        const gone = removeKeeping(id);
+        if (!gone) return;
+        openKeepings();
+        twShowUndo("deleted", () => restoreKeeping(gone, at), () => openKeepings());
+      } else if (rowEl.dataset.dropDir) {
+        const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
+        const gone = g && removeGoalDirection(g.id, (g.objectives || []).map(o => o && o.id)
+          .find(id => String(id) === rowEl.dataset.dropDir));
+        if (!gone) return;
+        openKeepings();
+        twShowUndo("deleted", () => restoreGoalDirection(gone), () => openKeepings());
+      }
+    };
+    mount.querySelectorAll(".kp-item[data-keep], .kp-item[data-drop-dir]").forEach(rowEl => {
+      let sw = null;
+      const onMove = e => {
+        if (!sw) return;
+        const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+        if (!sw.on) {
+          if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
+          if (!(Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 2.5)) return;
+          sw.on = true;
+          rowEl.classList.add("kp-swiping");
+        }
+        sw.dx = dx;
+        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(0, dx)) + "px)";
+      };
+      const end = commit => {
+        document.removeEventListener("pointermove", onMove, true);
+        document.removeEventListener("pointerup", onUp, true);
+        document.removeEventListener("pointercancel", onCancel, true);
+        const was = sw; sw = null;
+        rowEl.classList.remove("kp-swiping");
+        rowEl.style.transform = "";
+        if (commit && was && was.on && was.dx <= -72) takeOff(rowEl);
+      };
+      const onUp = () => end(true);
+      const onCancel = () => end(false);
+      rowEl.addEventListener("pointerdown", e => {
+        if (e.button != null && e.button !== 0) return;
+        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
+        document.addEventListener("pointermove", onMove, true);
+        document.addEventListener("pointerup", onUp, true);
+        document.addEventListener("pointercancel", onCancel, true);
+      });
+    });
     openBookPage(document.getElementById("keepOverlay"));
   }
   function closeKeepings() {
