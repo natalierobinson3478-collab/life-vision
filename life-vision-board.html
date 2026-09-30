@@ -14805,6 +14805,32 @@
     saveState();
     return true;
   }
+  // A GOAL'S DIRECTION COMES OFF THE SAME WAY (2026-09-29, owner: "i want the
+  // ability to take them off if i want though"). Off the keeping page is off
+  // the goal: the page is the only place a direction is read every day, so a
+  // line hidden here but kept on the goal would only come back at the check-in
+  // as something she had already put down. The sync keys a goal's objectives
+  // by id, so a direction taken off here stays off on every device.
+  function removeGoalDirection(goalId, dirId) {
+    const g = goals.find(x => x && x.id === goalId);
+    const objs = g && g.objectives;
+    const at = objs ? objs.findIndex(o => o && o.theme && o.id === dirId) : -1;
+    if (at < 0) return null;
+    const rec = JSON.parse(JSON.stringify(objs[at]));
+    objs.splice(at, 1);
+    saveState();
+    return { goalId, at, rec };
+  }
+  function restoreGoalDirection(gone) {
+    const g = gone && goals.find(x => x && x.id === gone.goalId);
+    if (!g) return false;
+    g.objectives = g.objectives || [];
+    if (!g.objectives.some(o => o && o.id === gone.rec.id)) {
+      g.objectives.splice(Math.max(0, Math.min(gone.at, g.objectives.length)), 0, JSON.parse(JSON.stringify(gone.rec)));
+    }
+    saveState();
+    return true;
+  }
 
   let releaseWishes = [];
   // TOMORROW, AND TOMORROW's pages (2026-09-05): the moves tried, never a
@@ -42437,15 +42463,17 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
     // since the chapter page stopped showing them. Each wears its goal's
     // area colour rather than a seeded one, which is how it says whose it
-    // is, and it has no way off here: it belongs to the goal, and the
-    // quarter's check-in is where a direction is kept or let go. A paused
-    // goal's wait with it. One she already pinned is not said twice.
+    // is. It comes off the way hers do, and off here is off the goal
+    // (removeGoalDirection). A paused goal's wait with it. One she already
+    // pinned is not said twice.
     const same = t => String(t || "").trim().toLowerCase();
     const pinned = new Set(keepings.map(k => same(k && k.text)));
     const fromGoals = goals.filter(g => g && g.status !== "parked").flatMap(g =>
       (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
         .map(d => `<div data-type-area="keep/row" class="fq-item kp-item kp-goal ${(CATS[g.category] || CATS.Other).cls}">
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
+        ${d.id != null ? `<button class="kp-drop" type="button" data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"
+          aria-label="take this off the page">take it off</button>` : ``}
       </div>`));
     const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
     mount.innerHTML = `<div class="fq-page kp-page">
@@ -42487,6 +42515,14 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       if (!gone) return;
       openKeepings();
       twShowUndo("taken off the page", () => restoreKeeping(gone, at), () => openKeepings());
+    }));
+    mount.querySelectorAll("[data-drop-dir]").forEach(b => b.addEventListener("click", () => {
+      const g = goals.find(x => x && String(x.id) === b.dataset.dropGoal);
+      const gone = g && removeGoalDirection(g.id, (g.objectives || []).map(o => o && o.id)
+        .find(id => String(id) === b.dataset.dropDir));
+      if (!gone) return;
+      openKeepings();
+      twShowUndo("taken off the page", () => restoreGoalDirection(gone), () => openKeepings());
     }));
     openBookPage(document.getElementById("keepOverlay"));
   }
