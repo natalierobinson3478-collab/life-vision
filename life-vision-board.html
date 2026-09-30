@@ -5790,7 +5790,7 @@
      falls behind the ground. */
   .kp-float { position: relative; isolation: isolate; width: fit-content; max-width: 100%;
     margin-left: var(--kp-dx, 0px); margin-top: calc(var(--lead) * var(--kp-gap, 0.8));
-    padding: calc(var(--lead) * 0.3) 24px calc(var(--lead) * 0.3) 16px; }
+    padding: calc(var(--lead) * 0.3) 24px; }
   .kp-oval { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
     pointer-events: none; z-index: -1; }
   .kp-item { display: flex; align-items: baseline; justify-content: space-between;
@@ -5803,9 +5803,13 @@
     -webkit-user-select: none; user-select: none; }
   .kp-item.kp-swiping { transition: none; }
   .kp-line { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-  .kp-mark { flex: 0 0 auto; width: 26px; height: 20px; align-self: center; }
-  /* The dabs fade with the water, or they are the one unfaded thing on it. */
-  .kp-float .kp-mark { filter: saturate(0.6) sepia(0.12); }
+  /* NO MARK BEFORE A LINE (2026-09-30, owner: "i like the watercolor mark
+     to the left of each item. but idk i feel like its too much with all
+     the different background stuff going on"). Shown the marks in the
+     water's colours, in the water's and the flowers', and gone, she chose
+     gone, and then asked for something tying the bubbles in: they are the
+     water's now (keepOvalSvg). The words start 24px in, the same both
+     sides. */
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
   /* A LINE IS WRITTEN ON WHERE IT IS READ (owner, 2026-09-30: "just click
      and edit"). The words take a text cursor, and while one is being
@@ -5840,9 +5844,12 @@
   /* THE ADD FLOAT: a dashed oval reading "+ add a reminder" (2026-09-29,
      owner: "usually i have a + sign or someting where i want to add so lets
      keep that consistent"), which opens into the line to write on inside
-     the same oval, the + in the column the marks stand in and the words,
-     then the field, starting where a line's words start. Full width while
-     it is open, so there is room to type on a phone. */
+     the same oval, the words, then the field, starting where a line's words
+     start. Full width while it is open, so there is room to type on a
+     phone. With no marks the words start 24px in, so the + stands in that
+     margin: 6px of padding, the + 12px wide, 6px to the words. */
+  .kp-add-float { padding-left: 6px; }
+  .kp-add-float .kp-add-row, .kp-add-float .kp-open { gap: 6px; }
   .kp-add-float.writing { width: 100%; }
   .kp-add-row { display: flex; align-items: baseline; gap: 8px; }
   .kp-add-row[hidden], .kp-open[hidden] { display: none; }
@@ -5851,10 +5858,7 @@
     font-family: inherit; font-size: var(--t-read); line-height: var(--lead);
     color: var(--ink-soft); -webkit-tap-highlight-color: transparent; }
   .kp-open:hover { color: var(--ink); }
-  /* 30, not .kp-mark's 26: the mark is drawn at .bs-swatch's width, which
-     comes later in the sheet and wins, and the + has to stand in the
-     column the marks actually take. */
-  .kp-plus { flex: 0 0 30px; width: 30px; text-align: center; color: var(--ink-soft);
+  .kp-plus { flex: 0 0 12px; width: 12px; text-align: center; color: var(--ink-soft);
     font-size: var(--t-read); line-height: var(--lead); }
   .kp-input { flex: 1 1 auto; min-width: 0; padding-left: 0; }
   .kp-go { align-self: center; }
@@ -43336,22 +43340,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // a line written here is filed as a reminder. `kind` stays on the record,
   // so nothing already kept changes shape and the pin from a plan is
   // untouched.
-  //
-  // THE MARKS ARE THE SHELF'S OWN COLOURS, each a wash and a deeper pool of
-  // the same hue. Which one a line wears is seeded off its id, like its
-  // shape, so chance picks it and it holds between visits; the one rule on
-  // top is that a line never wears the colour of the line above it.
-  const KEEP_MARKS = [
-    ["#c3c9b4", "#5d6647"],   // sage, the book's own
-    ["#dcc79c", "#8f733d"],   // ochre
-    ["#dcb398", "#a0634a"],   // terracotta
-    ["#d3aea8", "#935f59"],   // dusty rose
-    ["#b3c2cc", "#557082"],   // slate blue
-    ["#c2b8c9", "#6f6180"],   // lavender
-    ["#adc6c0", "#4f756c"],   // sea green
-  ];
-  const keepMarkOf = id => [...String(id || "x")]
-    .reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261) % KEEP_MARKS.length;
+  // The watercolour mark each line once wore (the shelf's own colours,
+  // seeded off its id) came off on 30 Sep; see .kp-line.
   // ---- KEEP WATER (2026-09-30, owner: "I want to have all my reminders
   // floating in the water. Even the add a new task. And i can add as many
   // tasks to the water like I want") ----
@@ -43792,10 +43782,34 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       (hash % 89) + 3, 3 + h * 0.06);
     const ring = (dx, dy) => { const ax = rx + dx, ay = ry + dy, n = Math.max(40, Math.round((ax + ay) * 3.14 / 3));
       return Array.from({ length: n + 1 }, (_, i) => { const a = -0.4 + i / n * 6.283; return [cx + Math.cos(a) * ax, cy + Math.sin(a) * ay]; }); };
-    let out = `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${oval}" fill="#efe8d6" opacity="0.94"/>`
-      + `<path d="${oval}" fill="none" stroke="#d6cdb2" stroke-width="3" opacity="0.4"/></g>`;
-    out += `<g fill="${KEEP_INK}" filter="url(#rough)">${keepPen(rnd, ring(0, 0), 1.3, dashed ? 6 : 40, dashed ? 14 : 120, dashed)}</g>`;
-    if (!dashed && rnd() < 0.4) {
+    // THE BUBBLE IS THE WATER'S (2026-09-30, owner, with the marks gone:
+    // "now the quotes look misplaced in the water and petals idk. its
+    // missing something blending it in more or tieing it to the other
+    // colors"; of four drawn on the page she chose the watercolour bubble
+    // with petals). It sits in the water on a wash of the water's blue
+    // grey, as the flowers and This Week's bubbles do; its paper lets the
+    // water through a little and dries to a blue grey tide line, the pen
+    // lighter over it; a ring rides more of them; and on about half, a
+    // petal or two has drifted up against one end, half on the paper and
+    // half on the water.
+    const pool = keepBlob(rnd, cx + 5, cy + 7, rx + 16, ry + 11, 11, 0.18);
+    let out = `<g filter="url(#washTight)"><path d="${pool}" fill="#a3b3b4" opacity="0.34"/>`
+      + `<path d="${pool}" fill="none" stroke="#8fa0a2" stroke-width="3" opacity="0.2"/></g>`;
+    out += `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${oval}" fill="#efe8d6" opacity="0.8"/>`
+      + `<path d="${oval}" fill="none" stroke="#8fa0a2" stroke-width="3" opacity="0.5"/></g>`;
+    out += `<g fill="${KEEP_INK}" filter="url(#rough)" opacity="0.55">${keepPen(rnd, ring(0, 0), 1.3, dashed ? 6 : 40, dashed ? 14 : 120, dashed)}</g>`;
+    if (!dashed && rnd() < 0.5) {
+      const a = (rnd() < 0.5 ? 3.14 : 0) + (rnd() - 0.5) * 0.9, px = cx + Math.cos(a) * (rx + 4), py = cy + Math.sin(a) * (ry + 2);
+      const k = 1 + (rnd() < 0.45 ? 1 : 0);
+      for (let i = 0; i < k; i++) {
+        const pc = [px + Math.cos(a) * i * 12, py + i * 5];
+        const f = keepLoosePetal(rnd, pc[0], pc[1], 13 + rnd() * 3, rnd() * 6.283, KEEP_PINKS_MAIN[i % 2]);
+        out += `<g filter="url(#washTight)"><path d="${keepBlob(rnd, pc[0] + 1.5, pc[1] + 3, 13, 6, 9, 0.3)}" fill="#8fa0a2" opacity="0.22"/></g>`
+          + `<g class="kp-petal" transform="translate(-1 1)" filter="url(#wash-fine)">${f.paint}</g>`
+          + `<g fill="${KEEP_FLOWER_INK}" filter="url(#rough)" opacity="0.75">${f.ink}</g>`;
+      }
+    }
+    if (!dashed && rnd() < 0.65) {
       out += `<g fill="${KEEP_INK}" opacity="0.42" filter="url(#rough)">${keepPen(rnd, ring(9, 7), 1.0, 30, 90)}`
         + `${rnd() < 0.5 ? keepPen(rnd, ring(18, 13), 0.9, 30, 90) : ""}</g>`;
     }
@@ -43898,15 +43912,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     const writing = !!(opts && opts.writing);
     const mount = document.getElementById("keepMount");
     if (!mount) return;
-    let above = -1;
     const row = (k) => {
-      let m = keepMarkOf(k.id);
-      if (m === above) m = (m + 1) % KEEP_MARKS.length;
-      above = m;
-      const sw = paintSwatch(k.id, KEEP_MARKS[m][0], KEEP_MARKS[m][1], "kp-mark");
       return `<div data-type-area="keep/row" class="kp-item kp-float" data-keep="${escHtml(k.id)}">
         <svg class="kp-oval" aria-hidden="true"></svg>
-        <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
+        <div class="kp-line"><span class="kp-text">${escHtml(k.text)}</span></div>
       </div>`;
     };
     // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
@@ -43925,7 +43934,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           `<div data-type-area="keep/row" class="kp-item kp-float kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
         <svg class="kp-oval" aria-hidden="true"></svg>
-        <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
+        <div class="kp-line"><span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
       </div>`)));
     const fromGoals = [...dirRows.values()];
     // THREE TO BEGIN WITH (2026-09-30, owner: "for users who dont have any
