@@ -5499,7 +5499,9 @@
     mask-size: 100% 18px, 100% max(0px, 100% - 26px), 100% 18px;
     -webkit-mask-position: 0 100%, 0 13px, 0 0; mask-position: 0 100%, 0 13px, 0 0;
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
-  #twUndoPill.on { display: flex; }
+  #twUndoPill.on { display: flex; flex-wrap: wrap; }
+  /* the week's hours, said once, on a line of their own under an undo */
+  #twUndoPill .tw-pill-note { flex-basis: 100%; }
   #twUndoPill button { background: none; border: none; padding: 0; cursor: pointer;
     font-family: inherit; font-size: inherit; font-weight: 600; color: var(--ink);
     text-decoration: underline; text-underline-offset: 3px; }
@@ -5810,6 +5812,24 @@
   /* The dabs fade with the water, or they are the one unfaded thing on it. */
   .kp-float .kp-mark { filter: saturate(0.6) sepia(0.12); }
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
+  /* THE STONE THAT CARRIES A LINE TO THE WEEK (2026-09-30, keepPinButton).
+     Hollow and out of sight until a mouse is over the line; filled with the
+     page's ink, and always there, on the line that stands on the week. A
+     finger has no hover, so on a phone only the carried line shows one and
+     the swipe right is the way; an unseen stone takes no taps there. */
+  .kp-pin { flex: 0 0 auto; align-self: center; background: none; border: none;
+    padding: 4px; margin: -4px -10px -4px 0; line-height: 0; cursor: pointer;
+    opacity: 0; transition: opacity 0.15s ease; }
+  .kp-pin svg { display: block; width: 22px; height: 18px; overflow: visible; }
+  .kp-pin path { fill: rgba(71, 67, 61, 0.06); stroke: #47433d; stroke-width: 1.1; }
+  .kp-pin.on { opacity: 1; }
+  .kp-pin.on path { fill: rgba(71, 67, 61, 0.7); }
+  .kp-pin:focus-visible { opacity: 1; outline: none /* A1: the drawn ring */; }
+  @media (hover: hover) and (pointer: fine) {
+    .kp-item:hover .kp-pin { opacity: 0.55; }
+    .kp-item:hover .kp-pin:hover, .kp-item:hover .kp-pin.on { opacity: 1; }
+  }
+  @media not all and (hover: hover) { .kp-pin:not(.on) { visibility: hidden; } }
   /* A LINE IS WRITTEN ON WHERE IT IS READ (owner, 2026-09-30: "just click
      and edit"). The words take a text cursor, and while one is being
      written on the caret is the only sign: no focus ring and no patch
@@ -8135,6 +8155,23 @@
   .tw-readout-line { margin: 0; text-align: center; font-family: var(--voice-body);
     font-size: var(--t-label); letter-spacing: 0.04em; color: var(--ink-muted);
     line-height: var(--lead); font-variant-numeric: tabular-nums; }
+  /* THE LINE SHE CARRIED HERE (2026-09-30), where the hours line stood:
+     her own words from keeping in mind, so in the hand and in italic, the
+     reading the life vision line holds ("italic is reserved for the
+     person's own quoted words"), at the reading size, beside the stone that
+     carried it (filled in her goal's colour when it is a goal's direction).
+     It follows a swipe right, and the snap home is the rows' own. */
+  .tw-pin-line { margin: 0; text-align: center; line-height: var(--lead); }
+  .tw-pin { display: inline-flex; align-items: baseline; gap: 8px; max-width: 100%;
+    background: none; border: none; padding: 0 6px; margin: 0; cursor: pointer;
+    color: var(--ink); text-align: left; font-family: var(--voice-hand); font-style: italic;
+    font-size: var(--t-read); line-height: var(--lead);
+    touch-action: pan-y; transition: transform 0.18s ease; }
+  .tw-pin.tw-pin-swiping { transition: none; }
+  .tw-pin:focus-visible { outline: none /* A1: the drawn ring */; }
+  .tw-pin-stone { flex: 0 0 auto; align-self: center; width: 22px; height: 18px; overflow: visible; }
+  .tw-pin-stone path { fill: rgba(71, 67, 61, 0.7); stroke: #47433d; stroke-width: 1.1; }
+  .tw-pin[class*="cat-"] .tw-pin-stone path { fill: rgba(var(--cat), 0.8); stroke: rgb(var(--cat-ink)); }
   .tw-cap-x { background: none; border: none; padding: 0 0 0 4px; cursor: pointer;
     font-family: inherit; font-size: inherit; font-style: inherit; color: var(--ink); }
 
@@ -15102,6 +15139,56 @@
     }
     saveState();
     return true;
+  }
+  // THE LINE SHE CARRIES INTO HER WEEK (2026-09-30, owner: "i think itll be
+  // cute if i can choose to pin something there or not. like a reminder of
+  // my choosing"). One line from this page at most stands on This Week,
+  // where the hours line was. The mark is `week` on the line's own record,
+  // the moment it was carried: her own line's record, or the PLACE record
+  // of a goal's direction (orderKeepings writes the page's order first if
+  // the direction has none, so carrying it moves nothing on the page).
+  // Carrying another line moves the mark. It is a moment rather than a
+  // flag so that two devices that each carried a different line settle on
+  // the newer one, and a line taken off loses the field entirely, which the
+  // sync reads as taken off on purpose. `key` is the page's own spelling:
+  // "keep:<id>" for a line of hers, "dir:<goalId>:<dirId>" for a direction.
+  function keepOnWeek() {
+    let best = null;
+    keepings.forEach(k => { if (k && k.week && (!best || String(k.week) > String(best.week))) best = k; });
+    if (!best) return null;
+    if (best.text) return { rec: best, key: "keep:" + best.id, text: best.text, cls: "" };
+    const hit = best.kind === "place" && keepDirectionOf(best.goalId, best.dirId);
+    if (!hit || hit.g.status === "parked" || !hit.d.label) return null;
+    return { rec: best, key: "dir:" + hit.g.id + ":" + hit.d.id,
+      text: appVoice(hit.d.label, wroteIt(hit.d)), cls: (CATS[hit.g.category] || CATS.Other).cls };
+  }
+  function keepRecOf(key) {
+    key = String(key || "");
+    if (key.startsWith("keep:")) return keepings.find(k => k && k.id === key.slice(5)) || null;
+    const rest = key.slice(4), cut = rest.indexOf(":");
+    if (!key.startsWith("dir:") || cut <= 0) return null;
+    return keepings.find(k => k && k.id === keepPlaceId(rest.slice(0, cut), rest.slice(cut + 1))) || null;
+  }
+  // Carries the line named by `key` into the week, or takes whatever is
+  // there off when `key` is null. Returns the key that stood there before,
+  // so the way back is one call. `order` is the page's keys as they stand,
+  // used only when a direction with no place of its own is carried.
+  function setKeepOnWeek(key, order) {
+    const was = keepOnWeek();
+    let rec = key ? keepRecOf(key) : null;
+    if (key && !rec && String(key).startsWith("dir:")) {
+      const rest = String(key).slice(4), cut = rest.indexOf(":");
+      const hit = cut > 0 && keepDirectionOf(rest.slice(0, cut), rest.slice(cut + 1));
+      if (hit && order && order.length) orderKeepings(order);
+      else if (hit) keepings.push({ id: keepPlaceId(hit.g.id, hit.d.id), kind: "place",
+        goalId: hit.g.id, dirId: hit.d.id, at: appNow().toISOString() });
+      rec = keepRecOf(key);
+    }
+    if (key && !rec) return was ? was.key : null;
+    keepings.forEach(k => { if (k && k.week) delete k.week; });
+    if (rec) rec.week = appNow().toISOString();
+    saveState();
+    return was ? was.key : null;
   }
   // A GOAL'S DIRECTION COMES OFF THE SAME WAY (2026-09-29, owner: "i want the
   // ability to take them off if i want though"). Off the keeping page is off
@@ -29502,7 +29589,6 @@
     // rows are bright, never what the week adds up to.
     const twHours = twAreaHours(twWeekGoals(), twViewWk());
     const twCommitted = ROSE_AREAS.reduce((a, k) => a + twHours.planned[k], 0);
-    const twOpen = Math.round((weekBudget - twCommitted) * 10) / 10;
     // The subtitle says one thing and only that thing. The way back out of
     // either narrowing is the mark that set it, tapped again.
     // AND THE SAME LINE SAYS IT WHEN THE WEEK IS OVER-FULL. It used to speak
@@ -29513,9 +29599,18 @@
     // not a verdict on the person. No colour, no mark, no warning: the app
     // has no standing to tell you 12 hours was the right number, only to say
     // what you have arranged against the number you gave it.
-    const twOver = twOpen < 0 ? Math.round(-twOpen * 10) / 10 : 0;
-    const unspokenLine = twOpen > 0 ? `${twOpen} hrs of your ${weekBudget} still unspoken for`
-      : twOver > 0 ? `${twOver} hrs more than the ${weekBudget} you have` : ``;
+    // THE HOURS LEAVE THE PAGE (2026-09-30, owner: "i think im not loving
+    // the capacity being here. its stressing me"). The line above the
+    // strip, "N hrs of your M still unspoken for" or "N hrs more than the
+    // M you have", said the arithmetic every time the page was looked at,
+    // and a page looked at every day that can tell you it is over is a
+    // page that stresses you into not looking. Law 2 still holds: the
+    // numbers are never hidden. They are said at the moment they change,
+    // when the week's hours go up past hers, once, and then they go
+    // (twLoadWatch, twLoadWords). The line's place is hers now: the line
+    // she carried here from keeping in mind.
+    twLoadWatch(twViewWk(), twCommitted, weekBudget);
+    const twPin = keepOnWeek();
     // The sprout is gone (items 39/48) and so is the day-count header: the
     // title is the static TW_TITLE, the companion holds the margin. The
     // count line stays silent until the first tick (item 42).
@@ -29869,8 +29964,11 @@
                  its capacity — same words, same absence rule (a fully
                  committed week says nothing), same element the header used
                  to carry. Copy unchanged, never red. -->
-            ${unspokenLine ? `<p class="tw-readout-line"><span class="tw-readout" id="twReadout"
-              data-type-area="thisweek/readout">${escHtml(unspokenLine)}</span></p>` : ``}
+            ${twPin ? `<p class="tw-pin-line"><button type="button" class="tw-pin ${twPin.cls}" id="twPin"
+              data-type-area="thisweek/pin" data-pin="${escHtml(twPin.key)}"
+              aria-label="${escHtml(twPin.text)}, from keeping in mind, swipe right to take it off your week"
+              ><svg class="tw-pin-stone" viewBox="0 0 22 18" aria-hidden="true"><path d="${
+                twStonePath(11, 9.5, 5.4, 5, 7.6)}"/></svg><span class="tw-pin-words">${escHtml(twPin.text)}</span></button></p>` : ``}
             <div class="tw-strip-mount" id="twStripMount"></div>
             ${profileSeen["tw-cap-station"] ? `` : `<p class="tw-caption" data-type-area="thisweek/caption"
               >one mark for each thing, on the day it's due · drag one to move it <button type="button"
@@ -30639,6 +30737,55 @@
       rememberSeen("marker-" + boardQuarterName());
       renderThisWeek();
     });
+    // THE LINE SHE CARRIED HERE (2026-09-30, owner: "on the this week page
+    // we should keep it swipe right to unpin it though just for the quote.
+    // since in the book swipe right is pin and unpin"). A tap opens keeping
+    // in mind, where it came from. A swipe right, mouse or finger, takes it
+    // off the week, with the breath's undo: the rows' own numbers, arming at
+    // 36px of flat travel and letting go at 72, and the travel drawn through
+    // the page's zoom like every other translate inside it.
+    const pinEl = mount.querySelector("#twPin");
+    if (pinEl && twPin) {
+      let pw = null, pswiped = false;
+      const pMove = e => {
+        if (!pw) return;
+        const dx = e.clientX - pw.x, dy = e.clientY - pw.y;
+        if (!pw.on) {
+          if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { pEnd(false); return; }
+          if (!(dx > 36 && dx > Math.abs(dy) * 2.5)) return;
+          pw.on = true; pswiped = true;
+          pinEl.classList.add("tw-pin-swiping");
+        }
+        pw.dx = dx;
+        pinEl.style.transform = "translateX(" + Math.max(0, Math.min(96, dx)) / (twZoom || 1) + "px)";
+      };
+      const pEnd = commit => {
+        document.removeEventListener("pointermove", pMove, true);
+        document.removeEventListener("pointerup", pUp, true);
+        document.removeEventListener("pointercancel", pCancel, true);
+        const was = pw; pw = null;
+        pinEl.classList.remove("tw-pin-swiping");
+        pinEl.style.transform = "";
+        if (!(commit && was && was.on && was.dx >= 72)) return;
+        const key = twPin.key;
+        setKeepOnWeek(null);
+        renderThisWeek();
+        twShowUndo("off your week", () => setKeepOnWeek(key));
+      };
+      const pUp = () => pEnd(true), pCancel = () => pEnd(false);
+      pinEl.addEventListener("pointerdown", e => {
+        if (e.button != null && e.button !== 0) return;
+        pswiped = false;
+        pw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
+        document.addEventListener("pointermove", pMove, true);
+        document.addEventListener("pointerup", pUp, true);
+        document.addEventListener("pointercancel", pCancel, true);
+      });
+      pinEl.addEventListener("click", () => {
+        if (pswiped) { pswiped = false; return; }
+        openKeepings();
+      });
+    }
     // A toggle re-renders the sheet; keyboard users keep their place.
     if (focusedId) {
       const back = document.getElementById(focusedId);
@@ -30887,6 +31034,45 @@
       (after || renderThisWeek)();
     });
     twUndoTimer = setTimeout(() => host.classList.remove("on"), 4500);
+  }
+  // THE HOURS, SAID ONCE WHEN THEY CHANGE (2026-09-30, owner: "maybe it can
+  // say it as a warning but then goes away"). This Week no longer carries
+  // the hours line; law 2 is kept here instead. When the week's planned
+  // hours go UP and end past hers, the scrap bottom left says so in plain
+  // numbers, and a few seconds later it is gone. If an undo is already
+  // showing (a swipe, a filed task) the words join it, so the way back
+  // stands beside them. Moving a stone to another day changes nothing and
+  // says nothing; a week that goes down says nothing. It only counts what
+  // she has seen on the page: renders while the page is shut leave the
+  // mark where it was, so a habit added in another book is said the next
+  // time this page opens on that week.
+  const twLoadSeen = {};
+  const twHrs = n => { const r = Math.round(n * 10) / 10; return String(r); };
+  function twLoadWords(budget, committed) {
+    if (!(committed > budget + 0.001)) return null;
+    return `this week now holds ${twHrs(committed)} of your ${twHrs(budget)} ${Math.abs(budget - 1) < 0.001 ? "hour" : "hours"}`;
+  }
+  function twLoadWatch(wk, committed, budget) {
+    const ov = document.getElementById("thisWeekOverlay");
+    if (!ov || !ov.classList.contains("open")) return;
+    const was = twLoadSeen[wk];
+    twLoadSeen[wk] = committed;
+    if (was == null || !(committed > was + 0.001)) return;
+    const words = twLoadWords(budget, committed);
+    // after whatever the change itself raises, so the words join it
+    if (words) setTimeout(() => twShowNote(words), 0);
+  }
+  function twShowNote(words) {
+    const host = document.getElementById("twUndoPill");
+    if (!host || !words) return;
+    clearTimeout(twUndoTimer);
+    if (host.classList.contains("on") && host.querySelector("button")) {
+      host.insertAdjacentHTML("beforeend", `<span class="tw-pill-note">${escHtml(words)}</span>`);
+    } else {
+      host.innerHTML = `<span>${escHtml(words)}</span>`;
+      host.classList.add("on");
+    }
+    twUndoTimer = setTimeout(() => host.classList.remove("on"), 5500);
   }
   function twDeleteForSwipe(gid, mid) {
     if (gid == null) {
@@ -42607,6 +42793,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     arrivalDecision, speechState, pickArrivalLine, quarterCatchUp, setClockOffset, appNow, todayKey,
     nextDayKey, workStartsAhead,
     keepingsGet: () => keepings, addKeeping, removeKeeping, restoreKeeping, openKeepings, closeKeepings,
+    keepOnWeek, setKeepOnWeek, twLoadWords, twShowNote,
     // UT1d seams: the dial-born dig sheet, drivable without the discovery.
     digDialHtml, wireDigDial,
     // UT1.5 seams: the capture's tone read (hard by default), the week's
@@ -43407,11 +43594,26 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       keepWaterPaint();
     }, 120);
   });
+  // THE WAY A LINE GOES TO HER WEEK (2026-09-30): a small stone at the
+  // line's end, the week's own mark. Hollow, and shown only under a mouse,
+  // until the line is carried; filled, and always shown, while it stands on
+  // the week. A mouse clicks it, because a mouse dragging a line right is
+  // already moving it across the water; a finger swipes the line right,
+  // which on this page meant nothing until now. Either way again takes it
+  // off. No words on it: the label is for a reader.
+  function keepPinButton(key, onWeek) {
+    const on = key === onWeek;
+    return `<button type="button" class="kp-pin${on ? " on" : ""}" data-pin="${escHtml(key)}"
+      aria-pressed="${on}" aria-label="${on ? "take it off your week" : "carry it to your week"}"><svg
+      viewBox="0 0 22 18" aria-hidden="true"><path d="${twStonePath(11, 9.5, 5.4, 5, 7.6)}"/></svg></button>`;
+  }
   function openKeepings(opts) {
     const writing = !!(opts && opts.writing);
     const mount = document.getElementById("keepMount");
     if (!mount) return;
     let above = -1;
+    // the line on her week, if any (keepOnWeek), wears its stone filled
+    const onWeek = (keepOnWeek() || {}).key || null;
     const row = (k) => {
       let m = keepMarkOf(k.id);
       if (m === above) m = (m + 1) % KEEP_MARKS.length;
@@ -43420,6 +43622,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       return `<div data-type-area="keep/row" class="kp-item kp-float" data-keep="${escHtml(k.id)}">
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${sw}<span class="kp-text">${escHtml(k.text)}</span></div>
+        ${keepPinButton("keep:" + k.id, onWeek)}
       </div>`;
     };
     // A GOAL'S DIRECTIONS STAND HERE TOO (2026-09-29), after her own lines,
@@ -43439,6 +43642,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
+        ${d.id != null ? keepPinButton("dir:" + g.id + ":" + d.id, onWeek) : ``}
       </div>`)));
     const fromGoals = [...dirRows.values()];
     // THREE TO BEGIN WITH (2026-09-30, owner: "for users who dont have any
@@ -43698,6 +43902,23 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         ? { key: rowKey(was.rowEl), x: (was.dx0 + was.tx) / was.room } : null);
       openKeepings();
     };
+    // CARRIED TO THE WEEK, OR TAKEN OFF IT (2026-09-30): the stone's click
+    // and a finger's swipe right both come here. The page is drawn again
+    // with the stone's new state, and the way back is the breath's undo.
+    const toggleWeek = rowEl => {
+      const key = rowKey(rowEl);
+      const onNow = (keepOnWeek() || {}).key === key;
+      const order = [...mount.querySelectorAll(".kp-item[data-keep], .kp-item[data-drop-dir]")].map(rowKey);
+      const was = setKeepOnWeek(onNow ? null : key, order);
+      // the week behind this page, if it is open, shows the change at once
+      const weekToo = () => {
+        const ov = document.getElementById("thisWeekOverlay");
+        if (ov && ov.classList.contains("open")) renderThisWeek();
+      };
+      openKeepings(); weekToo();
+      twShowUndo(onNow ? "off your week" : "on your week", () => setKeepOnWeek(was, order),
+        () => { openKeepings(); weekToo(); });
+    };
     mount.querySelectorAll(".kp-item[data-keep], .kp-item[data-drop-dir]").forEach(rowEl => {
       // a sideways drag that armed is a swipe, and its click is not a tap;
       // nor is a line lifted and set down
@@ -43720,7 +43941,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           rowEl.classList.add("kp-swiping");
         }
         sw.dx = dx;
-        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(0, dx)) + "px)";
+        // right means something now, to a finger: it carries the line to
+        // the week (a mouse never swipes here, it lifts)
+        rowEl.style.transform = "translateX(" + Math.max(-96, Math.min(sw.mouse ? 0 : 96, dx)) + "px)";
       };
       const end = commit => {
         document.removeEventListener("pointermove", onMove, true);
@@ -43732,6 +43955,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         rowEl.classList.remove("kp-swiping");
         rowEl.style.transform = "";
         if (commit && was && was.on && was.dx <= -72) takeOff(rowEl);
+        else if (commit && was && was.on && !was.mouse && was.dx >= 72) toggleWeek(rowEl);
       };
       const onUp = () => end(true);
       const onCancel = () => end(false);
@@ -43740,6 +43964,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         swiped = false;
         // a line being written on is a line, not a row to swipe
         if (rowEl.classList.contains("kp-editing")) return;
+        // a press on the stone is its click, never a drag of the line
+        if (e.target && e.target.closest && e.target.closest(".kp-pin")) return;
         sw = { x: e.clientX, y: e.clientY, dx: 0, on: false,
           mouse: e.pointerType !== "touch" && e.pointerType !== "pen" };
         document.addEventListener("pointermove", onMove, true);
@@ -43761,6 +43987,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         if (swiped) { swiped = false; return; }
         writeOn(rowEl, e.clientX, e.clientY);
       });
+      const stone = rowEl.querySelector(".kp-pin");
+      if (stone) stone.addEventListener("click", e => { e.stopPropagation(); toggleWeek(rowEl); });
     });
     openBookPage(document.getElementById("keepOverlay"));
     // open first: a page that is display none measures every float at zero
