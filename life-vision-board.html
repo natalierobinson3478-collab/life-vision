@@ -7735,13 +7735,23 @@
      THE WASH CARRIES THE COLOUR (owner, 2026-09-29: "i cant really tell
      which task goes to which color"). At 0.16 a planned stone was cream with
      a hint in it, and rose and plum, green and olive, came out the same
-     tint: at pebble size the wash is the only place the hue can be seen. At
-     0.42 the six separate at a glance and a planned stone is still plainly
-     lighter than a done one (0.85), so light-is-planned still reads. */
-  .tw-stone.wash { fill: rgb(var(--cat, var(--accent))); opacity: 0.42; }
+     tint: at pebble size the wash is the only place the hue can be seen.
+     AND THE WASH IS WATERCOLOUR, PLANNED PALE AND DONE DEEP (owner, the
+     same night: 0.42 flat made planned and done too alike, "hard to tell
+     between a done task and a not done task", and "more watercolor themed
+     like my overall vision"). Each stone is filled from a gradient per area
+     (twStoneWashDefs), laid the way the stepping stones in review/aesthetic/
+     are: a planned stone is pale in the middle with the pigment pooled
+     toward its rim, and a done one is deep all through, a little lighter
+     where the light catches its top. The fill arrives on the path's own
+     style; the rules here are the fallback and the strength. */
+  .tw-stone.wash { fill: rgb(var(--cat, var(--accent))); opacity: 0.9; }
   .tw-stone.edge { fill: none; stroke: rgb(var(--cat, var(--accent)));
-    stroke-width: 1.6; opacity: 0.95; }
-  .tw-stone.done { fill: rgb(var(--cat, var(--accent))); opacity: 0.85; }
+    stroke-width: 1; opacity: 0.7; }
+  .tw-stone.done { fill: rgb(var(--cat, var(--accent))); opacity: 1; }
+  .tw-bloom { fill: rgb(var(--cat, var(--accent))); opacity: 0.13; pointer-events: none; }
+  .tw-bloom.done { opacity: 0.2; }
+  .tw-strip-mount.dragging .tw-bloom { opacity: 0; }
 
   /* ---- THE ROSE AS THE CAPACITY ---- */
   /* VERTICAL SPACE ON THE RULED SHEET IS 0 OR A MULTIPLE OF --lead. These
@@ -7876,7 +7886,7 @@
   .tw-stone.quiet { transition: opacity 0.18s ease; }
   .tw-stone.lit { opacity: 1; }
   .tw-stone.lit.edge { opacity: 1; stroke-width: 1.9; }
-  .tw-stone.lit.wash { opacity: 0.62; }
+  .tw-stone.lit.wash { opacity: 1; }
   .tw-stone[data-mech]:focus-visible { outline: none /* A1: the drawn ring */; }
   /* THE MIDDLE IS THE WAY BACK — a target over the pivot, not a button
      beside the drawing. Bigger than the pivot it sits on, so it is reachable
@@ -8491,17 +8501,41 @@
      drawn on her week at her window: the ring filled (a filled ring already
      means done), the words in the area's ink (the task text stays dark
      ink), and this, a dab of the area's own colour blooming a little past
-     the ring, which is the one she was shown as the pick. A gradient and an
-     uneven radius, NO FILTER: a blur here would re-rasterize every row
-     under a scrolling finger on the phone. The ring is lifted over it by
-     position alone, and its line gains a little weight to stand on it. */
+     the ring, which is the one she was shown as the pick. NO FILTER: a blur
+     here would re-rasterize every row under a scrolling finger on the phone.
+     The ring is lifted over it by position alone, and its line gains a
+     little weight to stand on it.
+     AND IT IS A WASH, NOT A GLOW, WITH NOTHING IN THE MIDDLE (owner, the
+     same night, of the first one published: "now its hard to tell between
+     a done task and a not done task", then "could we make it more
+     watercolor themed like my overall vision"). A round gradient filled the
+     ring, so an open ring looked nearly as full as a done one, and read as
+     a screen's glow rather than paint. Now it is laid the way the lotus
+     pads and the stepping stones in review/aesthetic/ are: an uneven
+     shape, a little off the ring's centre, clear in the middle, the
+     pigment pooling toward its edge and drying there to a darker line. So
+     an open ring is empty paper inside, and only done fills it. The shape
+     is a mask image (an image is drawn once, never per frame), the colour
+     is the row's own --cat, and three shapes take turns down the list so
+     no two neighbours are the same stamp. */
+  #thisWeekMount {
+    --tw-dab-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3CradialGradient id='p' gradientUnits='userSpaceOnUse' cx='21.4' cy='19.0' r='17.5' fx='17.8' fy='17.3'%3E%3Cstop offset='0' stop-opacity='.03'/%3E%3Cstop offset='.44' stop-opacity='.05'/%3E%3Cstop offset='.56' stop-opacity='.3'/%3E%3Cstop offset='.76' stop-opacity='.48'/%3E%3Cstop offset='.93' stop-opacity='.74'/%3E%3Cstop offset='1' stop-opacity='.9'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M42.4 18.4C42.3 21.8 38.3 26.0 35.5 28.6C32.7 31.2 29.0 33.3 25.4 33.8C21.9 34.4 17.5 33.5 14.2 31.9C11.0 30.3 7.3 27.4 5.8 24.1C4.2 20.9 3.7 15.8 5.0 12.4C6.3 9.0 10.3 5.2 13.6 3.9C17.0 2.6 21.5 3.7 25.1 4.4C28.8 5.1 32.8 5.7 35.7 8.0C38.5 10.4 42.4 15.0 42.4 18.4Z' fill='%23000' fill-opacity='.09'/%3E%3Cpath d='M38.7 19.0C39.1 22.0 37.9 26.5 35.8 28.9C33.8 31.3 29.6 32.8 26.4 33.4C23.2 34.1 19.7 33.6 16.7 32.7C13.6 31.8 10.2 30.2 8.3 27.9C6.4 25.7 5.2 22.1 5.0 19.0C4.9 15.9 5.6 12.0 7.4 9.4C9.3 6.9 13.0 4.3 16.1 3.6C19.2 2.9 23.3 4.0 26.2 5.2C29.1 6.4 31.3 8.5 33.4 10.8C35.5 13.1 38.3 16.0 38.7 19.0Z' fill='url(%23p)'/%3E%3Cpath d='M38.7 19.0C39.1 22.0 37.9 26.5 35.8 28.9C33.8 31.3 29.6 32.8 26.4 33.4C23.2 34.1 19.7 33.6 16.7 32.7C13.6 31.8 10.2 30.2 8.3 27.9C6.4 25.7 5.2 22.1 5.0 19.0C4.9 15.9 5.6 12.0 7.4 9.4C9.3 6.9 13.0 4.3 16.1 3.6C19.2 2.9 23.3 4.0 26.2 5.2C29.1 6.4 31.3 8.5 33.4 10.8C35.5 13.1 38.3 16.0 38.7 19.0Z' fill='none' stroke='%23000' stroke-opacity='.3' stroke-width='.7' stroke-dasharray='9 3 15 5 6 2 11 4'/%3E%3Cg fill='%23000' fill-opacity='.28'%3E%3Ccircle cx='32.8' cy='11.6' r='0.35'/%3E%3Ccircle cx='23.6' cy='33.8' r='0.39'/%3E%3Ccircle cx='13.9' cy='32.4' r='0.45'/%3E%3Ccircle cx='9.4' cy='8.6' r='0.73'/%3E%3Ccircle cx='7.7' cy='17.5' r='0.50'/%3E%3Ccircle cx='7.2' cy='23.9' r='0.42'/%3E%3Ccircle cx='26.4' cy='7.7' r='0.65'/%3E%3Ccircle cx='34.9' cy='22.2' r='0.50'/%3E%3Ccircle cx='6.7' cy='15.4' r='0.59'/%3E%3Ccircle cx='20.1' cy='5.7' r='0.68'/%3E%3Ccircle cx='33.8' cy='21.8' r='0.48'/%3E%3Ccircle cx='30.0' cy='10.0' r='0.65'/%3E%3Ccircle cx='10.7' cy='7.4' r='0.47'/%3E%3Ccircle cx='23.0' cy='4.0' r='0.57'/%3E%3C/g%3E%3C/svg%3E");
+    --tw-dab-2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3CradialGradient id='p' gradientUnits='userSpaceOnUse' cx='18.7' cy='21.1' r='17.5' fx='19.9' fy='17.3'%3E%3Cstop offset='0' stop-opacity='.03'/%3E%3Cstop offset='.44' stop-opacity='.05'/%3E%3Cstop offset='.56' stop-opacity='.3'/%3E%3Cstop offset='.76' stop-opacity='.48'/%3E%3Cstop offset='.93' stop-opacity='.74'/%3E%3Cstop offset='1' stop-opacity='.9'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M34.9 21.8C34.6 25.3 32.5 29.0 30.1 31.6C27.7 34.2 24.2 36.8 20.6 37.5C17.1 38.3 12.3 37.8 8.8 36.2C5.3 34.6 0.8 31.2 -0.4 27.9C-1.5 24.6 0.0 19.4 1.8 16.3C3.6 13.3 7.0 11.6 10.2 9.6C13.4 7.6 17.3 4.3 20.9 4.4C24.5 4.6 29.6 7.6 31.9 10.5C34.3 13.4 35.2 18.2 34.9 21.8Z' fill='%23000' fill-opacity='.09'/%3E%3Cpath d='M36.2 21.1C35.8 24.1 33.2 27.2 31.1 29.6C29.1 32.0 26.6 34.6 23.7 35.5C20.8 36.4 16.9 36.0 13.8 35.2C10.7 34.3 7.1 32.8 5.0 30.5C2.9 28.1 1.3 24.2 1.3 21.1C1.3 18.0 2.9 13.9 5.0 11.7C7.2 9.6 11.1 9.1 14.3 8.3C17.4 7.4 20.6 6.2 23.7 6.7C26.8 7.2 30.9 9.0 32.9 11.4C35.0 13.8 36.5 18.1 36.2 21.1Z' fill='url(%23p)'/%3E%3Cpath d='M36.2 21.1C35.8 24.1 33.2 27.2 31.1 29.6C29.1 32.0 26.6 34.6 23.7 35.5C20.8 36.4 16.9 36.0 13.8 35.2C10.7 34.3 7.1 32.8 5.0 30.5C2.9 28.1 1.3 24.2 1.3 21.1C1.3 18.0 2.9 13.9 5.0 11.7C7.2 9.6 11.1 9.1 14.3 8.3C17.4 7.4 20.6 6.2 23.7 6.7C26.8 7.2 30.9 9.0 32.9 11.4C35.0 13.8 36.5 18.1 36.2 21.1Z' fill='none' stroke='%23000' stroke-opacity='.3' stroke-width='.7' stroke-dasharray='10.5 4.5 16.5 6.5 7.5 3.5 12.5 5.5'/%3E%3Cg fill='%23000' fill-opacity='.28'%3E%3Ccircle cx='20.4' cy='35.8' r='0.60'/%3E%3Ccircle cx='10.8' cy='33.5' r='0.36'/%3E%3Ccircle cx='8.0' cy='13.5' r='0.47'/%3E%3Ccircle cx='3.3' cy='25.6' r='0.66'/%3E%3Ccircle cx='13.8' cy='36.0' r='0.68'/%3E%3Ccircle cx='3.4' cy='15.6' r='0.71'/%3E%3Ccircle cx='11.0' cy='11.1' r='0.49'/%3E%3Ccircle cx='31.8' cy='20.2' r='0.65'/%3E%3Ccircle cx='32.4' cy='20.5' r='0.49'/%3E%3Ccircle cx='33.6' cy='28.5' r='0.64'/%3E%3Ccircle cx='10.5' cy='9.0' r='0.39'/%3E%3Ccircle cx='27.3' cy='33.2' r='0.37'/%3E%3Ccircle cx='33.4' cy='19.7' r='0.33'/%3E%3Ccircle cx='4.7' cy='16.0' r='0.45'/%3E%3C/g%3E%3C/svg%3E");
+    --tw-dab-3: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3CradialGradient id='p' gradientUnits='userSpaceOnUse' cx='20.9' cy='21.5' r='17.5' fx='24.8' fy='22.1'%3E%3Cstop offset='0' stop-opacity='.03'/%3E%3Cstop offset='.44' stop-opacity='.05'/%3E%3Cstop offset='.56' stop-opacity='.3'/%3E%3Cstop offset='.76' stop-opacity='.48'/%3E%3Cstop offset='.93' stop-opacity='.74'/%3E%3Cstop offset='1' stop-opacity='.9'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cpath d='M38.1 22.4C38.2 25.8 37.0 29.8 34.8 32.8C32.6 35.7 28.6 39.3 24.9 40.0C21.2 40.8 15.3 39.4 12.5 37.3C9.6 35.1 9.1 30.5 7.8 27.1C6.6 23.7 4.3 20.1 5.1 16.7C5.8 13.4 8.9 8.9 12.2 7.1C15.5 5.3 21.0 5.0 24.7 5.9C28.4 6.7 32.2 9.6 34.4 12.3C36.6 15.1 38.1 19.0 38.1 22.4Z' fill='%23000' fill-opacity='.09'/%3E%3Cpath d='M36.9 21.5C36.9 24.4 35.3 27.7 33.5 30.1C31.7 32.6 29.0 35.1 26.0 36.3C23.0 37.5 18.6 38.1 15.5 37.3C12.3 36.4 8.5 33.6 7.0 31.0C5.5 28.4 6.1 24.5 6.3 21.5C6.5 18.5 6.7 15.5 8.2 12.9C9.8 10.3 12.5 7.1 15.5 5.9C18.5 4.7 23.3 4.7 26.3 5.9C29.3 7.0 32.0 10.1 33.7 12.7C35.5 15.3 37.0 18.6 36.9 21.5Z' fill='url(%23p)'/%3E%3Cpath d='M36.9 21.5C36.9 24.4 35.3 27.7 33.5 30.1C31.7 32.6 29.0 35.1 26.0 36.3C23.0 37.5 18.6 38.1 15.5 37.3C12.3 36.4 8.5 33.6 7.0 31.0C5.5 28.4 6.1 24.5 6.3 21.5C6.5 18.5 6.7 15.5 8.2 12.9C9.8 10.3 12.5 7.1 15.5 5.9C18.5 4.7 23.3 4.7 26.3 5.9C29.3 7.0 32.0 10.1 33.7 12.7C35.5 15.3 37.0 18.6 36.9 21.5Z' fill='none' stroke='%23000' stroke-opacity='.3' stroke-width='.7' stroke-dasharray='12 6 18 8 9 5 14 7'/%3E%3Cg fill='%23000' fill-opacity='.28'%3E%3Ccircle cx='20.1' cy='9.4' r='0.44'/%3E%3Ccircle cx='28.3' cy='35.0' r='0.63'/%3E%3Ccircle cx='26.5' cy='34.8' r='0.44'/%3E%3Ccircle cx='25.7' cy='36.2' r='0.54'/%3E%3Ccircle cx='9.2' cy='9.9' r='0.64'/%3E%3Ccircle cx='31.9' cy='12.7' r='0.49'/%3E%3Ccircle cx='9.0' cy='30.4' r='0.73'/%3E%3Ccircle cx='5.7' cy='15.4' r='0.65'/%3E%3Ccircle cx='27.2' cy='7.8' r='0.42'/%3E%3Ccircle cx='7.0' cy='15.9' r='0.70'/%3E%3Ccircle cx='23.2' cy='36.4' r='0.31'/%3E%3Ccircle cx='23.8' cy='36.4' r='0.34'/%3E%3Ccircle cx='33.2' cy='18.8' r='0.54'/%3E%3Ccircle cx='32.2' cy='10.2' r='0.63'/%3E%3C/g%3E%3C/svg%3E");
+  }
   #thisWeekMount .tw-row .tw-circle { position: relative; }
   #thisWeekMount .tw-row .tw-circle::before { content: ""; position: absolute;
-    left: -3px; top: -3px; width: 28px; height: 28px;
-    border-radius: 47% 53% 44% 56% / 55% 45% 55% 45%;
-    background: radial-gradient(closest-side, rgba(var(--cat, var(--accent)), 0.6) 58%,
-      rgba(var(--cat, var(--accent)), 0.34) 82%, rgba(var(--cat, var(--accent)), 0));
+    left: -4px; top: -4px; width: 30px; height: 30px;
+    background: rgb(var(--cat, var(--accent)));
+    -webkit-mask: var(--tw-dab-1) center / 100% 100% no-repeat;
+    mask: var(--tw-dab-1) center / 100% 100% no-repeat;
     pointer-events: none; }
+  #thisWeekMount .tw-row:nth-child(3n+2) .tw-circle::before {
+    -webkit-mask-image: var(--tw-dab-2); mask-image: var(--tw-dab-2); }
+  #thisWeekMount .tw-row:nth-child(3n) .tw-circle::before {
+    -webkit-mask-image: var(--tw-dab-3); mask-image: var(--tw-dab-3); }
+  /* Done is full ink, all the way (it was 0.9 over the old glow). */
+  #thisWeekMount .tw-row .tw-circle .drawn-ring-ink { opacity: 1; }
   #thisWeekMount .tw-row .tw-circle > svg { position: relative; }
   #thisWeekMount .tw-row .tw-circle .drawn-ring { stroke-width: 2.2; }
   /* The return mark is quieter than the ring it belongs to, but MUTED IS NOT
@@ -29047,10 +29081,34 @@
     // from twFocus/twFilter, which is exactly the duplicate mechanism the
     // one-selection rule exists to prevent.
     // INK ONLY ACCUMULATES: hollow with a faint wash until done, filled after.
+    // The wash is the area's own watercolour (twStoneWashDefs).
+    const area = (String(cls || "").match(/\bcat-([a-z]+)/) || [])[1] || "other";
+    // THE BLOOM: the same colour spread a little past the stone and off its
+    // centre, the way paint runs past the line it was laid inside. Under
+    // the stone, no identity, never a target; it sits out a drag.
+    const bloom = `<path class="tw-bloom${done ? " done" : ""} ${cls}" aria-hidden="true" d="${
+      twStonePath(cx + 0.9, cy + 0.7, r + 1.7, seed + 2, TW_STONE_R + 1.9)}"/>`;
     return done
-      ? `<path class="tw-stone done ${cls}" d="${d}"${at}/>` + hit
-      : `<path class="tw-stone wash ${cls}" d="${d}"${at}/>`
+      ? bloom + `<path class="tw-stone done ${cls}" d="${d}" style="fill:url(#twWashD-${area})"${at}/>` + hit
+      : bloom + `<path class="tw-stone wash ${cls}" d="${d}" style="fill:url(#twWashP-${area})"${at}/>`
         + `<path class="tw-stone edge ${cls}" d="${d}"${at}/>` + hit;
+  }
+  // THE STONES' WATERCOLOUR, one pair per area, drawn into the strip's own
+  // defs. A gradient cannot read the colour of the stone that uses it, so
+  // each one carries its area's class and takes --cat from there. Planned:
+  // pale in the middle, the pigment pooled toward the rim, the pool set a
+  // little off centre the way a wash dries. Done: deep all through, a
+  // little lighter where the light catches the top, like the stepping
+  // stones. No filter, so nothing re-rasterizes under a moving finger.
+  const TW_WASH_AREAS = ["career", "health", "finance", "meaning", "relationships", "growth", "other", "none"];
+  function twStoneWashDefs() {
+    const stop = (o, a) => `<stop offset="${o}" style="stop-color:rgb(var(--cat));stop-opacity:${a}"/>`;
+    return "<defs>" + TW_WASH_AREAS.map(k =>
+      `<radialGradient id="twWashP-${k}" class="cat-${k}" cx=".47" cy=".43" r=".6" fx=".44" fy=".38">`
+        + stop(0, 0.14) + stop(0.5, 0.2) + stop(0.82, 0.42) + stop(1, 0.62) + `</radialGradient>`
+      + `<radialGradient id="twWashD-${k}" class="cat-${k}" cx=".45" cy=".4" r=".68" fx=".38" fy=".3">`
+        + stop(0, 0.66) + stop(0.45, 0.86) + stop(0.85, 0.97) + stop(1, 1) + `</radialGradient>`).join("")
+      + "</defs>";
   }
 
   // THE LANE TAKES WHAT ITS WORD NEEDS AND NO MORE, so it costs the seven
@@ -29114,7 +29172,8 @@
     // headroom would clip it, so the ring buys its own room.
     const ringPad = today >= 0 && laidDays[today] && laidDays[today].length ? 8 : 0;
     const H = tallest + 36 + WORD_DROP + ringPad, base = H - 30 - WORD_DROP;
-    let out = `<svg class="tw-strip-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+    let out = `<svg class="tw-strip-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+      + twStoneWashDefs();
     const pile = (laid, cx) => laid.map((st, k) =>
       twStone(cx + st.dx, base + st.y, st.r, st.it.cls, st.it.done, k * 3 + 1, st.it)).join("");
     const wdIso = weekDates(twViewWk());
