@@ -14942,7 +14942,9 @@
   function addKeeping(spec) {
     const text = String((spec && spec.text) || "").trim();
     if (!text) return null;
-    const k = { id: userId("keep"), text,
+    // a fixed id is only ever the three starters' (openKeepings), so two
+    // devices that each put them out end up holding the same three
+    const k = { id: (spec && spec.id) || userId("keep"), text,
       kind: (spec && spec.kind) === "affirmation" ? "affirmation" : "reminder",
       source: (spec && spec.source) || "user",
       at: appNow().toISOString() };
@@ -42836,6 +42838,12 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // oval, paper cream so the words read, with a pen edge and now and then a
   // ripple ring; the add row floats the same way with a dashed edge.
   const KEEP_WATER_SEED = 3, KEEP_BLOSSOM_SEED = 17, KEEP_INK = "#47433d";
+  // the three lines an empty page begins with, in the order they read
+  const KEEP_STARTERS = [
+    "you are allowed to rest before you are finished",
+    "small steps still count",
+    "be as kind to yourself as you would be to a friend",
+  ];
   const keepRnd = seed0 => { let seed = seed0 || 1; return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; };
   const keepF1 = n => n.toFixed(1);
   const keepHash = s => [...String(s || "x")].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
@@ -43269,6 +43277,19 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
       </div>`));
+    // THREE TO BEGIN WITH (2026-09-30, owner: "for users who dont have any
+    // reminders for whatever reason ... (maybe decided to not use any AI
+    // functions or coach) then we should have three reminders that most
+    // people need to hear"). The first time the page opens with nothing on
+    // it, not a line of hers and not a goal's, it puts out three she chose
+    // the wording of. They are ordinary lines from then on: they float, and
+    // a swipe takes one away. They are offered ONCE (the seen flag rides the
+    // profile to every device), so a page she has cleared stays clear.
+    if (!keepings.some(k => k && k.text) && !fromGoals.length && !profileSeen["keep-starters"]) {
+      rememberSeen("keep-starters");
+      KEEP_STARTERS.slice().reverse().forEach((text, i) =>
+        addKeeping({ id: "keep-starter-" + (KEEP_STARTERS.length - i), text, kind: "affirmation", source: "starter" }));
+    }
     const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
     // THE LINES FLOAT ON THE WATER (2026-09-30). No sheet: the title and its
     // line sit on the water, every line is its own float, the empty state
