@@ -5291,6 +5291,18 @@
        finger lifts. Containing the overscroll here keeps every gesture on
        the sand. */
     overscroll-behavior: contain; }
+  /* ---- SAND HAS NO TRACK EITHER (owner, 2026-09-30: "i hate this scroll
+     bar on the right when my list gets longer") ----
+     The Atlas's recipe, and the keeping page's: a book page reserves a
+     gutter on both edges and a long week put a grey thumb in the right
+     one, a bar laid down the garden. `scrollbar-width: none` takes the
+     thumb and leaves the page scrolling as it did, wheel, trackpad, keys
+     and touch; with no scrollbar there is no gutter to hold, so the 30px
+     the two edges kept comes back to the sand. Nothing on this page was
+     ever worked by that thumb, and the fit, the strip and the ✕ all
+     measure the room they are given. */
+  #thisWeekOverlay { scrollbar-width: none; scrollbar-gutter: auto; }
+  #thisWeekOverlay::-webkit-scrollbar { width: 0; height: 0; display: none; }
   /* THE GROUND IS THE WHOLE GARDEN, NOT THE GLASS (owner, 2026-09-01:
      "if i rake something at the top i wont see it if i scroll down because
      it's still at the top. like a living area"). The sand is absolute
