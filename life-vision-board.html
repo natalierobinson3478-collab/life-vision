@@ -7817,7 +7817,12 @@
      box, and the row no shorter than the seat (its thirty pixels of
      headroom, the box, the prop at its feet), so the strip below starts
      under the figure's feet and never under its chin. */
-  .tw-head { padding-right: calc(var(--comp-seat, 140px) + 12px); min-height: calc(var(--comp-seat, 140px) + 36px); }
+  /* THE SEAT GROWS WITH THE FIGURE (2026-09-30): the head keeps its own
+     size when the page is drawn larger (twHeadFit), but the figure beside it
+     does not, so the room held for it is the page's zoom, --tw-z, times its
+     own; the words beside it stay the words' size. */
+  .tw-head { padding-right: calc((var(--comp-seat, 140px) + 12px) * var(--tw-z, 1));
+    min-height: calc((var(--comp-seat, 140px) + 36px) * var(--tw-z, 1)); }
   /* No companion, no seat: the head is the words' own height (2026-09-08). */
   #thisWeekMount:not(:has(#twCompanion .companion)) .tw-head { padding-right: 0; min-height: 0; }
   /* A figure standing over the sand beside the title owes the head row no
@@ -11366,6 +11371,46 @@
     :is([data-type-area$="/header"] > .fq-sub-line, .tw-plan-sub, .at-head .at-sub,
         .ch-page .at-sub, .wk-span, .qr-sub-line, .pt-sub) { font-size: var(--t-read); }
   }
+  /* ---- ONE HEADER, ONE PLACE (owner, 2026-09-30: "i think the main title
+     and subtitle are different fonts, and centered diferent...? i want it
+     the same on every boo[k]"; of two drawn options she took A, the same
+     corner of the screen on every book, and then that a book on paper keeps
+     its heading on its paper) ----
+     THE CORNER. --book-col is where a book's column begins on the screen
+     (centred at --bf-w, never nearer the edge than the overlay's 16px), and
+     --book-x is where an open book's title begins: 14px on a phone, 30px on
+     a laptop, which is where the planner's own list begins, and at 1280 and
+     up the column's edge plus the planner's 14, because the companion rides
+     the margin left of the column there and a title in the screen's corner
+     would stand under it. The planner's page is anchored to the same frame
+     and its head is kept at the page's own size (twHeadFit), so the three
+     open books, the planner, keeping in mind and the atlas, put the same
+     title in the same place at the same size. The books on paper (chapters,
+     facts, breaking bad, the quarter's close) keep their heading on their
+     paper and stop floating: the paper starts at the top, as the open books
+     do. The weekly check in keeps its lane above the paper for the
+     companion, and the spreads (journal, portrait), the add page's scroll
+     and the discovery are not books with a heading in this sense. */
+  :root { --book-col: max(16px, calc((100vw - var(--bf-w)) / 2)); --book-x: 14px; }
+  @media (min-width: 641px) { :root { --book-x: 30px; } }
+  @media (min-width: 1280px) { :root { --book-x: calc(var(--book-col) + 14px); } }
+  /* The planner's page starts at the frame instead of centring in it. */
+  @media (min-width: 641px) {
+    #thisWeekMount .tw-stack { margin-left: calc(var(--book-x) - 30px); margin-right: auto; }
+  }
+  /* Keeping in mind's head stood at the column's edge. */
+  #keepMount .kp-head { margin-left: calc(var(--book-x) - var(--book-col)); }
+  /* The atlas's head stood inside .at-inner's padding (3.6% of the page's
+     width plus 34px, 18px at 520 and under), and 8px lower than the rest. */
+  #atlasMount .at-head { margin-top: -10px;
+    margin-left: calc(var(--book-x) - var(--book-col) - (min(var(--bf-w), 100vw - 32px) * 0.036 + 34px)); }
+  @media (max-width: 520px) {
+    #atlasMount .at-head { margin-top: -16px; margin-left: calc(var(--book-x) - var(--book-col) - 18px); }
+  }
+  /* The books on paper start at the top: no lane above the paper (its ✕
+     is seated on the paper's own corner) and no centring of a short page. */
+  #chaptersOverlay, #faqOverlay, #tomorrowOverlay, #quarterOverlay { padding-top: 12px; }
+  #chaptersOverlay > div, #faqOverlay > div, #tomorrowOverlay > div, #quarterOverlay > div { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -31150,28 +31195,81 @@
     twZoom = 1;
     if (!stack) return 1;
     stack.style.zoom = "";
+    twHeadReset(mount);
     const ov = document.getElementById("thisWeekOverlay");
     if (!ov || !ov.classList.contains("open") || !ov.clientHeight || !ov.clientWidth) return 1;
     const cs = getComputedStyle(ov);
     const padB = parseFloat(cs.paddingBottom) || 0;
-    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const padR = parseFloat(cs.paddingRight) || 0, padL = parseFloat(cs.paddingLeft) || 0;
     const sr = stack.getBoundingClientRect(), or = ov.getBoundingClientRect();
     if (!sr.height || !sr.width) return 1;
-    // The words are measured here, at the page's own size, because this is
-    // the one moment the zoom is off: the sand reads them back scaled.
-    twSandWordsMeasure(stack, sr);
     const top = sr.top - or.top + ov.scrollTop;
-    const byH = (ov.clientHeight - top - padB - 2) / sr.height;
-    // At 1280 and up the companion rides the LEFT MARGIN, 226px out from a
-    // centred page, so the fit keeps that margin on screen on both sides.
-    const margin = matchMedia("(min-width: 1280px)").matches
-      && stack.querySelector(".tw-margin .companion") ? 2 * 226 : 0;
-    const byW = (ov.clientWidth - padX) / (sr.width + margin);
+    // THE HEAD KEEPS ITS SIZE (2026-09-30, one header on every book), so
+    // only the rest of the page grows to meet the foot: the head's height,
+    // margins and all, is taken out of both sides of the sum.
+    // (A head that is holding the companion's seat is as tall as the seat,
+    // and the seat grows with the figure, so that head grows like the rest.)
+    const head = stack.querySelector(".tw-head");
+    const hcs = head && getComputedStyle(head);
+    const hBox = head ? head.getBoundingClientRect().height : 0;
+    const seatHeld = head && parseFloat(hcs.minHeight) > 0 && hBox - parseFloat(hcs.minHeight) < 1.5;
+    const hh = head && !seatHeld ? hBox
+      + (parseFloat(hcs.marginTop) || 0) + (parseFloat(hcs.marginBottom) || 0) : 0;
+    const byH = (ov.clientHeight - top - padB - 2 - hh) / Math.max(1, sr.height - hh);
+    // THE PAGE STARTS AT THE BOOKS' FRAME (2026-09-30) and grows to the
+    // right from there, so the room it has is the screen's width less
+    // where it starts. At 1280 and up it starts at the column's edge,
+    // which leaves the companion its margin on the left.
+    const startX = sr.left - or.left - padL;
+    const byW = (ov.clientWidth - padL - padR - startX) / sr.width;
     const z = Math.floor(Math.min(byH, byW, TW_ZOOM_MAX) * 100) / 100;
-    if (!(z > 1)) return 1;
+    if (!(z > 1)) { twHeadFit(mount, 1); return 1; }
     twZoom = z;
     stack.style.zoom = String(z);
+    twHeadFit(mount, z);
     return z;
+  }
+  // THE PLANNER'S HEAD STANDS WHERE EVERY OPEN BOOK'S DOES (2026-09-30,
+  // owner: "i want it the same on every boo[k]"). The page is drawn larger
+  // to fill the screen, and its head was drawn larger with it and wherever
+  // the zoom left it; now the head is set back to the page's own size (a
+  // zoom of 1/z inside the page's z) and moved so its title begins at the
+  // books' corner, --book-x, read off a probe so the number lives in the
+  // stylesheet only, and at the keeping page's height. On a phone the page
+  // never zooms and its head is already there.
+  const TW_HEAD_TOP = 36;     // the title's glyphs, from the page's top, at the desk
+  function twHeadReset(mount) {
+    const head = mount && mount.querySelector(".tw-head");
+    if (!head) return;
+    head.style.zoom = ""; head.style.marginLeft = ""; head.style.marginTop = "";
+    head.style.removeProperty("--tw-z");
+  }
+  function twBookX() {
+    let probe = document.getElementById("twBookXProbe");
+    if (!probe) {
+      probe = document.createElement("div");
+      probe.id = "twBookXProbe";
+      probe.setAttribute("aria-hidden", "true");
+      probe.style.cssText = "position:fixed;left:0;top:0;height:0;visibility:hidden;pointer-events:none;width:var(--book-x)";
+      document.body.appendChild(probe);
+    }
+    return probe.getBoundingClientRect().width;
+  }
+  function twHeadFit(mount, z) {
+    const head = mount && mount.querySelector(".tw-head");
+    const title = head && head.querySelector(".tw-title");
+    const ov = document.getElementById("thisWeekOverlay");
+    if (!head || !title || !ov) return;
+    if (z > 1) { head.style.zoom = String(1 / z); head.style.setProperty("--tw-z", String(z)); }
+    if (matchMedia("(max-width: 640px)").matches) return;
+    const rg = document.createRange();
+    rg.selectNodeContents(title);
+    const r = rg.getBoundingClientRect(), o = ov.getBoundingClientRect();
+    if (!r.width) return;
+    const dx = twBookX() - (r.left - o.left);
+    const dy = TW_HEAD_TOP - (r.top - o.top + ov.scrollTop);
+    if (Math.abs(dx) >= 0.5) head.style.marginLeft = dx.toFixed(1) + "px";
+    if (Math.abs(dy) >= 0.5) head.style.marginTop = dy.toFixed(1) + "px";
   }
   // THE COMPANION STANDS OVER THE SAND BESIDE THE TITLE, NOT IN A ROW OF
   // ITS OWN (owner, 2026-09-29: "i dont want the space like that. But i
@@ -31200,6 +31298,7 @@
     // Measured at the page's own size; the fit that follows sets the zoom.
     const stack = mount.querySelector(".tw-stack");
     if (stack) stack.style.zoom = "";
+    twHeadReset(mount);
     head.classList.add("tw-seat-free");
     // Where the figure stands AT HOME: a stroll's translate is set aside
     // for the reading, the way roamHomeRect does.
@@ -31833,43 +31932,39 @@
   // there. ONLY THE BED'S OWN SWEEPS: a line she rakes herself is carved
   // exactly where she drew it, over words or not.
   //
-  // Measured by twFitToScreen with the zoom off, from the stack's own
-  // corner, so the numbers are the page's own pixels; the ground reads them
-  // back through the zoom. Every glyph box (a wrapped title is two), every
-  // row's mark, the strip and the page turners; nothing in the companion's
-  // margin, which is sand with a figure on it.
-  let twSandWords = [];
+  // Read where they stand on the screen, after the page has been fitted:
+  // every glyph box (a wrapped title is two), every row's mark, the strip
+  // and the page turners; nothing in the companion's margin, which is sand
+  // with a figure on it. (Until 2026-09-30 they were read with the zoom off
+  // and scaled back up; the head keeping its own size since then means the
+  // rows under it no longer sit at the zoom's multiple, so nothing is
+  // scaled any more.)
   let twSandQuiet = { sig: "", rects: [] };   // [x0, y0, x1, y1] in ground px
-  function twSandWordsMeasure(stack, sr) {
-    const out = [];
-    const push = r => { if (r.width >= 2 && r.height >= 2) out.push([r.left - sr.left, r.top - sr.top, r.width, r.height]); };
+  // Cut to an 8px grid so a render that moved nothing gives the same
+  // answer, and a tick, which moves nothing, costs no repaint. The
+  // signature is a short hash, because it rides in twSandSig.
+  function twSandQuietRects(host) {
+    const stack = document.querySelector("#thisWeekMount .tw-stack");
+    if (!stack) return { sig: "", rects: [] };
+    const h = host.getBoundingClientRect();
+    if (!stack.getBoundingClientRect().width) return { sig: "", rects: [] };
+    const lo = v => Math.floor(v / 8) * 8, hi = v => Math.ceil(v / 8) * 8;
+    const seen = new Set(), rects = [];
+    const add = r => {
+      if (!(r.width >= 2 && r.height >= 2)) return;
+      const q = [lo(r.left - h.left), lo(r.top - h.top), hi(r.right - h.left), hi(r.bottom - h.top)];
+      const k = q.join(",");
+      if (!seen.has(k)) { seen.add(k); rects.push(q); }
+    };
     const walk = document.createTreeWalker(stack, NodeFilter.SHOW_TEXT, { acceptNode: n =>
       n.nodeValue.trim() && !(n.parentElement && n.parentElement.closest(".tw-margin, svg"))
         ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
     const rg = document.createRange();
     for (let n = walk.nextNode(); n; n = walk.nextNode()) {
       rg.selectNodeContents(n);
-      for (const r of rg.getClientRects()) push(r);
+      for (const r of rg.getClientRects()) add(r);
     }
-    stack.querySelectorAll(".tw-circle, #twStripMount, .tw-turn").forEach(el => push(el.getBoundingClientRect()));
-    twSandWords = out;
-  }
-  // The same boxes on the ground, cut to an 8px grid so a render that moved
-  // nothing gives the same answer, and a tick, which moves nothing, costs no
-  // repaint. The signature is a short hash, because it rides in twSandSig.
-  function twSandQuietRects(host) {
-    const stack = document.querySelector("#thisWeekMount .tw-stack");
-    if (!stack || !twSandWords.length) return { sig: "", rects: [] };
-    const s = stack.getBoundingClientRect(), h = host.getBoundingClientRect();
-    if (!s.width) return { sig: "", rects: [] };
-    const z = twZoom || 1, ox = s.left - h.left, oy = s.top - h.top;
-    const lo = v => Math.floor(v / 8) * 8, hi = v => Math.ceil(v / 8) * 8;
-    const seen = new Set(), rects = [];
-    twSandWords.forEach(([x, y, w, hh]) => {
-      const r = [lo(ox + x * z), lo(oy + y * z), hi(ox + (x + w) * z), hi(oy + (y + hh) * z)];
-      const k = r.join(",");
-      if (!seen.has(k)) { seen.add(k); rects.push(r); }
-    });
+    stack.querySelectorAll(".tw-circle, #twStripMount, .tw-turn").forEach(el => add(el.getBoundingClientRect()));
     let hash = 5381;
     for (const k of seen) for (let i = 0; i < k.length; i++) hash = ((hash << 5) + hash + k.charCodeAt(i)) | 0;
     return { sig: rects.length + ":" + (hash >>> 0).toString(36), rects };

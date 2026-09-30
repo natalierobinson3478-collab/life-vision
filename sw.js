@@ -27,7 +27,7 @@
    editing the board never sees a copy of it. publish-app.sh stamps VERSION
    with the commit it ships, which is what makes a browser notice a new
    worker and refresh the drawings it keeps. */
-const VERSION = "7ad8b42";
+const VERSION = "43985c6";
 const CACHE = "life-vision-" + VERSION;
 const APP = "life-vision-board.html";
 const PAGE_WAIT_MS = 4000;
