@@ -3453,10 +3453,10 @@
   /* G1j (176): a quarter with nothing written is two quiet rules — label,
      invitation — not four rules of vacancy. */
   .rm-qblock.rm-qb-empty { margin-bottom: 0; }
-  .rm-write-step, .rm-add-work, .rm-add-quarter {
+  .rm-write-step, .rm-add-work, .rm-add-quarter, .kp-open {
     font-style: italic; font-weight: 400; font-size: var(--t-label);
     color: var(--ink-soft); text-decoration: none; }
-  .rm-write-step:hover, .rm-add-work:hover, .rm-add-quarter:hover {
+  .rm-write-step:hover, .rm-add-work:hover, .rm-add-quarter:hover, .kp-open:hover {
     color: var(--ink); }
   .rm-mark-rc { background: none; border: none; padding: 2px 0; cursor: pointer;
     font-family: inherit; font-style: italic; font-size: var(--t-label);
@@ -3547,10 +3547,10 @@
     padding: 5px 2px; border-radius: 8px; }
   .rc-move-opt:hover { color: var(--ink); }
   .rm-add-work-row { margin-top: 2px; }
-  .rm-add-work, .rm-add-quarter { background: none; border: none; padding: 2px 0;
+  .rm-add-work, .rm-add-quarter, .kp-open { background: none; border: none; padding: 2px 0;
     cursor: pointer; font-family: inherit; font-size: var(--t-label); font-weight: 600;
     color: var(--ink-soft); }
-  .rm-add-work:hover, .rm-add-quarter:hover { color: var(--ink); }
+  .rm-add-work:hover, .rm-add-quarter:hover, .kp-open:hover { color: var(--ink); }
   .rm-addq-row { margin: 6px 0 2px; }
   .rm-work-form { margin: 6px 0 10px; display: flex; flex-direction: column; gap: 8px;
     max-width: 420px; }
@@ -5727,9 +5727,12 @@
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
   .kp-empty { opacity: 0.7; margin-top: calc(var(--lead) * 0.5); }
   /* The foot's line, the corner's own field on the page's paper: a line to
-     write on and the arrow that keeps it, nothing else. */
+     write on and the arrow that keeps it, nothing else. It waits behind the
+     app's own "+ add" line (.kp-open, styled with the chapter's "+ add a
+     quarter") until that is tapped. */
   .kp-add { margin-top: calc(var(--lead) * 1.5); }
   .kp-add-row { display: flex; align-items: center; gap: 8px; }
+  .kp-add-row[hidden], .kp-open[hidden] { display: none; }
   .kp-input { flex: 1 1 auto; min-width: 0; }
   .fq-sub { display: block; font-family: var(--voice-hand); font-size: var(--t-label);
     font-style: italic; color: var(--ink-muted);
@@ -7630,7 +7633,13 @@
      A smaller or lighter-weight row would say the work matters less; it
      does not, it is simply not today. The rows keep every mark they had:
      a completed row still strikes through, a pin still shows. */
-  .tw-sec-soft .tw-sec-label { opacity: 0.72; }
+  /* THE STEP BACK IS A STATED INK, NOT AN OPACITY (2026-09-29, owner: "im
+     having a hard time reading this on my desktop"). 0.72 of --ink on the
+     sand was 4.0:1, under the floor the rest of the file keeps, on the
+     headings that tell you where you are in the week. #5A574B is 5.0:1 on
+     the sand and 4.7 on its darkest patch, and still plainly quieter than
+     today's 8:1. The any-day row below takes the same value. */
+  .tw-sec-soft .tw-sec-label { color: #5A574B; }
   .tw-sec-soft .tw-row .tw-row-label:not(.done) { color: var(--ink-muted); }
   .tw-sec-label { display: block; line-height: var(--lead); }
   /* T5: the end-of-week focus line — the still-open register, soft ink. */
@@ -7680,8 +7689,11 @@
        the rest of the sheet's small type follows, taken to its end. */
     .tw-strip-day { font-size: var(--t-label); letter-spacing: normal; }
   }
-  /* Days already past speak in softer ink than days still ahead. */
-  .tw-strip-day.past { fill: var(--ink-muted); opacity: 0.72; }
+  /* Days already past speak in softer ink than days still ahead. A stated
+     ink since 2026-09-29: 0.72 of --ink was 4.0:1 on the sand, under the
+     floor. #5A574B is 5.0:1, below ahead's 6.3 and today's 8.0, so the
+     three steps still read in order. */
+  .tw-strip-day.past { fill: #5A574B; }
   .tw-strip-day.ahead { fill: var(--ink-muted); opacity: 0.9; }
   .tw-strip-day.now { fill: var(--ink); }
   /* TODAY IS UNDERLINED, NOT HIGHLIGHTED. One brushed stroke beneath the
@@ -7693,10 +7705,16 @@
   /* The rule the flexible work sits past. It is what says "not an eighth
      day" — so it must read, without becoming a second axis. */
   /* THE CAIRN'S STONES. Hollow with a faint wash until done, filled after —
-     ink only ever accumulates. Each takes its own area's colour. */
-  .tw-stone.wash { fill: rgb(var(--cat, var(--accent))); opacity: 0.16; }
+     ink only ever accumulates. Each takes its own area's colour.
+     THE WASH CARRIES THE COLOUR (owner, 2026-09-29: "i cant really tell
+     which task goes to which color"). At 0.16 a planned stone was cream with
+     a hint in it, and rose and plum, green and olive, came out the same
+     tint: at pebble size the wash is the only place the hue can be seen. At
+     0.42 the six separate at a glance and a planned stone is still plainly
+     lighter than a done one (0.85), so light-is-planned still reads. */
+  .tw-stone.wash { fill: rgb(var(--cat, var(--accent))); opacity: 0.42; }
   .tw-stone.edge { fill: none; stroke: rgb(var(--cat, var(--accent)));
-    stroke-width: 1.35; opacity: 0.66; }
+    stroke-width: 1.6; opacity: 0.95; }
   .tw-stone.done { fill: rgb(var(--cat, var(--accent))); opacity: 0.85; }
 
   /* ---- THE ROSE AS THE CAPACITY ---- */
@@ -7832,7 +7850,7 @@
   .tw-stone.quiet { transition: opacity 0.18s ease; }
   .tw-stone.lit { opacity: 1; }
   .tw-stone.lit.edge { opacity: 1; stroke-width: 1.9; }
-  .tw-stone.lit.wash { opacity: 0.34; }
+  .tw-stone.lit.wash { opacity: 0.62; }
   .tw-stone[data-mech]:focus-visible { outline: none /* A1: the drawn ring */; }
   /* THE MIDDLE IS THE WAY BACK — a target over the pivot, not a button
      beside the drawing. Bigger than the pivot it sits on, so it is reachable
@@ -8439,6 +8457,27 @@
   .tw-circle { flex: 0 0 auto; display: block; width: 28px; height: 22px; overflow: visible;
     color: rgb(var(--cat, var(--accent))); }
   .tw-tick.on .tw-circle { color: rgb(var(--cat, var(--accent))); }
+  /* THE AREA'S COLOUR IS A WASH BEHIND THE RING (owner, 2026-09-29: "i cant
+     really tell which task goes to which color"). The outline was the only
+     place the area showed, and a 1.8-unit line in a 22px frame is about a
+     pixel and a half: plum, green, olive and teal all came out the same
+     dark grey, so nothing on the row matched the pebbles below. Three were
+     drawn on her week at her window: the ring filled (a filled ring already
+     means done), the words in the area's ink (the task text stays dark
+     ink), and this, a dab of the area's own colour blooming a little past
+     the ring, which is the one she was shown as the pick. A gradient and an
+     uneven radius, NO FILTER: a blur here would re-rasterize every row
+     under a scrolling finger on the phone. The ring is lifted over it by
+     position alone, and its line gains a little weight to stand on it. */
+  #thisWeekMount .tw-row .tw-circle { position: relative; }
+  #thisWeekMount .tw-row .tw-circle::before { content: ""; position: absolute;
+    left: -3px; top: -3px; width: 28px; height: 28px;
+    border-radius: 47% 53% 44% 56% / 55% 45% 55% 45%;
+    background: radial-gradient(closest-side, rgba(var(--cat, var(--accent)), 0.6) 58%,
+      rgba(var(--cat, var(--accent)), 0.34) 82%, rgba(var(--cat, var(--accent)), 0));
+    pointer-events: none; }
+  #thisWeekMount .tw-row .tw-circle > svg { position: relative; }
+  #thisWeekMount .tw-row .tw-circle .drawn-ring { stroke-width: 2.2; }
   /* The return mark is quieter than the ring it belongs to, but MUTED IS NOT
      INVISIBLE — it is the only thing that says this work comes back. */
   .drawn-return { opacity: 0.82; }
@@ -8474,7 +8513,8 @@
      ink — the tone was declared and never drawn. That rule now sets --ink,
      which is the same colour as everything else, so it looked like nothing
      was wrong. Matched at 0,4,0 and declared later, so this wins on order. */
-  .tw-row.tw-anyday .tw-row-label:not(.done) { color: #6A675A; }
+  /* #6A675A until 2026-09-29, when it measured 3.9:1 on the sand. */
+  .tw-row.tw-anyday .tw-row-label:not(.done) { color: #5A574B; }
   /* Finished on an EARLIER day: sunk to the foot of the section and quieter
      still — a record of the week rather than a task in it. INK ONLY, like
      the any-day distinction: same size, same family, same weight. A row
@@ -8644,6 +8684,18 @@
      at all. One flex group, one push, one gap value. */
   .tw-meta { margin-left: auto; display: flex; align-items: baseline; gap: 10px;
     flex: 0 0 auto; }
+  /* ...AND AT THE DESK THE GROUP FOLLOWS THE WORDS (2026-09-29, owner: "im
+     having a hard time reading this on my desktop"). Pushed to the right
+     edge of a page drawn 1.26x across a desktop, "30 min each x6" began 480
+     to 690px after the task it belonged to ended, with the companion
+     standing in the gap, and the eye lost the row on the way across. Now
+     the label is its words' width and the group sits one gap after them,
+     so a row reads as one phrase. A long title still wraps and keeps its
+     figure at its end. The phone is untouched: it carries no figure. */
+  @media (min-width: 641px) {
+    .tw-row .tw-row-label { flex: 0 1 auto; }
+    .tw-row .tw-meta { margin-left: 14px; }
+  }
   /* THE DAYS, AS WORDS — replacing the lettered bubbles.
      THE INK RULE HELD EVERYWHERE BUT HERE, AND HERE IT IS AMENDED
      (2026-08-27, owner: "it crosses it out with the x we have generated
@@ -13958,7 +14010,10 @@
   // shape: a square reads as a checkbox and a circle reads as a radio button,
   // and neither has ever read as "this one comes back". THE AREA RIDES THE
   // OUTLINE COLOUR instead, matching the petal it belongs to — a thing the
-  // eye matches without being taught.
+  // eye matches without being taught. (Amended 2026-09-29: the outline alone
+  // was too thin to carry a hue at 22px, so a wash of the same colour now
+  // sits behind the ring, drawn in CSS on .tw-circle::before. The ring is
+  // still the mark; the wash is where the colour is seen.)
   // AND THE FILL IS THE COMPLETION, the same rule as the petals and the
   // pebbles: light is planned, full ink is done. The tick glyph and the
   // strike-through were a fourth language for a fact three shapes already
@@ -29093,6 +29148,13 @@
     // Read where the reader was; put them back once the page has its height.
     const twOv = document.getElementById("thisWeekOverlay");
     const twScroll = twOv ? twOv.scrollTop : 0;
+    // NOR MAY IT MOVE THE ROWS (2026-09-29). The companion is mounted again
+    // a beat after every render, and until it stands, the head row lost the
+    // lead twSeatCompanion had given it, so at the desk the whole list rose
+    // 40px and fell back on every tick and drop, and the sand read two
+    // layouts in a row. The head keeps what it had; the figure's own
+    // seating decides again once it lands.
+    const twSeatWasFree = !!mount.querySelector(".tw-head.tw-seat-free");
     const weekBudget = (() => {
       const intake = buildIntake();
       return (intake.capacity && intake.capacity.statedHours)
@@ -29133,7 +29195,7 @@
              the overlay itself now paints. -->
         <div class="tw-paper">
         <div class="tw-sheet">
-          <div class="tw-head" data-type-area="thisweek/head">
+          <div class="tw-head${twSeatWasFree ? " tw-seat-free" : ""}" data-type-area="thisweek/head">
             <!-- T2: the title is display only — no click, no hover door. -->
             <h1 class="tw-title">${escHtml(TW_TITLE)}</h1>
             <!-- THE UNSPOKEN HOURS SIT UNDER THE TITLE, not in a strip below
@@ -30289,6 +30351,9 @@
     const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
     const sr = stack.getBoundingClientRect(), or = ov.getBoundingClientRect();
     if (!sr.height || !sr.width) return 1;
+    // The words are measured here, at the page's own size, because this is
+    // the one moment the zoom is off: the sand reads them back scaled.
+    twSandWordsMeasure(stack, sr);
     const top = sr.top - or.top + ov.scrollTop;
     const byH = (ov.clientHeight - top - padB - 2) / sr.height;
     // At 1280 and up the companion rides the LEFT MARGIN, 226px out from a
@@ -30987,6 +31052,80 @@
     }
     return len;
   }
+  // THE FRESH SAND'S RIPPLES GO AROUND THE WORDS (2026-09-29, owner: "idk
+  // why but im having a hard time reading this on my desktop"). The bed
+  // comes with a few long sweeps pressed in, spaced evenly down the page
+  // and blind to what stands on it. On a phone they happened to fall
+  // between the rows; at the desk, zoomed and wider, they ran straight
+  // through "tomorrow", through the crossed-off rows (a strike line and
+  // five grooves on one word) and through the strip's day names. Lines
+  // that run the way the text runs are the hardest thing to read over.
+  // A raked garden goes around its stones, and this page already treats
+  // its words as stones (the companion keeps off them), so the sweeps are
+  // pressed only where no word is within a comb's reach, and ease in from
+  // there. ONLY THE BED'S OWN SWEEPS: a line she rakes herself is carved
+  // exactly where she drew it, over words or not.
+  //
+  // Measured by twFitToScreen with the zoom off, from the stack's own
+  // corner, so the numbers are the page's own pixels; the ground reads them
+  // back through the zoom. Every glyph box (a wrapped title is two), every
+  // row's mark, the strip and the page turners; nothing in the companion's
+  // margin, which is sand with a figure on it.
+  let twSandWords = [];
+  let twSandQuiet = { sig: "", rects: [] };   // [x0, y0, x1, y1] in ground px
+  function twSandWordsMeasure(stack, sr) {
+    const out = [];
+    const push = r => { if (r.width >= 2 && r.height >= 2) out.push([r.left - sr.left, r.top - sr.top, r.width, r.height]); };
+    const walk = document.createTreeWalker(stack, NodeFilter.SHOW_TEXT, { acceptNode: n =>
+      n.nodeValue.trim() && !(n.parentElement && n.parentElement.closest(".tw-margin, svg"))
+        ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const rg = document.createRange();
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      rg.selectNodeContents(n);
+      for (const r of rg.getClientRects()) push(r);
+    }
+    stack.querySelectorAll(".tw-circle, #twStripMount, .tw-turn").forEach(el => push(el.getBoundingClientRect()));
+    twSandWords = out;
+  }
+  // The same boxes on the ground, cut to an 8px grid so a render that moved
+  // nothing gives the same answer, and a tick, which moves nothing, costs no
+  // repaint. The signature is a short hash, because it rides in twSandSig.
+  function twSandQuietRects(host) {
+    const stack = document.querySelector("#thisWeekMount .tw-stack");
+    if (!stack || !twSandWords.length) return { sig: "", rects: [] };
+    const s = stack.getBoundingClientRect(), h = host.getBoundingClientRect();
+    if (!s.width) return { sig: "", rects: [] };
+    const z = twZoom || 1, ox = s.left - h.left, oy = s.top - h.top;
+    const lo = v => Math.floor(v / 8) * 8, hi = v => Math.ceil(v / 8) * 8;
+    const seen = new Set(), rects = [];
+    twSandWords.forEach(([x, y, w, hh]) => {
+      const r = [lo(ox + x * z), lo(oy + y * z), hi(ox + (x + w) * z), hi(oy + (y + hh) * z)];
+      const k = r.join(",");
+      if (!seen.has(k)) { seen.add(k); rects.push(r); }
+    });
+    let hash = 5381;
+    for (const k of seen) for (let i = 0; i < k.length; i++) hash = ((hash << 5) + hash + k.charCodeAt(i)) | 0;
+    return { sig: rects.length + ":" + (hash >>> 0).toString(36), rects };
+  }
+  // How much of a sweep may be pressed at a point: none while a word is
+  // within the comb's reach (its swath is 16px either side), all of it
+  // eighteen pixels further out, eased between.
+  const TW_CALM_NEAR = 22, TW_CALM_EASE = 18;
+  function twSandCalm(rects) {
+    if (!rects || !rects.length) return null;
+    return (x, y) => {
+      let dd = Infinity;
+      for (let i = 0; i < rects.length; i++) {
+        const r = rects[i];
+        const dx = x < r[0] ? r[0] - x : x > r[2] ? x - r[2] : 0;
+        const dy = y < r[1] ? r[1] - y : y > r[3] ? y - r[3] : 0;
+        const q = dx * dx + dy * dy;
+        if (q < dd) dd = q;
+      }
+      const t = Math.max(0, Math.min(1, (Math.sqrt(dd) - TW_CALM_NEAR) / TW_CALM_EASE));
+      return t * t * (3 - 2 * t);
+    };
+  }
   function twSandGroundPaint() {
     const host = document.getElementById("twSandGround");
     const ov = document.getElementById("thisWeekOverlay");
@@ -31038,6 +31177,9 @@
     twGroundWaiting = false;
     const H = Math.ceil(need / 512) * 512;
     host.style.height = need + "px";
+    // Where the words stand on this ground now. Never while the rake is
+    // held: a repaint mid-stroke would wipe the grooves not yet recorded.
+    if (!twRaking) twSandQuiet = twSandQuietRects(host);
     if (twSandDims.W === W && twSandDims.H === H && host.firstElementChild) {
       twSandPaintDrawn();
       return;
@@ -31235,6 +31377,11 @@
   // the drawn sand repaints only when something about it changed
   // (twSandPaintSig). twSandPaints counts real repaints for the suite.
   let twBaseHF = null, twSandPaintSig = null, twSandPaints = 0;
+  // The bed is two halves since the sweeps learned where the words are
+  // (2026-09-29): the noise, which only a new size can change and which is
+  // most of the cost, and the sweeps over it, laid again when the words
+  // move. Each is kept under the key it was made for.
+  let twNoiseHF = null, twNoiseKey = "", twBaseKey = "";
   // WHICH TOOL THE HAND HOLDS while the rake mode is on: the comb carves,
   // the hand smooths (owner, 2026-09-05: "a way for the person to clear out
   // their strokes ... or have something they can clean it up themselves").
@@ -31314,7 +31461,11 @@
       // ...and it LANDS gradually: the first thumb-width of a stroke
       // presses in rather than stamping a full-depth disk at the touch.
       const land = Math.min(1, (travel + s) / 14);
-      twStampAt(x0 + rux * s, y0 + ruy * s, ux, uy, str * turn * land);
+      const x = x0 + rux * s, y = y0 + ruy * s;
+      // A strength may be a function of the place, which is how the bed's
+      // sweeps ease off near the words; a press of nothing is skipped.
+      const k = typeof str === "function" ? str(x, y) : str;
+      if (k > 0.004) twStampAt(x, y, ux, uy, k * turn * land);
     }
     const R = TW_SWATH + 4;
     return [Math.min(x0, x1) - R, Math.min(y0, y1) - R, Math.max(x0, x1) + R, Math.max(y0, y1) + R];
@@ -31348,30 +31499,40 @@
   // so a pass over them erases them like anything else.
   function twSandFieldInit() {
     const { W, H } = twSandDims;
-    // The flat bed for this size is already known: copy it back in one
-    // move instead of re-rolling the noise and re-laying the sweeps.
-    if (twBaseHF && twBaseHF.length === W * H) {
+    const size = W + "x" + H, key = size + "|" + twSandQuiet.sig;
+    // The flat bed for this size and these words is already known: copy it
+    // back in one move instead of re-rolling the noise and re-laying the
+    // sweeps.
+    if (twBaseHF && twBaseHF.length === W * H && twBaseKey === key) {
       if (!twHF || twHF.length !== W * H) twHF = new Float32Array(W * H);
       twHF.set(twBaseHF);
       return;
     }
-    twHF = new Float32Array(W * H);
-    // Bilinear value noise, two octaves — INTERPOLATED, because sampling
-    // the lattice raw shades 8px squares into the bed and squares are the
-    // one shape sand never makes.
-    const noise = (x, y, s, seed) => {
-      const fx = x / s, fy = y / s;
-      const ix = Math.floor(fx), iy = Math.floor(fy);
-      const tx = fx - ix, ty = fy - iy;
-      const a = SPEC_R(ix, iy + seed), b = SPEC_R(ix + 1, iy + seed);
-      const c = SPEC_R(ix, iy + 1 + seed), d = SPEC_R(ix + 1, iy + 1 + seed);
-      return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty - 0.5;
-    };
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        twHF[y * W + x] = noise(x, y, 7, 0) * 0.18 + noise(x, y, 29, 777) * 0.26;
+    if (!twNoiseHF || twNoiseKey !== size) {
+      twNoiseHF = new Float32Array(W * H);
+      // Bilinear value noise, two octaves — INTERPOLATED, because sampling
+      // the lattice raw shades 8px squares into the bed and squares are the
+      // one shape sand never makes.
+      const noise = (x, y, s, seed) => {
+        const fx = x / s, fy = y / s;
+        const ix = Math.floor(fx), iy = Math.floor(fy);
+        const tx = fx - ix, ty = fy - iy;
+        const a = SPEC_R(ix, iy + seed), b = SPEC_R(ix + 1, iy + seed);
+        const c = SPEC_R(ix, iy + 1 + seed), d = SPEC_R(ix + 1, iy + 1 + seed);
+        return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty - 0.5;
+      };
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          twNoiseHF[y * W + x] = noise(x, y, 7, 0) * 0.18 + noise(x, y, 29, 777) * 0.26;
+        }
       }
+      twNoiseKey = size;
     }
+    if (!twHF || twHF.length !== W * H) twHF = new Float32Array(W * H);
+    twHF.set(twNoiseHF);
+    // The sweeps keep off the words (see twSandQuietRects).
+    const calm = twSandCalm(twSandQuiet.rects);
+    const press = calm ? (x, y) => 0.45 * calm(x, y) : 0.45;
     const rows = Math.max(3, Math.round(H / 260));
     for (let i = 0; i < rows; i++) {
       const yy = 90 + (i * (H - 180)) / Math.max(1, rows - 1) + (SPEC_R(i, 3) - 0.5) * 50;
@@ -31381,11 +31542,12 @@
         const t = s / 34;
         const nx = x0 + t * (x1 - x0);
         const ny = yy + Math.sin(t * 4.1 + i * 1.7) * (16 + SPEC_R(i, 11) * 12);
-        twStampSeg(px, py, nx, ny, 0.45);
+        twStampSeg(px, py, nx, ny, press);
         px = nx; py = ny;
       }
     }
     twBaseHF = twHF.slice();          // the flat bed, kept for every repaint at this size
+    twBaseKey = key;
   }
   // THE HAND: the comb's opposite. Where the comb converges the bed to its
   // grooved profile, the hand converges it to FLAT, in a soft round
@@ -31481,7 +31643,8 @@
     const strokes = now ? twSandStrokesNow() : [];
     const last = strokes.length ? twStrokePts(strokes[strokes.length - 1]) : null;
     const tail = last && last.length ? last[last.length - 1].join(",") : "";
-    return `${W}x${H}|${now ? "now" : "then"}|${strokes.length}|${tail}`;
+    // ...and where the words stand, since the bed's sweeps go around them.
+    return `${W}x${H}|${now ? "now" : "then"}|${strokes.length}|${tail}|${twSandQuiet.sig}`;
   }
   function twSandPaintDrawn(force) {
     if (!twCtx) return;
@@ -42282,6 +42445,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // and clear a synthetic finger that no test ever lifted.
     syncBusy: () => syncBusy(), syncHeld: () => syncWanted, handClear,
     twSandPaintCount: () => twSandPaints, twSandDimsGet: () => twSandDims,
+    twSandQuietGet: () => twSandQuiet,
     twGroundPaintCount: () => twGroundPaints, twGroundBuildCount: () => twGroundBuilds, twPageLength: () => twPageLength(document.getElementById("thisWeekOverlay")),
     boardPaintCount: () => boardPaints,
     twSmoothSeg, twToolSet, twSandClean, twSandPaintDrawn, twDeleteForSwipe,
@@ -42454,7 +42618,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   ];
   const keepMarkOf = id => [...String(id || "x")]
     .reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261) % KEEP_MARKS.length;
-  function openKeepings() {
+  function openKeepings(opts) {
+    const writing = !!(opts && opts.writing);
     const mount = document.getElementById("keepMount");
     if (!mount) return;
     let above = -1;
@@ -42491,29 +42656,45 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           <p class="fq-sub-line">reminders to keep close to your heart</p></div>
         <div data-type-area="keep/list" class="kp-list">${rows.length ? rows.join("")
           : `<span class="fq-sub kp-empty">nothing yet. write one below.</span>`}</div>
-        <div data-type-area="keep/add" class="kp-add kp-add-row">
-          <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
-            placeholder="something to keep in mind" aria-label="write something to keep">
-          <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
+        <div data-type-area="keep/add" class="kp-add">
+          <button class="kp-open" id="keepOpen" type="button"${writing ? " hidden" : ""}>+ add a reminder</button>
+          <div class="kp-add-row" id="keepRow"${writing ? "" : " hidden"}>
+            <input type="text" id="keepInput" class="tw-add-input kp-input" autocomplete="off"
+              placeholder="something to keep in mind" aria-label="write something to keep">
+            <button class="tw-corner-go kp-go" id="keepGo" type="button" aria-label="keep it">${DRAWN_ARROW}</button>
+          </div>
         </div>
       </div></div>
       <div class="at-margin" id="keepCompanion" data-type-area="keep/margin"></div></div>`;
+    // THE WAY ON IS THE APP'S OWN "+ add" (2026-09-29, owner: "usually i
+    // have a + sign or someting where i want to add so lets keep that
+    // consistent"). The foot reads "+ add a reminder" in the chapter's own
+    // voice for "+ add a quarter", and a tap turns it into the line to write
+    // on, caret in it. A kept line leaves the field open for the next one;
+    // leaving it empty folds it back to the "+".
     const input = mount.querySelector("#keepInput");
+    const openBtn = mount.querySelector("#keepOpen"), field = mount.querySelector("#keepRow");
+    const fold = () => { field.hidden = true; openBtn.hidden = false; };
+    openBtn.addEventListener("click", () => {
+      openBtn.hidden = true; field.hidden = false;
+      input.focus();
+    });
     const file = () => {
       const t = (input.value || "").trim();
       if (!t) return;
       addKeeping({ text: t, kind: "reminder" });
       input.value = "";
-      openKeepings();
-      const again = document.getElementById("keepInput");
-      if (again) again.focus();
+      openKeepings({ writing: true });
     };
     mount.querySelector("#keepGo").addEventListener("click", file);
     input.addEventListener("keydown", e => {
+      if (e.key === "Escape") { input.value = ""; fold(); return; }
       if (e.key !== "Enter") return;
       e.preventDefault();
       file();
     });
+    input.addEventListener("blur", () => { if (!(input.value || "").trim()) fold(); });
+    if (writing) input.focus();
     // THE WAY BACK IS THE BREATH, the same one the board's deletes use, and
     // the same scrap: it lives at body level since 11 September precisely so
     // a page like this one can raise it.
