@@ -3488,12 +3488,30 @@
   .tw-row-pop .tw-pop-title { display: block; width: 100%; box-sizing: border-box;
     font-family: inherit; font-size: inherit; color: var(--ink);
     background: none; border: none; border-bottom: 1px solid var(--line);
-    padding: 2px 0 5px; margin: 0 0 4px; outline: none; }
+    padding: 2px 22px 5px 0; margin: 0 0 4px; outline: none; }
+  /* The drawn pencil at the end of the name says the name can be written on
+     (owner, 30 Sep: "Be able to edit the task name"); it is a sign, not a
+     control, so a tap on it lands in the field. */
+  .tw-row-pop .tw-pop-name { position: relative; }
+  /* The bubble behind a box's words (keepBubbleIn): absolute, overflowing
+     the box a little, never in the way of a tap. */
+  .kp-bubble { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+    pointer-events: none; z-index: -1; }
+  .when-pop.tw-row-pop { background: none; border: none; box-shadow: none; isolation: isolate;
+    -webkit-mask-image: none; mask-image: none; padding: 20px 22px 22px; }
+  /* snug on a phone: less margin inside the bubble, the same room to write */
+  @media (max-width: 640px) {
+    .when-pop.tw-row-pop { padding: 13px 15px 14px; }
+    .tw-row-pop .tw-pop-name .drawn-pencil-inline { right: 8px; top: 6px; }
+    .tw-corner-sheet { padding: 11px 15px 12px; }
+  }
+  .tw-row-pop .tw-pop-name .drawn-pencil-inline { position: absolute; right: 2px; top: 5px;
+    margin: 0; color: var(--ink-soft); opacity: 0.7; pointer-events: none; }
+  .tw-row-pop .tw-pop-name:focus-within .drawn-pencil-inline { opacity: 0.35; }
   /* THE NOTE UNDER THE TITLE: what this is, why, and the goal it sits under,
      in the box's own quiet voice (.mp-b), one line each, ruled off from the
      options below by the same hairline they use. Not a control. */
-  .tw-row-pop .tw-pop-about { margin: 2px 0 0; padding: 4px 0 8px;
-    border-bottom: 1px solid rgba(90,70,50,0.16);
+  .tw-row-pop .tw-pop-about { margin: 2px 0 0; padding: 4px 0 2px;
     font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
     color: var(--ink-muted); line-height: var(--lead); }
   .tw-row-pop .tw-pop-about span { display: block; }
@@ -5396,15 +5414,13 @@
      outside, the torn mask inside, handwriting on it, and a drawn tick at
      the end for a thumb that does not reach for the keyboard's return.
      It docks above the keyboard when one is up (wireTwCorner). */
+  /* A BUBBLE SINCE 30 SEP (owner: "I love how you did the little bubbles
+     on my remidner page. Maybe we can use some of that theme?"): the
+     keeping page's float, drawn by keepBubbleIn when the strip opens, on a
+     little wash of its water. The paper and its tear are gone. */
   .tw-corner-add { width: min(360px, calc(100vw - 20px)); }
   .tw-corner-add[hidden] { display: none; }
-  .tw-corner-sheet { position: relative; background: var(--paper); padding: 16px 18px 18px;
-    -webkit-mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
-    mask-image: var(--torn-b), var(--torn-fill), var(--torn-t);
-    -webkit-mask-size: 100% 22px, 100% max(0px, 100% - 32px), 100% 22px;
-    mask-size: 100% 22px, 100% max(0px, 100% - 32px), 100% 22px;
-    -webkit-mask-position: 0 100%, 0 16px, 0 0; mask-position: 0 100%, 0 16px, 0 0;
-    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+  .tw-corner-sheet { position: relative; isolation: isolate; background: none; padding: 18px 22px 20px; }
   .tw-corner-row { display: flex; align-items: center; gap: 10px; }
   .tw-corner-row .tw-add-field { margin: 0; max-width: none; flex: 1 1 auto; }
   .tw-corner-row .tw-add-field::after { opacity: 0.5; }
@@ -11576,8 +11592,8 @@
         <button id="twToolClean" class="tw-corner-tool" type="button"
           aria-label="smooth the whole sand" title="smooth the whole sand"></button>
       </div>
-      <div class="tw-corner-add torn-paper" id="twCornerAdd" hidden>
-        <div class="tw-corner-sheet"><div class="tw-corner-row">
+      <div class="tw-corner-add" id="twCornerAdd" hidden>
+        <div class="tw-corner-sheet"><svg class="kp-bubble" aria-hidden="true"></svg><div class="tw-corner-row">
           <div class="tw-add-field">
             <input type="text" id="twCornerInput" class="tw-add-input"
               placeholder="call Joe tomorrow" aria-label="what is it?">
@@ -29806,6 +29822,7 @@
     const stripMount = mount.querySelector("#twStripMount");
     if (stripMount) {
       const stripW = stripMount.clientWidth || 600;
+      stripMount.dataset.vw = String(window.innerWidth);   // the width it was drawn for
       stripMount.innerHTML = buildWeekStrip(twStripItems(twViewWk()), stripW);
       // The strip's height comes from the tallest pile of pebbles, so it is
       // data-shaped and lands anywhere. Same treatment as the rose.
@@ -30636,12 +30653,25 @@
   // A WINDOW THAT CHANGES SIZE IS FITTED AGAIN, without a re-render: the
   // zoom is cleared, the figure seated against the rows as they now wrap,
   // and the page measured at its own size and fitted anew.
+  // A WIDER OR NARROWER WINDOW DRAWS THE PAGE AGAIN (2026-09-30, owner: "why
+  // does it look so weird"). The week strip is drawn once to the width the
+  // page has at render, so a phone turned sideways, an iPad turned, or a
+  // window dragged wider kept a strip drawn for the old width and stretched
+  // it: day words twice their size, the hint over the pebbles. A change of
+  // WIDTH now re-renders; a change of height alone (a phone's keyboard)
+  // still only refits, so typing never redraws the page.
   let twFitTimer = null;
   window.addEventListener("resize", () => {
     clearTimeout(twFitTimer);
     twFitTimer = setTimeout(() => {
       const ov = document.getElementById("thisWeekOverlay");
       if (!ov || !ov.classList.contains("open")) return;
+      const drawnFor = Number((document.getElementById("twStripMount") || {}).dataset?.vw || 0);
+      if (drawnFor && window.innerWidth !== drawnFor) {
+        if (twRowPopClose) twRowPopClose();
+        renderThisWeek();
+        return;
+      }
       const mount = document.getElementById("thisWeekMount");
       twSeatCompanion(mount);
       twFitToScreen(mount);
@@ -30678,10 +30708,16 @@
   // Not the old edit state: the anchored popover recipe openMovePicker
   // already uses — one box at a time, outside tap closes, Escape closes —
   // holding exactly four things: the title in place, push to tomorrow,
-  // change the day, delete. Tying work to a goal is deliberately NOT here
+  // change the day, delete (since 30 Sep: the name and one line of what it
+  // is, nothing else; every action is a gesture now, see openRowOptions).
+  // Tying work to a goal is deliberately NOT here
   // (workshop only, ruled, test 145), by the owner's own choice this round.
   // Since 2026-09-06 a note sits under the title saying what the row is
   // (the fuller label, its why, its goal): a note, not a fifth thing.
+  // KNOWN DEAD SINCE 2026-09-30: the box's push to tomorrow came off at the
+  // owner's word and the right swipe has its own (twSwipeTomorrow), so
+  // nothing calls this. Left standing in a region other sessions work in;
+  // named in CLAUDE.md's known dead list.
   // PUSH TO TOMORROW — one rule, shared by the box and the left swipe. An
   // errand is re-dated; a scheduled thing's nearest open occurrence moves,
   // this week only; a tomorrow beyond the week means next week, and only a
@@ -30922,74 +30958,37 @@
                 : reminderList().find(x => x.id === mid);
     if (!m) return null;
     const isRem = gid == null;
-    const oneOff = isRem && !m.schedule;       // an errand, dated or not
-    // THE BOX SPEAKS FOR THE WEEK ON THE SHEET (2026-09-02, the plannable
-    // future week): its days are that week's days, its pushes bend that
-    // week. On the live page nothing changes — the viewed week IS the week.
-    const wk = twViewWk(), wd = weekDates(wk), today = todayKey();
-    const tomorrow = localDateKey(new Date(new Date(today + "T00:00:00").getTime() + 86400000));
-    const tomorrowInWeek = wd.indexOf(tomorrow) >= 0;
-    // THE OCCURRENCE THE BOX IS ABOUT: the nearest open one, today or
-    // ahead, else the earliest open one — the checkbox's own reading order.
-    const nearestOpen = () => {
-      const eff = scheduledDatesFor(m, gid, wk);
-      const raw = scheduleOriginsFor(m, gid, wk);
-      let pick = -1;
-      eff.forEach((d, i) => {
-        if (d && d >= today && !completionsAt(m, d) && (pick < 0 || d < eff[pick])) pick = i;
-      });
-      if (pick < 0) eff.forEach((d, i) => { if (pick < 0 && d && !completionsAt(m, d)) pick = i; });
-      return pick < 0 ? null : { date: eff[pick], from: raw[pick] };
-    };
-    const due = oneOff ? (!m.date || m.date <= today)
-      : (() => { const no = nearestOpen(); return !!no && no.date <= today; })();
-    const canPush = due && (oneOff || tomorrowInWeek || !isRem);
-    const repeating = !isRem || !!m.schedule;
     const title = appVoice(m.weekLabel ?? m.label, wroteIt(m));
     // WHAT THIS IS, under the title (owner, 2026-09-06: "it says 'do one AI
-    // practice exercise' but what does that mean"). The week line is seven
-    // words by design; the fuller label and the model's one-line why were
-    // written for exactly this question and were drawn nowhere. A note, not
-    // an option: nothing here is a control. Nothing for a reminder (no goal,
-    // no why); a person's own work shows only the goal it sits under.
+    // practice exercise' but what does that mean"). ONE LINE SINCE 30 SEP
+    // (owner: "there's too much here. I want to just show the wider
+    // description of what this task is"): the fuller label when it says more
+    // than the week line, else the model's why, and nothing else. The goal
+    // it sits under is the chapter's to say. A note, not a control; nothing
+    // for a reminder or for a person's own work, whose title is the whole of it.
     const undash = s => String(s == null ? "" : s).replace(/\s+—\s+/g, ", ");
     const same = (a, b) => String(a || "").toLowerCase().replace(/[.\s]+$/, "").trim()
       === String(b || "").toLowerCase().replace(/[.\s]+$/, "").trim();
-    const aboutLines = isRem ? [] : [
-      m.weekLabel && m.label && !same(m.label, m.weekLabel) ? undash(appVoice(m.label, wroteIt(m))) : "",
-      m.why ? undash(lcFirst(m.why)) : "",
-      g ? `part of “${appVoice(stripDot(g.title), titleIsTheirs(g))}”` : ""
-    ].filter(Boolean);
-    const aboutHtml = aboutLines.length
-      ? `<p class="tw-pop-about">${aboutLines.map(l => `<span>${escHtml(l)}</span>`).join("")}</p>` : ``;
+    const about = isRem ? "" : m.weekLabel && m.label && !same(m.label, m.weekLabel)
+      ? undash(appVoice(m.label, wroteIt(m))) : m.why ? undash(lcFirst(m.why)) : "";
+    const aboutHtml = about ? `<p class="tw-pop-about"><span>${escHtml(about)}</span></p>` : ``;
     const pop = document.createElement("div");
     pop.className = "when-pop move-pop tw-row-pop";
     pop.setAttribute("role", "dialog");
+    // THE BOX IS THE NAME AND WHAT IT MEANS (2026-09-30, owner: "all i want
+    // it to say when i click on it is what it means and be able to edit the
+    // name"). The name in place, with the drawn pencil saying it can be
+    // written on, and the one line of what it is. Everything else is a
+    // gesture: the right swipe pushes to tomorrow, the left swipe deletes
+    // with its undo, a pebble dragged to another day moves it and one
+    // dragged to the corner takes that day off.
     pop.innerHTML = `
-      <input id="twEditTitle" class="tw-pop-title" type="text" autocomplete="off"
-        value="${escHtml(title)}" aria-label="rename this">
-      ${aboutHtml}
-      ${canPush ? `<button type="button" class="mp-opt" id="rpPush">
-        <span class="mp-a">${oneOff || tomorrowInWeek ? "push to tomorrow" : "push to next week"}</span>
-        <span class="mp-b">this week bends, the rhythm is untouched</span>
-      </button>` : ``}
-      ${!isRem ? `<button type="button" class="mp-opt" id="rpSkip">
-        <span class="mp-a">${twIsNow() ? "push to next week" : "push a week on"}</span>
-        <span class="mp-b">${twIsNow() ? "not this week, back on its rhythm monday"
-          : "not that week, back on its rhythm after"}</span>
-      </button>` : ``}
-      <button type="button" class="mp-opt" id="rpWhen">
-        <span class="mp-a">change the day</span>
-        <span class="mp-b">${isRem ? "pick the day it belongs to" : "this week, or the standing plan"}</span>
-      </button>
-      ${repeating ? `<button type="button" class="mp-opt" id="rpOffDay">
-        <span class="mp-a">skip just this one</span>
-        <span class="mp-b">this one time. the rhythm, and next week, are untouched</span>
-      </button>` : ``}
-      <button type="button" class="mp-opt tw-pop-danger" id="rpDrop">
-        <span class="mp-a">${repeating ? "delete the whole repeat" : "delete"}</span>
-        <span class="mp-b">${repeating ? "everywhere, though what is done stays done" : "for good"}</span>
-      </button>`;
+      <svg class="kp-bubble" aria-hidden="true"></svg>
+      <div class="tw-pop-name">
+        <input id="twEditTitle" class="tw-pop-title" type="text" autocomplete="off"
+          value="${escHtml(title)}" aria-label="rename this">${DRAWN_PENCIL_INLINE}
+      </div>
+      ${aboutHtml}`;
     const cleanup = () => {
       // The title commits on the way out, whatever closed the box — but
       // only if the person actually typed. Committing an untouched field
@@ -31032,83 +31031,6 @@
     twEditing = { key: (gid == null ? "" : gid) + "|" + mid };
     const inp = pop.querySelector("#twEditTitle");
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
-    const push = pop.querySelector("#rpPush");
-    if (push) push.addEventListener("click", () => { twPushToTomorrow(gid, mid); done(); });
-    const skipBtn = pop.querySelector("#rpSkip");
-    if (skipBtn) skipBtn.addEventListener("click", () => {
-      cleanup();
-      twSwipeNextWeek(anchor, gid, mid);
-    });
-    pop.querySelector("#rpWhen").addEventListener("click", () => {
-      if (!isRem) { cleanup(); openMovePicker(anchor, g, m, () => renderThisWeek()); return; }
-      // A reminder's days, in place: seven chips, one tap, done.
-      if (pop.querySelector(".mp-days")) return;
-      const row = document.createElement("div");
-      row.className = "when-pop-row mp-days";
-      row.innerHTML = wd.map((iso, i) =>
-        `<button type="button" class="ci-chip wp-day${(oneOff ? m.date === iso : false) ? " on" : ""}"
-          data-iso="${iso}">${TW_DAYS[i]}</button>`).join("");
-      pop.querySelector("#rpWhen").after(row);
-      row.querySelectorAll(".wp-day").forEach(b => b.addEventListener("click", () => {
-        const iso = b.dataset.iso;
-        if (oneOff) { m.date = iso; saveState(); return done(); }
-        const no = nearestOpen();
-        if (no) moveOccurrence(null, mid, no.from, iso, wk);
-        done();
-      }));
-    });
-    // SKIP JUST THIS ONE, AND SAY WHICH ONE (2026-09-11). It has always acted
-    // on nearestOpen, the next one coming, which is a fair reading of "this
-    // one" — but the button never said so, and on a daily commitment opened
-    // on a Monday it silently meant Monday when the person was looking at
-    // Wednesday. THE BOX HAS NO DAY OF ITS OWN to prefer instead: a chosen
-    // day and a chosen commitment are one selection with two shapes
-    // (twProject), so holding the row has already cleared any chosen day.
-    // Rather than invent a second selection the model deliberately does not
-    // have, the box now NAMES the occurrence it is about, and prefers a
-    // chosen day if one somehow survives. Getting rid of a particular day's
-    // stone is the picker's job, or the drag to the corner.
-    const offTarget = () => {
-      if (twDay) {
-        const eff = scheduledDatesFor(m, gid, wk);
-        const raw = scheduleOriginsFor(m, gid, wk);
-        const i = eff.indexOf(twDay);
-        if (i >= 0 && !completionsAt(m, eff[i])) return { date: eff[i], from: raw[i] };
-      }
-      return nearestOpen();
-    };
-    const off = pop.querySelector("#rpOffDay");
-    if (off) {
-      const t = offTarget();
-      const sub = off.querySelector(".mp-b");
-      if (sub && t && t.date) {
-        const i = wd.indexOf(t.date);
-        if (i >= 0) sub.textContent = WK_DAY_WORDS[i] + " only. the rhythm, and next week, are untouched";
-      }
-      off.addEventListener("click", () => {
-        const n2 = offTarget();
-        if (n2) moveOccurrence(gid, mid, n2.from, "off", wk);
-        done();
-      });
-    }
-    // DELETE ARMS FIRST — the two-step the discovery menus already use.
-    const drop = pop.querySelector("#rpDrop");
-    drop.addEventListener("click", () => {
-      if (!drop.classList.contains("arm")) {
-        drop.classList.add("arm");
-        drop.querySelector(".mp-b").textContent = "tap again, and it is gone";
-        setTimeout(() => { if (drop.isConnected) drop.classList.remove("arm"); }, 4000);
-        return;
-      }
-      if (isRem) removeReminder(mid);
-      else {
-        // on the live board at the tap, not the object held at the open
-        const g2 = goals.find(x => x.id === gid);
-        const m2 = g2 && (g2.mechanisms || []).find(x => x.id === mid);
-        if (m2) { m2.dropped = true; saveState(); }
-      }
-      done();
-    });
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
     const pw = Math.min(300, innerWidth - 16);
@@ -31126,6 +31048,7 @@
       document.addEventListener("pointerdown", onOutside, true);
       document.addEventListener("keydown", onKey, true);
     }, 0);
+    keepBubbleIn(pop, (gid == null ? "" : gid) + "|" + mid);
     twRowPopClose = cleanup;
     return pop;
   }
@@ -32301,6 +32224,7 @@
     };
     const open = () => {
       strip.hidden = false;
+      keepBubbleIn(strip.querySelector(".tw-corner-sheet"), "corner-add");
       input.focus();
       dock();
       if (!outside) {
@@ -43213,6 +43137,42 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         + `${rnd() < 0.5 ? keepPen(rnd, ring(18, 13), 0.9, 30, 90) : ""}</g>`;
     }
     return out;
+  }
+  // A BUBBLE FOR A BOX (2026-09-30, owner, of This Week's two pop ups: "I
+  // love how you did the little bubbles on my remidner page. Maybe we can
+  // use some of that theme? and the water you made there somewhere"). The
+  // float's own paint and pen, shaped rounder than an oval (a superellipse)
+  // so a box of several lines fits inside it, sitting on a small wash of the
+  // water's blue grey that spreads past its edge, with one faint ripple ring.
+  // Drawn to the measured box, a little outside it (the svg overflows).
+  // SNUG ON A PHONE (owner, 30 Sep: "on the phone its pretty big"): the
+  // bubble hugs its box, and the wash and the ring stay closer to it.
+  function keepBubbleSvg(w, h, hash, snug) {
+    const rnd = keepRnd((hash % 100000) + 29);
+    const cx = w / 2, cy = h / 2, ax = w / 2 + (snug ? 1 : 4), ay = h / 2 + (snug ? 2 : 5);
+    const shape = (rx, ry, k) => Array.from({ length: k }, (_, i) => {
+      const a = i / k * 6.283, c = Math.cos(a), sn = Math.sin(a);
+      return [cx + Math.sign(c) * Math.pow(Math.abs(c), 2 / 3) * rx, cy + Math.sign(sn) * Math.pow(Math.abs(sn), 2 / 3) * ry];
+    });
+    const edge = specBlob(shape(ax, ay, 16), (hash % 89) + 5, 3 + Math.min(w, h) * 0.03);
+    const pool = snug ? keepBlob(rnd, cx + 3, cy + 4, ax + 7, ay + 6, 11, 0.22)
+      : keepBlob(rnd, cx + 5, cy + 7, ax + 16, ay + 13, 11, 0.22);
+    const line = (dx, dy) => { const pts = shape(ax + dx, ay + dy, Math.max(80, Math.round((w + h) / 3))); pts.push(pts[0], pts[1]); return pts; };
+    return `<g filter="url(#washTight)"><path d="${pool}" fill="#a3b3b4" opacity="0.34"/>`
+      + `<path d="${pool}" fill="none" stroke="#8fa0a2" stroke-width="3" opacity="0.2"/></g>`
+      + `<g transform="translate(-2.5 2)" filter="url(#wash-fine)"><path d="${edge}" fill="#efe8d6" opacity="0.97"/>`
+      + `<path d="${edge}" fill="none" stroke="#d6cdb2" stroke-width="3" opacity="0.4"/></g>`
+      + `<g fill="${KEEP_INK}" filter="url(#rough)">${keepPen(rnd, line(0, 0), 1.3, 40, 140)}</g>`
+      + `<g fill="${KEEP_INK}" opacity="0.34" filter="url(#rough)">${keepPen(rnd, snug ? line(7, 6) : line(12, 10), 0.9, 40, 110)}</g>`;
+  }
+  // draw an element's bubble into its own `.kp-bubble` svg, once it is laid out
+  function keepBubbleIn(el, key) {
+    const svg = el && el.querySelector(":scope > .kp-bubble");
+    if (!svg) return;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    if (!w || !h) return;
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.innerHTML = keepBubbleSvg(w, h, keepHash(key), window.innerWidth < 640);
   }
   // Every float is measured after layout (no rAF: it never fires in a
   // de-prioritised tab), drifted by its own two numbers, and given its oval.
