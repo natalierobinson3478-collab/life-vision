@@ -5775,6 +5775,15 @@
     padding-top: 28px; }
   @media (max-width: 640px) { .kp-page { padding-top: 10px; } }
   .kp-head { margin-bottom: calc(var(--lead) * 0.5); }
+  /* THE TITLE'S LINE IS READ AT THE READING SIZE AT THE DESK (owner,
+     2026-09-30: "its kinda hard to read the sub-title", then "i think the
+     font is too small for desktop to be honest"). It was the caption size,
+     14px italic, under a 30px title on a wide screen and over busy water.
+     At the desk it takes the reminders' own size, which still sits under
+     the title (the step above, 20px, began to rival it). The phone keeps
+     its size. A pale patch of water under the words was tried the same
+     day and taken out: "i dont like how much it whites out the art". */
+  @media (min-width: 641px) { .kp-head .fq-sub-line { font-size: var(--t-read); } }
   /* A FLOAT: the water's own oval, paper cream, with a pen edge, and the
      words inside it. Each is drifted a little by its own two numbers
      (--kp-dx, --kp-gap, written by keepFloatOvals), and the oval is an
@@ -5801,6 +5810,16 @@
   /* The dabs fade with the water, or they are the one unfaded thing on it. */
   .kp-float .kp-mark { filter: saturate(0.6) sepia(0.12); }
   .kp-text { font-size: var(--t-read); color: var(--ink); line-height: var(--lead); }
+  /* A LINE IS WRITTEN ON WHERE IT IS READ (owner, 2026-09-30: "just click
+     and edit"). The words take a text cursor, and while one is being
+     written on the caret is the only sign: no focus ring and no patch
+     (the app's .edit-signal patch was tried here the same day, "it has an
+     ugly faint grey box that appears"). The row's no-select, which is
+     there for the swipe, would keep the caret out on iOS, so an editing
+     row can be selected again. */
+  @media (hover: hover) and (pointer: fine) { .kp-item .kp-text { cursor: text; } }
+  .kp-item.kp-editing, .kp-item.kp-editing .kp-text { -webkit-user-select: text; user-select: text; }
+  .kp-item.kp-editing .kp-text { outline: none; }
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
   .kp-empty { opacity: 0.7; }
   .kp-empty-float .kp-empty { margin: 0; padding: 0; }
@@ -8155,9 +8174,18 @@
      the side padding no longer clears a torn bite it does not have: the
      checklist takes the room the tear used to spend. --pad-top and
      line-height stay — the LEAD is still the page's rhythm, spacing holds
-     the list together now that no drawn line does. */
+     the list together now that no drawn line does.
+     NO CUSHION AT THE FOOT AT THE DESK (owner, 2026-09-30: "too much dead
+     space after the week/pebble graphic ... im able to scroll a bit even
+     though the contents fit to page"). The sheet kept 44px under the page
+     turners from the paper era, and the overlay's own 80px foot for the
+     corner sat under that, so a week an inch taller than the window
+     scrolled for nothing but empty sand. The overlay's foot alone is what
+     the corner needs: it stands 72px from the bottom, so the turners end
+     8px above it. The phone keeps its 34px below, because its foot is
+     only 50px and the → turner would sit under the corner without it. */
   .tw-sheet { --pad-top: 26px;
-    padding: var(--pad-top) 14px 44px; line-height: var(--lead); }
+    padding: var(--pad-top) 14px 0; line-height: var(--lead); }
   /* ---- the companion (2026-08-22) ----
      ~72px, at home beneath the sprout on desktop and beside it on the phone.
      It never overlaps content and never blocks a tap: it lives in the sprout
@@ -36131,20 +36159,32 @@
     if (typeof v === "object") return Object.keys(v).length === 0;
     return false;
   }
-  function boardSame(a, b) {
+  // THE SHELF IS THE ONE PLACE A false IS AN ANSWER (2026-09-30, owner: "i
+  // keep trying to hide two books but when i try they re-appear once i get
+  // out of the place where i hide them"). Everywhere else a false is a flag
+  // unset, which the wire may spell as nothing. The shelf says a book is put
+  // away with door -> false, so read as nothing every shelf with a book
+  // already away compared equal to every other: a second book going was no
+  // change, the account's shelf came back in over it when the library
+  // closed, and it was never sent. `parent` is the name of the object the
+  // value sits in. Test 199b.
+  const boardHeld = (v, parent) => !boardEmptyish(v) || (parent === "shelf" && v === false);
+  function boardSame(a, b, name) {
     if (a === b) return true;
     const ea = boardEmptyish(a), eb = boardEmptyish(b);
     if (ea || eb) return ea && eb;
     if (typeof a !== typeof b) return false;
     if (Array.isArray(a) || Array.isArray(b)) {
       if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-      return a.every((x, i) => boardSame(x, b[i]));
+      return a.every((x, i) => boardSame(x, b[i], name));
     }
     if (typeof a === "object") {
-      const ka = Object.keys(a).filter(k => !boardEmptyish(a[k]));
-      const kb = Object.keys(b).filter(k => !boardEmptyish(b[k]));
+      const ka = Object.keys(a).filter(k => boardHeld(a[k], name));
+      const kb = Object.keys(b).filter(k => boardHeld(b[k], name));
       if (ka.length !== kb.length) return false;
-      return ka.every(k => boardSame(a[k], b[k]));
+      // by name as well as by value: two books away are not two other books
+      const inB = new Set(kb);
+      return ka.every(k => inB.has(k) && boardSame(a[k], b[k], k));
     }
     return false;
   }
@@ -36173,20 +36213,20 @@
   // is dropped, and where the two disagree this device's line stands.
   function mergeBoards(base, local, remote) {
     const walk = (b, l, r, name) => {
-      if (boardSame(l, r)) return l;
+      if (boardSame(l, r, name)) return l;
       const hasB = b !== undefined && !(boardEmptyish(b) && name === "");
-      if (hasB && boardSame(l, b)) return r;              // only the account moved
-      if (hasB && boardSame(r, b)) return l;              // only this device moved
+      if (hasB && boardSame(l, b, name)) return r;        // only the account moved
+      if (hasB && boardSame(r, b, name)) return l;        // only this device moved
       if (boardIsObj(l) && boardIsObj(r)) {
         const bb = boardIsObj(b) ? b : null;
         const out = {};
         new Set([...Object.keys(l), ...Object.keys(r)]).forEach(k => {
-          const inL = !boardEmptyish(l[k]), inR = !boardEmptyish(r[k]);
+          const inL = boardHeld(l[k], name), inR = boardHeld(r[k], name);
           const bk = bb ? bb[k] : undefined;
-          const held = bb && !boardEmptyish(bk);           // the base had this field
+          const held = bb && boardHeld(bk, name);          // the base had this field
           if (inL && inR) out[k] = walk(bk, l[k], r[k], k);
-          else if (inL) { if (!(held && boardSame(l[k], bk))) out[k] = l[k]; }   // new here, or emptied there on purpose
-          else if (inR) { if (!(held && boardSame(r[k], bk))) out[k] = r[k]; }   // new there, or emptied here on purpose
+          else if (inL) { if (!(held && boardSame(l[k], bk, k))) out[k] = l[k]; }   // new here, or emptied there on purpose
+          else if (inR) { if (!(held && boardSame(r[k], bk, k))) out[k] = r[k]; }   // new there, or emptied here on purpose
           else out[k] = l[k] !== undefined ? l[k] : r[k];
         });
         return out;
@@ -43208,6 +43248,16 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       svg.innerHTML = keepOvalSvg(w, h, el.classList.contains("kp-add-float"), h1);
     });
   }
+  // One float's oval, redrawn to its box as it is now, with no drift moved:
+  // a line being written on grows under the hand and its oval grows with it.
+  function keepOvalRedraw(el) {
+    const svg = el && el.querySelector(":scope > .kp-oval");
+    const w = el ? el.offsetWidth : 0, h = el ? el.offsetHeight : 0;
+    if (!svg || !w || !h) return;
+    const key = el.dataset.keep || el.dataset.dropDir || (el.classList.contains("kp-add-float") ? "add" : "empty");
+    svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.innerHTML = keepOvalSvg(w, h, el.classList.contains("kp-add-float"), keepHash(key));
+  }
   let keepResizeTimer = null;
   window.addEventListener("resize", () => {
     const ov = document.getElementById("keepOverlay");
@@ -43346,8 +43396,92 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         twShowUndo("deleted", () => restoreGoalDirection(gone), () => openKeepings());
       }
     };
+    // A LINE IS WRITTEN ON WHERE IT IS READ (2026-09-30, owner: "i want to
+    // be able to click on this and edit the text. like if i want to re-word
+    // or something an existing one ... i dont want a pop up or anything just
+    // click and edit"). A tap on the words puts the caret in them where the
+    // tap landed. Enter or a tap anywhere else keeps the new words, Escape
+    // puts the old ones back, and a line emptied changes nothing, since the
+    // swipe is how a line goes. Her own line changes its text; a goal's
+    // direction changes ON THE GOAL, the way taking one off here takes it
+    // off the goal (setObjectiveLabel, which marks the words as hers). The
+    // page is never rebuilt under the hand, only the ovals redrawn to the
+    // new length, so a tap from one line into the next still lands, and
+    // the sync waits while the caret is in a line (syncBusy).
+    const shownText = rowEl => {
+      if (rowEl.dataset.keep) {
+        const k = keepings.find(x => x && x.id === rowEl.dataset.keep);
+        return k ? k.text : null;
+      }
+      const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
+      const d = g && (g.objectives || []).find(o => o && String(o.id) === rowEl.dataset.dropDir);
+      return d ? appVoice(d.label, wroteIt(d)) : null;
+    };
+    const rewrite = (rowEl, v) => {
+      if (rowEl.dataset.keep) {
+        const k = keepings.find(x => x && x.id === rowEl.dataset.keep);
+        if (!k) return false;
+        k.text = v;
+        return true;
+      }
+      const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
+      const d = g && (g.objectives || []).find(o => o && String(o.id) === rowEl.dataset.dropDir);
+      return !!d && setObjectiveLabel(g, d.id, v);
+    };
+    const caretAt = (el, x, y) => {
+      let r = null;
+      if (document.caretRangeFromPoint) r = document.caretRangeFromPoint(x, y);
+      else if (document.caretPositionFromPoint) {
+        const pos = document.caretPositionFromPoint(x, y);
+        if (pos) { r = document.createRange(); r.setStart(pos.offsetNode, pos.offset); }
+      }
+      if (r && el.contains(r.startContainer)) r.collapse(true);
+      else { r = document.createRange(); r.selectNodeContents(el); r.collapse(false); }
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(r);
+    };
+    const writeOn = (rowEl, x, y) => {
+      const t = rowEl.querySelector(".kp-text"), was = shownText(rowEl);
+      if (!t || t.isContentEditable || was == null) return;
+      const ac = new AbortController();
+      rowEl.classList.add("kp-editing");
+      t.contentEditable = "true";
+      t.setAttribute("role", "textbox");
+      t.setAttribute("aria-label", "reword this line");
+      t.focus();
+      caretAt(t, x, y);
+      // Ended by Enter, Escape, a press anywhere off the words, or the focus
+      // leaving, whichever comes first. The press is heard as well as the
+      // focus because a window that is not in front never reports a blur,
+      // and a line left open there would keep the sync waiting for good.
+      const finish = keep => {
+        if (ac.signal.aborted) return;
+        ac.abort();
+        const v = String(t.textContent || "").replace(/\s+/g, " ").trim();
+        t.removeAttribute("contenteditable");
+        t.removeAttribute("role");
+        t.removeAttribute("aria-label");
+        if (document.activeElement === t) t.blur();
+        rowEl.classList.remove("kp-editing");
+        if (keep && v && v !== was && rewrite(rowEl, v)) saveState();
+        const now = shownText(rowEl);
+        t.textContent = now == null ? was : now;
+        keepFloatOvals(mount);
+        keepWaterPaint();
+      };
+      t.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); finish(true); }
+        else if (e.key === "Escape") { e.preventDefault(); finish(false); }
+      }, { signal: ac.signal });
+      // the oval grows with the words as they are written
+      t.addEventListener("input", () => keepOvalRedraw(rowEl), { signal: ac.signal });
+      t.addEventListener("blur", () => finish(true), { signal: ac.signal });
+      document.addEventListener("pointerdown", e => { if (!t.contains(e.target)) finish(true); },
+        { capture: true, signal: ac.signal });
+    };
     mount.querySelectorAll(".kp-item[data-keep], .kp-item[data-drop-dir]").forEach(rowEl => {
-      let sw = null;
+      // a sideways drag that armed is a swipe, and its click is not a tap
+      let sw = null, swiped = false;
       const onMove = e => {
         if (!sw) return;
         const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
@@ -43355,6 +43489,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
           if (!(Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 2.5)) return;
           sw.on = true;
+          swiped = true;
           rowEl.classList.add("kp-swiping");
         }
         sw.dx = dx;
@@ -43373,10 +43508,18 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       const onCancel = () => end(false);
       rowEl.addEventListener("pointerdown", e => {
         if (e.button != null && e.button !== 0) return;
+        swiped = false;
+        // a line being written on is a line, not a row to swipe
+        if (rowEl.classList.contains("kp-editing")) return;
         sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
         document.addEventListener("pointermove", onMove, true);
         document.addEventListener("pointerup", onUp, true);
         document.addEventListener("pointercancel", onCancel, true);
+      });
+      const words = rowEl.querySelector(".kp-text");
+      if (words) words.addEventListener("click", e => {
+        if (swiped) { swiped = false; return; }
+        writeOn(rowEl, e.clientX, e.clientY);
       });
     });
     openBookPage(document.getElementById("keepOverlay"));
