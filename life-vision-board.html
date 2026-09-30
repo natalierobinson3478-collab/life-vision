@@ -5818,6 +5818,17 @@
      there for the swipe, would keep the caret out on iOS, so an editing
      row can be selected again. */
   @media (hover: hover) and (pointer: fine) { .kp-item .kp-text { cursor: text; } }
+  /* A LINE IN THE HAND (2026-09-30, "let me drag it up and down"): it rises
+     a little off the water with a soft shadow the colour of the ink, and
+     the lines it passes slide aside on the row's own transition. A long
+     press is the phone's way to pick one up, so the phone's own callout
+     is kept off it. */
+  .kp-item { -webkit-touch-callout: none; }
+  @media (hover: hover) and (pointer: fine) { .kp-item { cursor: grab; } }
+  .kp-item.kp-lifted { transition: none; z-index: 2; cursor: grabbing;
+    filter: drop-shadow(0 8px 12px rgba(63, 58, 48, 0.22)); }
+  /* carried off the left edge, it fades: let go there and it is let go */
+  .kp-item.kp-lifted.kp-leaving { opacity: 0.45; }
   .kp-item.kp-editing, .kp-item.kp-editing .kp-text { -webkit-user-select: text; user-select: text; }
   .kp-item.kp-editing .kp-text { outline: none; }
   .kp-list { margin-top: calc(var(--lead) * 0.5); }
@@ -15018,6 +15029,70 @@
     keepings.splice(i, 1);
     saveState();
     return gone;
+  }
+  // THE ORDER SHE CHOSE (2026-09-30, owner: "ooo yes let me drag it up
+  // and down!"). The page reads her lines in the keepings' own order, and a
+  // goal's direction she has moved stands in that order too, as a PLACE: a
+  // record with no words of its own that names the goal and the direction,
+  // so the words still live on the goal and are reworded and taken off
+  // there. The goal's objectives are rows in the account, with no column for
+  // a place on this page; the keepings are one jsonb column, which carries a
+  // new kind of record as it is. A place is only written when a line is
+  // moved, and a direction never moved still follows her lines in its
+  // goal's order, as before. A copy of the app older than this skips any
+  // record with no text, so it reads her lines in the new order and passes
+  // over the places. Its id is the pair's own, so two devices that each
+  // move the same direction hold one place, not two.
+  // `keys` is the whole page in its new order: "keep:<id>" for a line of
+  // hers, "dir:<goalId>:<dirId>" for a goal's direction.
+  const keepPlaceId = (goalId, dirId) => "keep-place-" + goalId + "-" + dirId;
+  function keepDirectionOf(goalId, dirId) {
+    const g = goals.find(x => x && String(x.id) === String(goalId));
+    const d = g && (g.objectives || []).find(o => o && String(o.id) === String(dirId));
+    return d ? { g, d } : null;
+  }
+  // AND WHERE ACROSS THE WATER (2026-09-30, owner: "would it be feasible to
+  // be able to move them anywhere on the screen?", then yes to the middle
+  // way). A line set down keeps its place in the order AND how far across
+  // it floats: `x`, the share of the room beside it (0 at the left, 1 at
+  // the right), so a line set at the right of a wide window sits at the
+  // right of a phone too, by the little a phone has, and a line reworded
+  // longer stays in the column. `moved` is { key, x } for the one line set
+  // down; a line never moved across keeps its own drift (keepFloatOvals).
+  function orderKeepings(keys, moved) {
+    const out = [];
+    (keys || []).forEach(key => {
+      key = String(key);
+      if (key.startsWith("keep:")) {
+        const k = keepings.find(x => x && x.id === key.slice(5));
+        if (k && out.indexOf(k) < 0) out.push(k);
+        return;
+      }
+      const rest = key.slice(4), cut = rest.indexOf(":");
+      const hit = key.startsWith("dir:") && cut > 0 && keepDirectionOf(rest.slice(0, cut), rest.slice(cut + 1));
+      if (!hit) return;
+      const id = keepPlaceId(hit.g.id, hit.d.id);
+      const place = keepings.find(x => x && x.id === id)
+        || { id, kind: "place", goalId: hit.g.id, dirId: hit.d.id, at: appNow().toISOString() };
+      if (out.indexOf(place) < 0) out.push(place);
+    });
+    // Whatever is not on the page keeps coming after it: a paused goal's
+    // direction, one she pinned, a line an older copy wrote. A place whose
+    // direction is gone for good goes with it.
+    keepings.forEach(k => {
+      if (!k || out.indexOf(k) >= 0) return;
+      if (k.kind === "place" && !keepDirectionOf(k.goalId, k.dirId)) return;
+      out.push(k);
+    });
+    keepings.splice(0, keepings.length, ...out);
+    if (moved && typeof moved.x === "number" && isFinite(moved.x)) {
+      const key = String(moved.key || ""), rest = key.slice(4), cut = rest.indexOf(":");
+      const rec = key.startsWith("keep:") ? keepings.find(k => k && k.id === key.slice(5))
+        : cut > 0 ? keepings.find(k => k && k.id === keepPlaceId(rest.slice(0, cut), rest.slice(cut + 1))) : null;
+      if (rec) rec.x = Math.max(0, Math.min(1, +moved.x.toFixed(4)));
+    }
+    saveState();
+    return true;
   }
   function restoreKeeping(rec, at) {
     if (!rec || !rec.id) return false;
@@ -43010,34 +43085,79 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     }
     return { paint, ink };
   }
-  // a bud: a closed wash with its pen, a little deeper than the open flowers
+  // a bud: a closed wash with its pen, a little deeper than the open flowers,
+  // lying on its side on the water (turned in its own plane, then flattened)
   function keepBud(rnd, x, y, R, rot, pal) {
     const c = Math.cos(rot), s = Math.sin(rot);
     const pts = Array.from({ length: 30 }, (_, k) => {
       const a = k / 29 * 6.283, px = Math.cos(a) * R * 0.32, py = Math.sin(a) * R * 0.5 * (a > 3.14 ? 0.9 : 1.1);
-      return [x + px * c - py * s, y + px * s + py * c];
+      return [x + px * c - py * s, y + (px * s + py * c) * KEEP_FLAT];
     });
     const d = "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
     return {
       paint: `<path d="${d}" fill="${pal.base}" opacity="0.9"/><path d="${d}" fill="none" stroke="${pal.deep}" stroke-width="${keepF1(R * 0.12)}" opacity="0.5"/>`
-        + `<path d="${keepBlob(rnd, x + s * R * 0.15, y - c * R * 0.15, R * 0.16, R * 0.24, 6, 0.4)}" fill="${pal.deep}" opacity="0.45"/>`,
+        + `<path d="${keepBlob(rnd, x + s * R * 0.15, y - c * R * 0.15 * KEEP_FLAT, R * 0.16, R * 0.24 * KEEP_FLAT, 6, 0.4)}" fill="${pal.deep}" opacity="0.45"/>`,
       ink: keepPen(rnd, pts, 0.45, 10, 22, false, true),
     };
   }
   // a loose petal on the water
   function keepLoosePetal(rnd, x, y, R, rot, pal) {
     const c = Math.cos(rot), s = Math.sin(rot);
-    const pts = KEEP_PETAL.map(([px, py]) => [x + (px * c - py * s) * R, y + (px * s + py * c) * R * 0.8]);
+    const pts = KEEP_PETAL.map(([px, py]) => [x + (px * c - py * s) * R, y + (px * s + py * c) * R * KEEP_FLAT]);
     const d = "M " + pts.map(p => keepF1(p[0]) + " " + keepF1(p[1])).join(" L ") + " Z";
     return {
       paint: `<path d="${d}" fill="${pal.base}" opacity="0.88"/><path d="${d}" fill="none" stroke="${pal.deep}" stroke-width="${keepF1(Math.max(0.6, R * 0.12))}" opacity="0.4"/>`,
       ink: rnd() < 0.4 ? keepPen(rnd, pts, 0.38, 8, 16, false, true) : "",
     };
   }
+  // FLOATING, NOT FALLING (2026-09-30, owner: "it looks like they are
+  // falling down the page. While the water looks like its floating. want
+  // the flowers to look more like they are floating on the water rather
+  // than copy paste on the screen"). Three things said "falling". Each
+  // flower was tipped a different way, face on here and on its edge there,
+  // which is petals tumbling through the air past the glass; nothing met
+  // the water, so nothing sat on it; and nothing moved with it. Now every
+  // flower, bud and petal lies FLAT on the water, all foreshortened on the
+  // one axis the water is (KEEP_FLAT), spun only in their own plane; each
+  // TOUCHES it, with a faint wet shade of the water's own blue grey beneath
+  // and a broken ring or two of the reminders' own pen around it; and some
+  // DRIFT, a petal or two trailing behind along the current, which runs
+  // across the page as the bands do. Still scattered, patch by patch, as
+  // she asked on 30 Sep.
+  const KEEP_FLAT = 0.52;
   function keepBlossomSvg(rnd, W, H) {
-    let paint = "", ink = "";
+    let paint = "", ink = "", shade = "", rings = "";
     const add = f => { paint += f.paint; ink += f.ink; };
     const clear = (x, y) => y < 130 && x < W * 0.6;          // the title's corner stays clear
+    // where it meets the water: the wet shade under it, then the rings
+    const sit = (x, y, r, ringed) => {
+      shade += `<path d="${keepBlob(rnd, x + 1.5, y + r * 0.16, r * 1.08, r * KEEP_FLAT * 1.02, 9, 0.28)}" fill="#8fa0a2" opacity="${keepF1(0.2 + rnd() * 0.08)}"/>`;
+      if (!ringed) return;
+      const ring = (k, from, span) => {
+        const rx = r * (1.45 + k * 0.45), ry = rx * KEEP_FLAT * 0.86;
+        const m = Math.max(24, Math.round(rx * span / 3));
+        return Array.from({ length: m + 1 }, (_, i) => { const t = from + i / m * span; return [x + Math.cos(t) * rx, y + r * 0.08 + Math.sin(t) * ry]; });
+      };
+      // a touch more ripple (owner, same day: "maybe a little more ripple
+      // effect though but not too much more"): the rings run further round,
+      // the second comes more often, and now and then a faint third
+      rings += keepPen(rnd, ring(0, rnd() * 6.283, 4.0 + rnd() * 1.6), 0.75, 14, 40, false, true);
+      if (rnd() < 0.8) rings += `<g opacity="0.65">${keepPen(rnd, ring(1, rnd() * 6.283, 2.8 + rnd() * 1.6), 0.65, 12, 32, false, true)}</g>`;
+      if (rnd() < 0.3) rings += `<g opacity="0.4">${keepPen(rnd, ring(2, rnd() * 6.283, 2.2 + rnd() * 1.4), 0.6, 12, 28, false, true)}</g>`;
+    };
+    // a petal or two behind it, along the current (the current runs across)
+    const trail = (x, y, r, pal) => {
+      const dir = rnd() < 0.5 ? -1 : 1, k = 1 + Math.floor(rnd() * 2.4);
+      for (let i = 1; i <= k; i++) {
+        const px = x + dir * r * (1.5 + i * 1.15 + rnd() * 0.6), py = y + (rnd() - 0.5) * r * 0.5;
+        if (px < 8 || px > W - 8 || clear(px, py)) continue;
+        const pr = (6 + rnd() * 3) * (1 - i * 0.12);
+        sit(px, py, pr * 0.9, false);
+        add(keepLoosePetal(rnd, px, py, pr, rnd() * 6.283, keepPinkOf(rnd)));
+      }
+    };
+    // a flower lying on the water: spun in its own plane, never tipped
+    const flower = (x, y, R, pal) => add(keepFlower(rnd, x, y, R, (rnd() - 0.5) * 0.1, KEEP_FLAT * (0.95 + rnd() * 0.12), pal));
     // SCATTERED, NOT CLUMPED (2026-09-30, owner: "more scattered over the
     // water. not way too many more but at least enough to tell oh yes
     // there's flowers there"). The water is cut into as many patches as
@@ -43055,30 +43175,42 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       if (clear(x, y)) continue;
       const kind = rnd();
       const pal = keepPinkOf(rnd);
-      const R = 15 + rnd() * 6;
-      if (kind < 0.42) {                                     // one flower, face on or tipped
-        add(keepFlower(rnd, x, y, R, rnd() * 6.283, 0.55 + rnd() * 0.45, pal));
-        if (rnd() < 0.35) add(keepBud(rnd, x + R * 1.5, y - R * 0.6, R, rnd() * 6.283, pal));
+      // a size up from the flowers that stood face on: lying flat halves them
+      const R = 18 + rnd() * 7;
+      if (kind < 0.42) {                                     // one flower
+        sit(x, y, R, true);
+        flower(x, y, R, pal);
+        if (rnd() < 0.35) { sit(x + R * 1.5, y - R * 0.3, R * 0.5, false); add(keepBud(rnd, x + R * 1.5, y - R * 0.3, R, rnd() * 6.283, pal)); }
+        if (rnd() < 0.6) trail(x, y, R, pal);
       } else if (kind < 0.8) {                               // two or three together, the second a pink of its own
         const k = kind < 0.64 ? 2 : 3;
-        const spots = [[0, 0], [R * 1.35, R * 0.45], [R * 0.4, R * 1.3]].slice(0, k);
+        const spots = [[0, 0], [R * 1.5, R * 0.3], [R * 0.55, R * 0.8]].slice(0, k);
+        const gx = spots.reduce((a, p) => a + p[0], 0) / k, gy = spots.reduce((a, p) => a + p[1], 0) / k;
+        sit(x + gx, y + gy, R * (1 + k * 0.35), true);
+        spots.forEach(([dx, dy]) => sit(x + dx, y + dy, R * 0.95, false));
         spots.slice().reverse().forEach(([dx, dy], j) => {
           const p = j === 0 && rnd() < 0.6 ? keepPinkOf(rnd) : pal;
-          add(keepFlower(rnd, x + dx, y + dy, R * (0.85 + rnd() * 0.25), rnd() * 6.283, 0.55 + rnd() * 0.45, p));
+          flower(x + dx, y + dy, R * (0.85 + rnd() * 0.25), p);
         });
+        if (rnd() < 0.5) trail(x + gx, y + gy, R * 1.2, pal);
       } else if (kind < 0.9) {                               // buds on their own
+        sit(x + R * 0.45, y + R * 0.1, R * 0.8, true);
         add(keepBud(rnd, x, y, R, rnd() * 6.283, pal));
-        add(keepBud(rnd, x + R * 0.9, y + R * 0.4, R * 0.8, rnd() * 6.283, pal));
+        add(keepBud(rnd, x + R * 0.9, y + R * 0.2, R * 0.8, rnd() * 6.283, pal));
       } else {
-        add(keepFlower(rnd, x, y, R * 1.15, rnd() * 6.283, 0.9 + rnd() * 0.1, pal));
+        sit(x, y, R * 1.15, true);
+        flower(x, y, R * 1.15, pal);
+        trail(x, y, R * 1.15, pal);
       }
     }
-    for (let i = 0; i < n * 2; i++) {                        // single petals, drifting
+    for (let i = 0; i < n; i++) {                            // single petals, drifting on their own
       const x = rnd() * W, y = rnd() * H;
       if (clear(x, y)) continue;
-      add(keepLoosePetal(rnd, x, y, 6 + rnd() * 3.5, rnd() * 6.283, keepPinkOf(rnd)));
+      const r = 6 + rnd() * 3.5;
+      sit(x, y, r * 0.9, rnd() < 0.4);
+      add(keepLoosePetal(rnd, x, y, r, rnd() * 6.283, keepPinkOf(rnd)));
     }
-    return { paint, ink };
+    return { paint, ink, shade, rings };
   }
   // THE WHOLE PRINT, at W by H. One seed, so the same width always draws
   // the same top and a longer page only adds water below. The sun fade is a
@@ -43118,6 +43250,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         <rect x="0" y="0" width="${W}" height="${H}" filter="url(#kpMottle2)"/>
         <g filter="url(#washTight)">${blooms}</g>
         <g fill="${KEEP_INK}" filter="url(#rough)">${b.lines}</g>
+        <g filter="url(#washTight)">${bl.shade}</g>
+        <g fill="${KEEP_INK}" filter="url(#rough)" opacity="0.62">${bl.rings}</g>
         <g transform="translate(-1.5 1.2)" filter="url(#wash-fine)" opacity="0.92">${bl.paint}</g>
         <g filter="url(#granulate)" opacity="0.18">${bl.paint}</g>
         <g fill="${KEEP_FLOWER_INK}" filter="url(#rough)" opacity="0.72">${bl.ink}</g>
@@ -43240,7 +43374,11 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       el.style.setProperty("--kp-gap", (0.55 + (h1 % 1000) / 1000 * 0.55).toFixed(2));
       el.style.setProperty("--kp-dx", "0px");
       const w = el.offsetWidth, h = el.offsetHeight;
-      const want = (h2 % 1000) / 1000 * colW * (phone ? 0.10 : 0.22);
+      // one she set down floats where she set it (orderKeepings), any other by its own drift
+      const rec = el.dataset.keep ? keepings.find(k => k && k.id === el.dataset.keep)
+        : el.dataset.dropDir ? keepings.find(k => k && k.id === keepPlaceId(el.dataset.dropGoal, el.dataset.dropDir)) : null;
+      const want = rec && typeof rec.x === "number" ? rec.x * Math.max(0, colW - w)
+        : (h2 % 1000) / 1000 * colW * (phone ? 0.10 : 0.22);
       el.style.setProperty("--kp-dx", Math.max(0, Math.min(want, colW - w)).toFixed(1) + "px");
       const svg = el.querySelector(":scope > .kp-oval");
       if (!svg || !w || !h) return;
@@ -43292,13 +43430,17 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // pinned is not said twice.
     const same = t => String(t || "").trim().toLowerCase();
     const pinned = new Set(keepings.map(k => same(k && k.text)));
-    const fromGoals = goals.filter(g => g && g.status !== "parked").flatMap(g =>
+    // keyed by the pair, so a place she dragged it to can find it below
+    const dirRows = new Map();
+    goals.filter(g => g && g.status !== "parked").forEach(g =>
       (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
-        .map(d => `<div data-type-area="keep/row" class="kp-item kp-float kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
+        .forEach((d, i) => dirRows.set(d.id != null ? keepPlaceId(g.id, d.id) : "keep-unplaced-" + g.id + "-" + i,
+          `<div data-type-area="keep/row" class="kp-item kp-float kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
         <svg class="kp-oval" aria-hidden="true"></svg>
         <div class="kp-line">${paintSwatch(d.id || d.label, "rgb(var(--cat))", "rgb(var(--cat-ink))", "kp-mark")}<span class="kp-text">${escHtml(appVoice(d.label, wroteIt(d)))}</span></div>
-      </div>`));
+      </div>`)));
+    const fromGoals = [...dirRows.values()];
     // THREE TO BEGIN WITH (2026-09-30, owner: "for users who dont have any
     // reminders for whatever reason ... (maybe decided to not use any AI
     // functions or coach) then we should have three reminders that most
@@ -43312,7 +43454,14 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       KEEP_STARTERS.slice().reverse().forEach((text, i) =>
         addKeeping({ id: "keep-starter-" + (KEEP_STARTERS.length - i), text, kind: "affirmation", source: "starter" }));
     }
-    const rows = keepings.filter(k => k && k.text).map(row).concat(fromGoals);
+    // Her lines in her order, a direction she moved at its place among
+    // them (orderKeepings), and every direction never moved after them.
+    const rows = [];
+    keepings.forEach(k => {
+      if (k && k.text) rows.push(row(k));
+      else if (k && k.kind === "place" && dirRows.has(k.id)) { rows.push(dirRows.get(k.id)); dirRows.delete(k.id); }
+    });
+    rows.push(...dirRows.values());
     // THE LINES FLOAT ON THE WATER (2026-09-30). No sheet: the title and its
     // line sit on the water, every line is its own float, the empty state
     // and the add row are floats too. The ovals are drawn once the page is
@@ -43479,13 +43628,91 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
       document.addEventListener("pointerdown", e => { if (!t.contains(e.target)) finish(true); },
         { capture: true, signal: ac.signal });
     };
+    // A LINE IS DRAGGED UP OR DOWN (2026-09-30, owner: "ooo yes let me drag
+    // it up and down!"). Sideways stays the swipe; up and down moves the
+    // line. A mouse picks a line up by pressing it and moving up or down; a
+    // finger holds it a moment first, so that up and down on a phone is
+    // still the page scrolling. The lines it passes slide aside to make
+    // room, and at the top or bottom of the window the page scrolls along
+    // under it. Let go and the line stays where it was set down, in the
+    // order the page is read in on every device (orderKeepings). A lifted
+    // line moves across as well: set down to the left or the right, it
+    // floats there, inside the column.
+    // WITH A MOUSE, A DRAG IS ALWAYS A MOVE, AND THE WAY OFF IS THE EDGE.
+    // Once lines could be set anywhere across, a flat drag to the left meant
+    // two things, "put it further left" and the swipe that deletes, and a
+    // line moved left could be thrown away by it. So with a mouse every
+    // drag picks the line up, and a line carried off the left edge of the
+    // water, 72px past the column (the swipe's own number), is let go when
+    // it is dropped there, with the same undo. A finger keeps the swipe:
+    // quick and flat to the left takes a line off, a hold picks it up.
+    const list = mount.querySelector(".kp-list"), ov = document.getElementById("keepOverlay");
+    const rowKey = el => el.dataset.keep ? "keep:" + el.dataset.keep : "dir:" + el.dataset.dropGoal + ":" + el.dataset.dropDir;
+    let lift = null;
+    const liftUp = (rowEl, x, y) => {
+      const rows = [...list.querySelectorAll(":scope > .kp-item")], from = rows.indexOf(rowEl);
+      if (from < 0 || rows.length < 2) return false;
+      const top = ov.scrollTop;
+      // every position in the page's own coordinates, so a scroll mid drag moves nothing
+      const mids = rows.map(r => { const b = r.getBoundingClientRect(); return b.top + b.height / 2 + top; });
+      const step = rowEl.getBoundingClientRect().height + (parseFloat(getComputedStyle(rowEl).marginTop) || 0);
+      const page = mount.querySelector(".kp-page");
+      const room = Math.max(0, (page ? page.clientWidth : 0) - rowEl.offsetWidth);
+      const dx0 = parseFloat(rowEl.style.getPropertyValue("--kp-dx")) || 0;
+      lift = { rowEl, rows, from, to: from, at: y + top, mids, step, x0: x, dx0, room, tx: 0 };
+      rowEl.classList.add("kp-lifted");
+      return true;
+    };
+    const liftMove = (x, y) => {
+      const { rowEl, rows, from, mids, step } = lift;
+      const ob = ov.getBoundingClientRect();
+      if (y < ob.top + 48) ov.scrollTop -= 12;
+      else if (y > ob.bottom - 48) ov.scrollTop += 12;
+      const dy = y + ov.scrollTop - lift.at, mid = mids[from] + dy;
+      let to = 0;
+      rows.forEach((r, i) => { if (i !== from && mids[i] < mid) to++; });
+      lift.to = to;
+      const raw = x - lift.x0;
+      lift.leaving = lift.dx0 + raw < -72;
+      rowEl.classList.toggle("kp-leaving", lift.leaving);
+      lift.tx = lift.leaving ? raw : Math.max(-lift.dx0, Math.min(lift.room - lift.dx0, raw));
+      rowEl.style.transform = "translate(" + lift.tx + "px, " + dy + "px) scale(1.02)";
+      // a line on its way off makes no room among the others
+      rows.forEach((r, i) => {
+        if (i === from) return;
+        const shift = lift.leaving ? 0 : from < to && i > from && i <= to ? -step : to < from && i >= to && i < from ? step : 0;
+        r.style.transform = shift ? "translateY(" + shift + "px)" : "";
+      });
+    };
+    const liftDown = commit => {
+      const was = lift; lift = null;
+      if (!was) return;
+      was.rows.forEach(r => { r.style.transform = ""; });
+      was.rowEl.classList.remove("kp-lifted", "kp-leaving");
+      if (commit && was.leaving) { takeOff(was.rowEl); return; }
+      const across = Math.abs(was.tx) >= 2;
+      if (!commit || (was.to === was.from && !across)) return;
+      const keys = was.rows.map(rowKey);
+      keys.splice(was.to, 0, keys.splice(was.from, 1)[0]);
+      orderKeepings(keys, across && was.room > 0
+        ? { key: rowKey(was.rowEl), x: (was.dx0 + was.tx) / was.room } : null);
+      openKeepings();
+    };
     mount.querySelectorAll(".kp-item[data-keep], .kp-item[data-drop-dir]").forEach(rowEl => {
-      // a sideways drag that armed is a swipe, and its click is not a tap
-      let sw = null, swiped = false;
+      // a sideways drag that armed is a swipe, and its click is not a tap;
+      // nor is a line lifted and set down
+      let sw = null, swiped = false, hold = null;
       const onMove = e => {
         if (!sw) return;
+        if (lift && lift.rowEl === rowEl) { liftMove(e.clientX, e.clientY); return; }
         const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
         if (!sw.on) {
+          if (sw.mouse && Math.hypot(dx, dy) > 6) {
+            if (liftUp(rowEl, sw.x, sw.y)) { swiped = true; liftMove(e.clientX, e.clientY); }
+            return;
+          }
+          // a finger that moves before the hold is up is scrolling or swiping
+          if (hold && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) { clearTimeout(hold); hold = null; }
           if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { end(false); return; }
           if (!(Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 2.5)) return;
           sw.on = true;
@@ -43499,6 +43726,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         document.removeEventListener("pointermove", onMove, true);
         document.removeEventListener("pointerup", onUp, true);
         document.removeEventListener("pointercancel", onCancel, true);
+        clearTimeout(hold); hold = null;
+        if (lift && lift.rowEl === rowEl) { sw = null; liftDown(commit); return; }
         const was = sw; sw = null;
         rowEl.classList.remove("kp-swiping");
         rowEl.style.transform = "";
@@ -43511,11 +43740,22 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         swiped = false;
         // a line being written on is a line, not a row to swipe
         if (rowEl.classList.contains("kp-editing")) return;
-        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false };
+        sw = { x: e.clientX, y: e.clientY, dx: 0, on: false,
+          mouse: e.pointerType !== "touch" && e.pointerType !== "pen" };
         document.addEventListener("pointermove", onMove, true);
         document.addEventListener("pointerup", onUp, true);
         document.addEventListener("pointercancel", onCancel, true);
+        if (!sw.mouse) hold = setTimeout(() => {
+          hold = null;
+          if (sw && !sw.on && !lift && liftUp(rowEl, sw.x, sw.y)) swiped = true;
+        }, 380);
       });
+      // once a finger has lifted a line the page must not scroll under it,
+      // and a long press must not open the phone's own menu
+      rowEl.addEventListener("touchmove", e => {
+        if (lift && lift.rowEl === rowEl && e.cancelable) e.preventDefault();
+      }, { passive: false });
+      rowEl.addEventListener("contextmenu", e => { if (hold || (lift && lift.rowEl === rowEl)) e.preventDefault(); });
       const words = rowEl.querySelector(".kp-text");
       if (words) words.addEventListener("click", e => {
         if (swiped) { swiped = false; return; }
