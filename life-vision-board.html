@@ -8309,9 +8309,19 @@
     font-family: inherit; font-size: var(--t-label); font-weight: 600; color: var(--ink-muted); }
   .tw-later-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
   .tw-later-link:focus-visible { outline: none /* A1: the drawn ring */; outline-offset: 2px; }
-  .tw-later-item { margin-top: 2px; }
-  .tw-pull-line { margin: 0 0 calc(var(--lead) * 0.5); }
-  .tw-later-inweek { font-size: var(--t-label); color: var(--ink-muted); padding: 4px 0; }
+  /* ONE LINE A LATER ROW (2026-09-30, owner: "its a little clunky"). A row
+     set aside for a later chapter is a row a step quieter, its ring and its
+     words, with "pull in" where its time ends, in the app's small hand, the
+     way "got it" closes a caption. The receipt rows of pulled work are gone
+     from here (they are in the week), and put back is in the row's box. */
+  .tw-later-item .tw-row-label:not(.done) { color: #5A574B; }
+  .tw-later-item .tw-circle { opacity: 0.75; }
+  .tw-pull-link, .tw-putback-link { background: none; border: none; padding: 0; margin: 0 0 0 4px;
+    cursor: pointer; font-family: var(--voice-hand); font-style: italic; font-size: var(--t-label);
+    line-height: var(--lead); color: var(--ink); white-space: nowrap;
+    text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(58, 58, 46, 0.35); }
+  .tw-pull-link:hover, .tw-putback-link:hover { text-decoration-color: currentColor; }
+  .tw-pull-link:focus-visible, .tw-putback-link:focus-visible { outline: none /* A1: the drawn ring */; }
   /* ---- THIS-WEEK'S PAPER IS PAPER (owner, 2026-08-28) ----
      "I don't know why the theme for this book is like white."
      Because it was translucent. `--paper-sheet` is 0.82 alpha app-wide, and
@@ -28695,7 +28705,7 @@
         aria-label="${escHtml(minsText(up))}">+</button>
     </span>`;
   }
-  function twTickRow(g, { m, early, forMonth, _fewState, sank, _noHold, skipped }) {
+  function twTickRow(g, { m, early, forMonth, _fewState, sank, _noHold, skipped, _act }) {
     const parked = !!(g && g.status === "parked");
     // PUSHED TO NEXT WEEK reads like a parked goal's row — present, legible,
     // and asking nothing. It keeps ONE live control, the note, because the
@@ -28940,7 +28950,7 @@
           ${parked ? "disabled" : ""} aria-expanded="${stepping}"
           aria-label="${escHtml(rowLabel)}, ${escHtml(perText)}, change"
           >${escHtml(perText)}</button>`) : ``}
-        ${days}
+        ${days}${_act || ``}
       </span>
     </div>
     ${early && forMonth ? `<div class="tw-row-note">for ${escHtml(forMonth)}'s deadline</div>` : ``}`;
@@ -30170,26 +30180,32 @@
                 // ruling the narrowings follow. NOT a .tw-sec — a section
                 // without a label would trip the sections scan (test 143),
                 // and this is a line with a door, not a section.
-                const pulledLater = b.pulledEarly;
-                if (!laterRows.length && !pulledLater.length) return ``;
+                // ONLY WHAT IS NOT IN THE WEEK YET (2026-09-30, owner, of the
+                // open list: "its a little clunky", then of its pulled rows,
+                // "im confused what are the last three things?"). The list
+                // also named every row already pulled, "· in your week, put
+                // back", so a pulled row was on the page twice and the list
+                // read as a third kind of thing. A pulled row lives in the
+                // week like any other now, and its way back is in its own box
+                // (openRowOptions). Each later row is one line: its ring, its
+                // name and time a step quieter, and "pull in" where its time
+                // ends; a swipe right pulls it in too. With nothing left to
+                // set aside there is no line: nothing is deferred, so law 3
+                // has nothing to show, and every pulled row is in the week.
+                if (!laterRows.length) return ``;
                 const twDoneSum = ROSE_AREAS.reduce((a, k) => a + twHours.done[k], 0);
                 const ahead = twIsNow() && laterRows.length
                   && (twCommitted === 0 || twDoneSum / twCommitted >= TW_PULL_AHEAD_AT);
-                const lineText = !laterRows.length ? `later work is in your week`
-                  : ahead ? `you're ahead of your week, pull something forward?`
+                const lineText = ahead ? `you're ahead of your week, pull something forward?`
                   : `${laterRows.length} set aside for later chapters`;
                 return `<div class="tw-later-line" data-type-area="thisweek/later">
                   <button class="tw-later-link" id="twLaterLink" type="button"
                     aria-expanded="${twLaterOpen ? "true" : "false"}">${escHtml(lineText)}</button>
                   ${twLaterOpen ? laterRows.map(r => `<div class="tw-later-item">
-                      ${twTickRow(r.g, { ...r, _fewState: pinStateOf(r) })}
-                      ${twIsNow() ? `<p class="tw-pull-line"><button class="tw-pull-link brushed-link" type="button"
-                        data-pull-goal="${r.g.id}" data-pull-mech="${escHtml(r.m.id)}">pull into this week</button></p>` : ``}
-                    </div>`).join("")
-                    + pulledLater.map(r => `<div class="tw-later-inweek">${escHtml(
-                        appVoice(r.m.weekLabel ?? r.m.label, wroteIt(r.m)))} · in your week${
-                      twIsNow() ? ` <button class="tw-putback-link brushed-link" type="button"
-                        data-putback-goal="${r.g.id}" data-putback-mech="${escHtml(r.m.id)}">put back</button>` : ``}</div>`).join("") : ``}
+                      ${twTickRow(r.g, { ...r, _fewState: pinStateOf(r), _act: twIsNow()
+                        ? `<button class="tw-pull-link" type="button" data-pull-goal="${r.g.id}"
+                          data-pull-mech="${escHtml(r.m.id)}">pull in</button>` : `` })}
+                    </div>`).join("") : ``}
                 </div>`;
               })()}
             </div>`;
@@ -30262,14 +30278,13 @@
     if (!twRO) {
       mount.querySelectorAll(".tw-pull-link").forEach(bl => bl.addEventListener("click", e => {
         e.stopPropagation();
-        pullForward(Number(bl.dataset.pullGoal), bl.dataset.pullMech, true);
+        const pg = Number(bl.dataset.pullGoal), pm = bl.dataset.pullMech;
+        pullForward(pg, pm, true);
         renderThisWeek();
+        twShowUndo("pulled into this week", () => pullForward(pg, pm, false));
       }));
-      mount.querySelectorAll(".tw-putback-link").forEach(bl => bl.addEventListener("click", e => {
-        e.stopPropagation();
-        pullForward(Number(bl.dataset.putbackGoal), bl.dataset.putbackMech, false);
-        renderThisWeek();
-      }));
+      // (Put back lives in a pulled row's own box since 2026-09-30; see
+      // openRowOptions.)
     }
     // TURNING THE PAGE. Both arrows and the week's own name go through
     // twTurn / the current week, and every one of them re-renders — the
@@ -30929,6 +30944,16 @@
             twShowUndo(offWeek ? "off that week" : "deleted", undo);
           }
         } else if (was.dx >= 72) {
+          // A LATER ROW CARRIED FORWARD COMES INTO THE WEEK (2026-09-30):
+          // right is forward everywhere on the page, and forward for work
+          // set aside for a later chapter is into this week, the same as
+          // its "pull in".
+          if (rowEl.closest(".tw-later-item") && rgid != null && twIsNow()) {
+            pullForward(rgid, mid, true);
+            renderThisWeek();
+            twShowUndo("pulled into this week", () => pullForward(rgid, mid, false));
+            return;
+          }
           const anch = rowEl.querySelector(".tw-row-label") || rowEl;
           if (twPlan) twSwipeNextWeek(anch, rgid, mid);
           else twSwipeTomorrow(anch, rgid, mid);
@@ -31527,6 +31552,15 @@
     const about = isRem ? "" : m.weekLabel && m.label && !same(m.label, m.weekLabel)
       ? undash(appVoice(m.label, wroteIt(m))) : m.why ? undash(lcFirst(m.why)) : "";
     const aboutHtml = about ? `<p class="tw-pop-about"><span>${escHtml(about)}</span></p>` : ``;
+    // A ROW PULLED IN FROM A LATER CHAPTER SAYS SO HERE, WITH ITS WAY BACK
+    // (2026-09-30, owner: "yes" to taking the pulled rows off the later
+    // list and putting "put back" on the task itself). A row a tick pulled
+    // in has no record to take back, so it only says where it came from.
+    const laterIn = !isRem && g && twIsNow() && !twReadOnly()
+      && weeklyWorkFor(g, { wk: weekKeyOf() }).some(r => r.m && r.m.id === mid && r.early && r.pulled);
+    const canPutBack = laterIn && isPulled(g.id, mid, weekKeyOf());
+    const laterHtml = laterIn ? `<p class="tw-pop-about tw-pop-later"><span>from a later chapter, pulled into this week${
+      canPutBack ? ` <button type="button" class="tw-putback-link">put back</button>` : ``}</span></p>` : ``;
     const pop = document.createElement("div");
     pop.className = "when-pop move-pop tw-row-pop";
     pop.setAttribute("role", "dialog");
@@ -31543,7 +31577,7 @@
         <input id="twEditTitle" class="tw-pop-title" type="text" autocomplete="off"
           value="${escHtml(title)}" aria-label="rename this">${DRAWN_PENCIL_INLINE}
       </div>
-      ${aboutHtml}`;
+      ${aboutHtml}${laterHtml}`;
     const cleanup = () => {
       // The title commits on the way out, whatever closed the box — but
       // only if the person actually typed. Committing an untouched field
@@ -31586,6 +31620,13 @@
     twEditing = { key: (gid == null ? "" : gid) + "|" + mid };
     const inp = pop.querySelector("#twEditTitle");
     inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); done(); } });
+    const back = pop.querySelector(".tw-putback-link");
+    if (back) back.addEventListener("click", () => {
+      cleanup();
+      pullForward(gid, mid, false);
+      renderThisWeek();
+      twShowUndo("put back for later", () => pullForward(gid, mid, true));
+    });
     document.body.appendChild(pop);
     const r = anchor.getBoundingClientRect();
     const pw = Math.min(300, innerWidth - 16);
