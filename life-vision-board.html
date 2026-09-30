@@ -5909,7 +5909,8 @@
      the title (the step above, 20px, began to rival it). The phone keeps
      its size. A pale patch of water under the words was tried the same
      day and taken out: "i dont like how much it whites out the art". */
-  @media (min-width: 641px) { .kp-head .fq-sub-line { font-size: var(--t-read); } }
+  /* (the size is the shared subtitle rule's now, ONE SUBTITLE ON EVERY
+     PAGE, at the foot of the stylesheet) */
   /* A FLOAT: the water's own oval, paper cream, with a pen edge, and the
      words inside it. Each is drifted a little by its own two numbers
      (--kp-dx, --kp-gap, written by keepFloatOvals), and the oval is an
@@ -11343,6 +11344,28 @@
   .surf-lg .surf-sheet :is(.rv-title, .rv-objs, .rv-desc, .rv-bottom-line,
     .qr-label, .hw-label, .rv-reason, .rv-q-text, .rv-q-why, .rv-h-line, .rv-h-q,
     .rv-why-q, .rv-tension, .rv-tension-does, .rv-h-cost) { line-height: var(--lead); }
+  /* ---- ONE SUBTITLE ON EVERY PAGE (owner, 2026-09-30, of keeping in
+     mind's: "can we make sure all subtitles are the same font and size and
+     italics as this one?") ----
+     The line under a page's title is the app's own voice saying what the
+     page is, and it now reads the same wherever it stands: the hand, in
+     italic, at the ordinary weight and spacing, the reminders' size at the
+     desk and the caption size on a phone. Colour stays each page's own,
+     because the Atlas and This Week stand on water and sand and their
+     quiet inks are set to read on them. Last in the sheet so it settles
+     each page's older rule. The Atlas's line was roman Public Sans since
+     27 Aug, when a 13px italic serif could not be read; at 17px at the
+     desk, the size she reads the reminders at, the italic reads.
+     Not here: the check in's prompts (.ci-journal-prompt), which tell her
+     what to do next rather than say what the page is. */
+  :is([data-type-area$="/header"] > .fq-sub-line, .tw-plan-sub, .at-head .at-sub,
+      .ch-page .at-sub, .wk-span, .qr-sub-line, .pt-sub) {
+    font-family: var(--voice-hand); font-style: italic; font-weight: 400;
+    letter-spacing: normal; font-size: var(--t-label); }
+  @media (min-width: 641px) {
+    :is([data-type-area$="/header"] > .fq-sub-line, .tw-plan-sub, .at-head .at-sub,
+        .ch-page .at-sub, .wk-span, .qr-sub-line, .pt-sub) { font-size: var(--t-read); }
+  }
 </style>
 </head>
 <body>
