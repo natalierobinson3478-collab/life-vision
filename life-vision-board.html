@@ -241,7 +241,14 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; min-height: 100%; color: var(--ink);
     font-family: var(--voice-body);
-    -webkit-font-smoothing: antialiased; }
+    -webkit-font-smoothing: antialiased;
+    /* NO GREY BOX UNDER A FINGER (2026-09-30, owner, on the iPad: "when i
+       click each book a box appears"). Safari lays a grey square over
+       whatever a finger taps, and holds it there for as long as the page
+       is busy answering, which for a book's page is a moment. Every door
+       here answers with its own drawing, the book pulling out, the page
+       turning, so the square only ever read as a box. */
+    -webkit-tap-highlight-color: transparent; }
   body { background: var(--bg); position: relative; overflow-x: hidden; }
 
   /* The ground: one even pale sage painted on a canvas, under everything
@@ -5164,7 +5171,13 @@
      blur, no scrollbar, and the window's reserved strip painted the same. */
   :root { --add-silk: #e2d2c1; }
   html:has(#addOverlay.open) { background-color: var(--add-silk); }
-  #addOverlay { --x-in-top: 8px; --x-in-right: 4px; padding: 0;
+  /* THE ✕ STANDS WHERE KEEPING IN MIND'S AND THE PLANNER'S DOES (owner,
+     2026-09-30: "the X ... is more in the right corner than the books i
+     mentioned"): 20px from the top and the right. Those pages seat it 8 and
+     4 in from a mount that is itself 12 and 16 in from the window; this
+     page's world runs to the window's edge, so its insets carry the whole
+     20 (seatCloseMark reads both). */
+  #addOverlay { --x-in-top: 20px; --x-in-right: 20px; padding: 0;
     background-color: var(--add-silk);
     background-image: radial-gradient(circle at 30% 4%, rgba(236, 224, 210, 0.55), transparent 55%),
       radial-gradient(circle at 80% 96%, rgba(120, 104, 88, 0.08), transparent 60%);
@@ -5186,10 +5199,24 @@
   #addOverlay .add-ground svg, #addOverlay .add-ground canvas { display: block; width: 100%; }
   #addOverlay #addX { z-index: 5; }
   #addOverlay #addPhase1 { display: contents; }
-  /* the title's size, weight and face are the one shared title role; the
-     page only says where it stands */
-  #addOverlay .av-title { grid-row: 1; grid-column: 1; position: relative; z-index: 2;
-    margin: 0; padding: 22px 52px 12px 22px; }
+  /* THE HEADING IS KEEPING IN MIND'S (owner, 2026-09-30: "can we have the
+     same heading + subheading"): its title and its line under it in the
+     shared roles (.fq-h1, .fq-sub-line), on keeping in mind's rhythm (a 20px
+     rule), beginning at the books' corner (--book-x), 40px from the top at
+     the desk and 22 on a phone, as keeping in mind's does. */
+  #addOverlay .add-head { grid-row: 1; grid-column: 1; position: relative; z-index: 2;
+    --rule: 20px; --lead: calc(var(--rule) * 1.5);
+    padding: 22px 56px calc(var(--lead) * 0.5) var(--book-x); }
+  @media (min-width: 641px) { #addOverlay .add-head { padding-top: 40px; } }
+  #addOverlay .add-head .av-title { margin: 0; }
+  /* On a phone the title and its line already give the ✕ its corner (169b),
+     so the head holds no second margin for it; and the line, longer than
+     keeping in mind's, wraps, so its two lines sit at the words' own
+     spacing rather than a whole rule apart. */
+  @media (max-width: 640px) {
+    #addOverlay .add-head { padding-right: 0; }
+    #addOverlay .add-head .fq-sub-line { line-height: 1.5; text-wrap: balance; }
+  }
   #addOverlay .add-goal-fl, #addOverlay #addPhase2 { grid-row: 2; grid-column: 1;
     position: relative; z-index: 2; justify-self: stretch; margin: 0 14px; }
   #addOverlay .add-over { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 1;
@@ -5270,13 +5297,12 @@
 
   /* the desk: the painting is the window's width, so the clouds keep a
      reading measure rather than stretching into long thin lines across it.
-     The goal's cloud and phase 2's stand centred over the summit, the title
-     starts where they start, and the words beside the summit and the coach
-     note keep to their own width. */
+     The goal's cloud and phase 2's start under the heading, at the books'
+     corner, and the words beside the summit and the coach note keep to
+     their own width. */
   @media (min-width: 700px) {
-    #addOverlay .av-title { padding: 34px 60px 14px max(22px, calc(50% - 352px)); }
-    #addOverlay .add-goal-fl, #addOverlay #addPhase2 { justify-self: center;
-      width: min(720px, calc(100% - 28px)); margin: 0; }
+    #addOverlay .add-goal-fl, #addOverlay #addPhase2 { justify-self: start;
+      width: min(720px, calc(100% - var(--book-x) - 22px)); margin: 0 0 0 calc(var(--book-x) - 10px); }
   }
 
   /* ---- this week: the weekly work page ---- */
@@ -11687,7 +11713,11 @@
 <div class="book-page" id="addOverlay">
     <button class="checkin-close" id="addX" aria-label="close" title="close"></button>
     <div class="add-world">
-      <h2 class="av-title" data-type-area="add/head">add a goal to your board.</h2>
+      <!-- KEEPING IN MIND'S HEADING (owner, 2026-09-30: "can we have the same
+           heading + subheading"): the title and the line under it, in the
+           same roles, at the same corner of the screen. -->
+      <div class="add-head" data-type-area="add/header"><h2 class="av-title fq-h1">add a goal to my board.</h2>
+        <p class="fq-sub-line">have Coach help shape the habits for me or do it myself.</p></div>
       <div id="addPhase1">
         <div class="add-fl add-goal-fl" data-type-area="add/goal">
           <label class="pm-line add-line"><textarea id="newTitle" rows="1" placeholder=" " aria-label="your goal"></textarea><span class="pm-ghost"><i class="pm-caret"></i>write your goal</span></label>
@@ -20387,6 +20417,9 @@
     if (rmOv && rmMount && !rmOv.classList.contains("open") && rmMount.innerHTML !== "") {
       rmMount.innerHTML = "";
     }
+    // The board's fit, put off while a book covered it, is made as the last
+    // book closes and before the paint, so the board is never seen unfitted.
+    if (!top && lvFitOwed) fitBoardToWindow();
   }
   // THE MARKER MUST LAND BEFORE THE PAINT. `.book-page.open:not(.book-top)`
   // is hidden, so a book that is open but not yet marked is INVISIBLE. A
@@ -21864,7 +21897,18 @@
   // smudge, below which the page scrolls, and never more than a quarter up.
   const LV_ZOOM_MIN = 0.55, LV_ZOOM_MAX = 1.25;
   let lvZoom = 1;
+  // NOT UNDER A BOOK (2026-09-30, owner, of the iPad's open: "a black bar
+  // that shows on the right for a few seconds then it loads... or kinda
+  // glitches"). An iPad opens on This Week, and the fit below lays the
+  // whole page out eight times over to size a board no one can see under
+  // it, at the open and again at every turn of the screen, while the iPad
+  // waits on the page to show its new size. A book's page covers the
+  // window edge to edge, so the fit waits for the last book to close
+  // (markTopBook) and is made then, before the paint.
+  let lvFitOwed = false;
   function fitBoardToWindow() {
+    if (document.querySelector(".book-page.open")) { lvFitOwed = true; return; }
+    lvFitOwed = false;
     const root = document.documentElement;
     const shelf = document.querySelector(".notebook-slot .sb-full");
     const clear = () => { root.style.removeProperty("--lv-fit");
@@ -21878,7 +21922,8 @@
     lvZoom = 1;
     root.classList.toggle("lv-picture", picture);
     if (picture) { clear(); fitBoardPicture(root, app); return; }
-    if (matchMedia("(max-width: 900px)").matches || !goals.length) { clear(); return; }
+    if (!goals.length) { clear(); return; }
+    if (matchMedia("(max-width: 900px)").matches) { clear(); fitBoardTablet(root, app); return; }
     clear();
     if (!document.querySelector(".lv-grid")) return;
     // The shelf is an <svg> sized inline by mountShelf, so it is scaled by
@@ -21911,6 +21956,25 @@
     // too small to read is worse than one you scroll, so the floor is a stop,
     // not a target.
     apply(best == null ? LV_FIT_FLOOR : best);
+    fitBoardTablet(root, app);
+  }
+  // AN IPAD'S BOARD FITS ITS SCREEN (2026-09-30, owner: "when i go to the
+  // main page i have to scroll down to get the books a bit... id prefer it
+  // fit to my ipad screen on the main page"). A touch screen keeps its
+  // flowing board, and where that still runs past the window's foot once
+  // the plates have shrunk, the whole column is drawn smaller with the
+  // picture's zoom until the shelf stands in view; below LV_ZOOM_MIN the
+  // page scrolls. A phone (under 700 across, or under 600 high on its side)
+  // scrolls its stack as it always has, and a desktop's narrow window is
+  // left as it was.
+  function fitBoardTablet(root, app) {
+    if (!app || !document.querySelector(".lv-grid")) return;
+    if (!matchMedia("(min-width: 700px) and (min-height: 600px)").matches
+      || matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    for (let i = 0; i < 12 && lvZoom > LV_ZOOM_MIN && root.scrollHeight > innerHeight + 1; i++) {
+      lvZoom = Math.max(LV_ZOOM_MIN, Math.floor(lvZoom * (innerHeight - 8) / root.scrollHeight * 100) / 100);
+      app.style.zoom = String(lvZoom);
+    }
   }
   // Measured at the picture's own size, then zoomed until its foot meets
   // the window's or its widest part (the column, or a shelf wider than it)
@@ -32144,7 +32208,15 @@
       });
     };
   })();
-  window.addEventListener("resize", twGroundSoon);
+  // THE SCREEN IS DRAWN AT ITS NEW SIZE BEFORE THE SAND IS (2026-09-30,
+  // owner: "when i open the app on my ipad... there's a black bar that shows
+  // on the right for a few seconds"). A frame asked for from inside "resize"
+  // runs in that same frame, so a new width rebuilt the whole bed before the
+  // page at that width could be painted, and an iPad shows its old picture,
+  // black where the new width reaches past it, until the page paints. A
+  // timeout lets the frame go first; the old sand stretches to the new
+  // width for that frame and the rebuild follows in the next.
+  window.addEventListener("resize", () => setTimeout(twGroundSoon, 0));
   // THE GROUND FOLLOWS THE PAGE (2026-09-07): whatever stretches the page
   // after the sand was measured, a stone carried low, a figure landing at
   // the foot, is caught at the next scroll and the sand is measured again
@@ -32368,17 +32440,31 @@
       // Bilinear value noise, two octaves — INTERPOLATED, because sampling
       // the lattice raw shades 8px squares into the bed and squares are the
       // one shape sand never makes.
-      const noise = (x, y, s, seed) => {
+      // THE LATTICE IS ROLLED ONCE A CORNER, NOT FOUR TIMES A PIXEL
+      // (2026-09-30, owner on the iPad: "a black bar that shows on the right
+      // for a few seconds"). Each corner's value was hashed again for every
+      // pixel of the cell around it, millions of sines on an open, and the
+      // iPad cannot draw the screen at its turned size until the page lets
+      // go. The same corners hold the same values, so the bed is unchanged.
+      const lattice = (s, seed) => {
+        const cols = Math.floor((W - 1) / s) + 2, rows = Math.floor((H - 1) / s) + 2;
+        const v = new Float64Array(cols * rows);
+        for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) v[j * cols + i] = SPEC_R(i, j + seed);
+        return { v, cols };
+      };
+      const fine = lattice(7, 0), broad = lattice(29, 777);
+      const noise = (x, y, s, L) => {
         const fx = x / s, fy = y / s;
         const ix = Math.floor(fx), iy = Math.floor(fy);
         const tx = fx - ix, ty = fy - iy;
-        const a = SPEC_R(ix, iy + seed), b = SPEC_R(ix + 1, iy + seed);
-        const c = SPEC_R(ix, iy + 1 + seed), d = SPEC_R(ix + 1, iy + 1 + seed);
+        const k = iy * L.cols + ix;
+        const a = L.v[k], b = L.v[k + 1];
+        const c = L.v[k + L.cols], d = L.v[k + L.cols + 1];
         return (a * (1 - tx) + b * tx) * (1 - ty) + (c * (1 - tx) + d * tx) * ty - 0.5;
       };
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
-          twNoiseHF[y * W + x] = noise(x, y, 7, 0) * 0.18 + noise(x, y, 29, 777) * 0.26;
+          twNoiseHF[y * W + x] = noise(x, y, 7, fine) * 0.18 + noise(x, y, 29, broad) * 0.26;
         }
       }
       twNoiseKey = size;
@@ -33325,11 +33411,11 @@
   function paintAddPage() {
     if (!addOverlay.classList.contains("open")) return;
     const W = addOverlay.clientWidth, H = addOverlay.clientHeight;
-    const title = addOverlay.querySelector(".av-title");
+    const title = addOverlay.querySelector(".add-head");
     const tb = Math.round(title.getBoundingClientRect().bottom - addOverlay.getBoundingClientRect().top + addOverlay.scrollTop);
     // on a phone the width sets the scale and there is room below: the
     // summit's tip stands just under the goal's one line cloud; at the desk
-    // the height sets it and the painting starts under the title
+    // the height sets it and the painting starts under the heading
     const sW = W / ADD_W0, sH = (H - tb + 6) / (ADD_FOOT * ADD_H0);
     const top = sW < sH ? Math.max(0, Math.min(tb + 56 - 0.07 * ADD_H0 * sW, H - ADD_FOOT * ADD_H0 * sW)) : tb - 6;
     const fit = addFit(W, H, top); addFitNow = fit;
