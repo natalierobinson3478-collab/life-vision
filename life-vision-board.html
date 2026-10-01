@@ -2724,8 +2724,15 @@
      desk the books were being shrunk to fit the column. Past 900 the shelf
      keeps its own width up to 92% of the screen and centres on the column's
      centre, which is the screen's. A phone keeps the stack. */
+  /* CENTRED ONCE (2026-09-30, owner, of the iPad's board: "the main page
+     is still off center"). The auto margins above centred a shelf narrower
+     than the column, and then left: 50% moved it on from there as if it
+     had started at the column's edge, so it stood right of centre by its
+     own margin: 30 points on her board, more on a zoomed one. Past 900 the
+     margins are the column's edge and the shift does the centring alone. */
   @media (min-width: 900px) {
-    .notebook-slot { max-width: none; position: relative; left: 50%; transform: translateX(-50%); }
+    .notebook-slot { max-width: none; position: relative; left: 50%; transform: translateX(-50%);
+      margin-left: 0; margin-right: 0; }
     /* by id: the shelf's own rule below (min(92vw, 100%)) comes later in
        the sheet and would win on equal footing, and 100% of a fit-content
        slot is the circle that kept the shelf at the column's width */
@@ -5274,6 +5281,19 @@
     transform: translateY(-46%); overflow: visible; z-index: 1; pointer-events: none; }
   #addOverlay .add-left .add-stone { left: auto; right: 4px; }
   #addOverlay .add-word { display: inline-block; padding: 3px 14px 3px 12px; white-space: nowrap; }
+  /* THEY SAY THEY CAN BE PICKED (owner, 2026-09-30: "idk if im supposed to
+     click them or not"): a line in the app's hand beside the first stone
+     asks the question, and under a pointer a stone takes its area's colour
+     faintly before it is picked, the word's float a shade brighter. */
+  #addOverlay #newCategoryChips .cat-chip { cursor: pointer; }
+  #addOverlay #newCategoryChips .cat-chip:not(.on):is(:hover, :focus-visible) .st-top {
+    fill: rgb(var(--cat)) !important; fill-opacity: 0.6; }
+  #addOverlay #newCategoryChips .cat-chip:is(:hover, :focus-visible) .add-oval { filter: brightness(1.04); }
+  #addOverlay #newCategoryChips .cat-chip:focus-visible { outline: none; }
+  #addOverlay .add-over > .add-areas-hint { margin: 0; padding: 6px 20px; white-space: nowrap;
+    font-size: var(--t-label); line-height: 1.43; font-style: italic; color: var(--ink);
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(238, 229, 216, 0.92), rgba(238, 229, 216, 0.7) 62%, rgba(238, 229, 216, 0)); }
 
   /* THE DOORS FLOAT ON THE LAKE, just above the boat (70 to 72 per cent
      down the painting), which stays in view. */
@@ -5286,7 +5306,11 @@
   #addOverlay .add-doors #asWrittenAdd { margin-left: 64px; padding: 4px 18px 4px 16px; }
   /* the query mark keeps its 44px of target; the margins give the float
      back the room, so the mark still reads at the doors' own height */
-  #addOverlay .add-doors .av-why { width: 44px; height: 44px; padding: 11px; margin: -10px -10px -10px -6px; }
+  #addOverlay .add-doors .av-why { width: 44px; height: 44px; padding: 9px; margin: -10px -10px -10px -6px; }
+  /* NO HIGHLIGHT (owner, 2026-09-30: "i dont like the highlight on the
+     shape it with coach lets not do that"): the coach door still comes
+     first, and both are the same words on the same float. */
+  #addOverlay .add-doors .av-door-lead::before { content: none; display: none; }
   #addOverlay .add-over > .add-coach-note {
     padding: 8px 16px; margin: 0; font-size: var(--t-label); line-height: 1.43; font-style: italic; }
 
@@ -5300,6 +5324,18 @@
      The goal's cloud and phase 2's start under the heading, at the books'
      corner, and the words beside the summit and the coach note keep to
      their own width. */
+  /* LARGER TO READ AT THE DESK (owner, 2026-09-30: "its kinda small to
+     read. Same with the shape it with coach or add it myself. And the
+     question button."): the six areas and the two doors, the page's
+     buttons, take --t-step; the lines she writes beside them and the hints
+     take the reading size, so the page still sets three sizes. The phone
+     keeps the reading size for its buttons, where the stones lie close. */
+  @media (min-width: 700px) {
+    #addOverlay #newCategoryChips .cat-chip, #addOverlay .add-doors .av-door { font-size: var(--t-step); }
+    #addOverlay .add-doors .av-why { padding: 7px; }
+    #addOverlay .add-why-fl textarea, #addOverlay .add-why-fl .pm-ghost,
+    #addOverlay .add-over > .add-coach-note, #addOverlay .add-over > .add-areas-hint { font-size: var(--t-read); }
+  }
   @media (min-width: 700px) {
     #addOverlay .add-goal-fl, #addOverlay #addPhase2 { justify-self: start;
       width: min(720px, calc(100% - var(--book-x) - 22px)); margin: 0 0 0 calc(var(--book-x) - 10px); }
@@ -11726,6 +11762,7 @@
           <div class="add-fl add-why-fl" data-type-area="add/why">
             <label class="pm-line add-line"><textarea id="newDesc" rows="1" placeholder=" " aria-label="why it matters to you"></textarea><span class="pm-ghost add-hint">why it matters to you</span></label>
           </div>
+          <p class="add-areas-hint add-hint" data-type-area="add/areas-hint" aria-hidden="true">which part of your life?</p>
           <div class="cat-chip-row" id="newCategoryChips" role="radiogroup" aria-label="which part of your life?" data-type-area="add/areas"></div>
           <input type="hidden" id="newCategory" value="health">
           <!-- THE COACH DOOR LEADS (owner, 2026-08-27): first, and wearing the
@@ -33265,6 +33302,22 @@
       if (pts.length < 6) return;
       lines += keepPen(lr, pts, l.b ? 2.4 : Math.min(1.8, Math.max(0.9, l.w * 0.4)), 30, 120);
     });
+    // THE RIDGES (owner, 2026-09-30: "it doesnt give japanese art
+    // watercolor pen and ink"): the top edge of every traced wash, where the
+    // land meets what lies above it, in the pen, as Taiga outlines his hills.
+    let ridgePen = "";
+    (T.ridges || []).forEach(r => {
+      const pts = r.filter(([x, y]) => y < lim).map(([x, y]) => [X(x), Y(y)]);
+      if (pts.length > 8) ridgePen += keepPen(lr, pts, 1.2, 30, 120);
+    });
+    // THE SKY STAYS SILK. Two tries at filling it (owner, marking the sky
+    // either side of the summit for mountains, and the band behind the
+    // title for a watercolour sky) both read as pasted on: pale ranges
+    // drawn here "dont read as part of the landscape" and the keeping
+    // water's bands as a sky looked "odd and neon ish"; copies of the
+    // painting's own far hills, tried next, repeated and showed the edges
+    // they were cut at. In the painting the sky is bare silk, which is the
+    // negative space she first asked for, so it is left so.
     const x0 = X(0), x1 = X(1), side = Math.min(160, (x1 - x0) * 0.12);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="none" aria-hidden="true">
       <defs>__DEFS__
@@ -33284,6 +33337,7 @@
         <g fill="${KEEP_INK}" opacity="0.45" filter="url(#rough)">${waterPen}</g></g>
       <g filter="url(#wash-fine)">${dabs}</g>
       <g fill="${KEEP_INK}" filter="url(#rough)">${lines}</g>
+      <g fill="${KEEP_INK}" opacity="0.72" filter="url(#rough)">${ridgePen}</g>
       ${x0 > 4 ? `<rect x="${F(x0 - 2)}" y="0" width="${F(side)}" height="${H}" fill="url(#addSideL)"/><rect x="${F(x1 - side + 2)}" y="0" width="${F(side)}" height="${H}" fill="url(#addSideR)"/><rect x="0" y="0" width="${F(x0)}" height="${H}" fill="${ADD_SILK}"/><rect x="${F(x1)}" y="0" width="${F(W - x1)}" height="${H}" fill="${ADD_SILK}"/>` : ""}
       ${vmax < 0.99 ? `<rect x="0" y="${F(H - 44)}" width="${W}" height="44" fill="url(#addFootG)"/>` : ""}
       <rect x="0" y="0" width="${W}" height="${H}" filter="url(#addMottle)" opacity="0.6"/>
@@ -33352,8 +33406,8 @@
     const topFill = on ? "rgb(var(--cat))" : "#bcb09e", sideFill = on ? "rgb(var(--cat-ink))" : "#76695a";
     return `<g fill="#56707a" opacity="0.5" filter="url(#rough)">${keepPen(rnd, rip(5, 3), 0.85, 20, 44)}</g>`
       + `<g fill="#56707a" opacity="0.28" filter="url(#rough)">${keepPen(rnd, rip(11, 6.5), 0.75, 20, 44)}</g>`
-      + `<g filter="url(#wash-fine)"><path d="${d(side)}" style="fill:${sideFill}" opacity="0.85"/>`
-      + `<path d="${d(top)}" style="fill:${topFill}" opacity="0.97"/>`
+      + `<g filter="url(#wash-fine)"><path class="st-side" d="${d(side)}" style="fill:${sideFill}" opacity="0.85"/>`
+      + `<path class="st-top" d="${d(top)}" style="fill:${topFill}" opacity="0.97"/>`
       + `<path d="${d(lit)}" fill="#efe6d6" opacity="${on ? 0.28 : 0.45}"/></g>`
       + `<g filter="url(#granulate)" opacity="0.32"><path d="${d(side)}" fill="#4d443a"/><path d="${d(top)}" fill="#5f574b"/></g>`
       + `<g fill="${KEEP_INK}" opacity="0.85" filter="url(#rough)">${keepPen(rnd, top.concat([top[0], top[1], top[2]]), 1.1, 34, 80)}`
@@ -33430,6 +33484,13 @@
       const st = b.querySelector(".add-stone");
       if (st) st.innerHTML = addStoneSvg(b.dataset.cat, b.classList.contains("on"));
     });
+    // the question, just above the first stone's word, on the side its word is
+    const hint = over.querySelector(".add-areas-hint"), first = over.querySelector('#newCategoryChips .cat-chip[data-cat="health"]');
+    if (hint && first) {
+      const at = ADD_RIVER.health, fx = fit.X(at[0] / 100), fy = fit.Y(at[1] / 100);
+      hint.style.top = Math.max(0, fy - 52) + "px";
+      hint.style.left = Math.max(4, fx - hint.offsetWidth + 34) + "px";
+    }
     const why = over.querySelector(".add-why-fl");
     if (why) {
       const ww = Math.min(300, fit.drawnW * 0.49);
@@ -37776,7 +37837,8 @@
     // being stomped by it a moment later: curtainLifted is the decision, the
     // class only carries it out.
     let went = false;
-    const go = () => { if (!went && curtainLifted) { went = true; el.classList.add("lifted"); } };
+    const go = () => { if (!went && curtainLifted) { went = true; el.classList.add("lifted");
+      setTimeout(() => keepWaterWarm(), 2500); } };   // keeping in mind's water, painted ahead
     try { requestAnimationFrame(() => requestAnimationFrame(go)); } catch (e) {}
     setTimeout(go, 150);
   }
@@ -44196,6 +44258,28 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     keepWaterDims = { W, H: Math.max(H, keepWaterDims.W === W ? keepWaterDims.H : 0) };
     host.innerHTML = keepWaterSvg(W, keepWaterDims.H, false);
     keepWaterBake(host, W, keepWaterDims.H);
+  }
+  // THE WATER IS READY BEFORE THE BOOK OPENS (2026-09-30, owner, on the
+  // iPad: "takes a while to load the more artistic books"; her screenshot
+  // caught keeping in mind with its ink lines in and its colour still to
+  // come). The water is drawn from the window's size alone, so a few
+  // seconds after the app has opened it is painted and baked into the
+  // closed book at the size the page will ask for when its lines fit the
+  // screen, and keepWaterPaint finds it there on the first open. A finger
+  // on the glass puts it off a second at a time, so the bake never lands
+  // in the middle of a gesture.
+  let keepTouchedAt = 0;
+  addEventListener("pointerdown", () => { keepTouchedAt = Date.now(); }, { capture: true, passive: true });
+  function keepWaterWarm(tries) {
+    const ov = document.getElementById("keepOverlay"), host = document.getElementById("keepWaterGround");
+    if (!ov || !host || ov.classList.contains("open") || host.firstElementChild) return;
+    const n = tries || 0;
+    if (Date.now() - keepTouchedAt < 1000 && n < 5) { setTimeout(() => keepWaterWarm(n + 1), 1000); return; }
+    const W = Math.max(320, window.innerWidth);
+    const H = Math.min(8192, Math.ceil(Math.max(480, window.innerHeight) / 512) * 512);
+    keepWaterDims = { W, H };
+    host.innerHTML = keepWaterSvg(W, H, false);
+    keepWaterBake(host, W, H);
   }
   // THE PRINT IS BAKED (the sand's recipe, 2026-09-05): filtered SVG as
   // tall as the page, inside the scrolling content, is re-rasterized under a
