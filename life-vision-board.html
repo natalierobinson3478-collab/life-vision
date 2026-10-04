@@ -5176,7 +5176,9 @@
      The page stands on its own ground, as the Atlas and the keeping page
      do: the silk of the scroll, a shade lighter up where the sky is, no
      blur, no scrollbar, and the window's reserved strip painted the same. */
-  :root { --add-silk: #e2d2c1; }
+  /* keeping in mind's cream (owner, 2026-09-30, of the colours: "doesnt
+     really match the color scheme" of keeping in mind; she chose A) */
+  :root { --add-silk: #e6dfc9; }
   html:has(#addOverlay.open) { background-color: var(--add-silk); }
   /* THE ✕ STANDS WHERE KEEPING IN MIND'S AND THE PLANNER'S DOES (owner,
      2026-09-30: "the X ... is more in the right corner than the books i
@@ -33158,7 +33160,7 @@
   // brushwork keeps its density; past that the middle widens a little too.
   // Mirrored copies were tried first and read as inkblots at every seam.
   const ADD_W0 = 1200, ADD_H0 = 2645, ADD_FOOT = 0.745, ADD_CORE = [0.12, 0.72], ADD_MAXF = 6;
-  const ADD_SILK = "#e2d2c1";
+  const ADD_SILK = "#e6dfc9";
   // what a stretched band's repeated dabs leave out: the signature and seals, the boat
   const ADD_ONCE = [[0.03, 0.66, 0.12, 0.82], [0.12, 0.68, 0.36, 0.74]];
   let addTrace = null, addTracePromise = null, addFitNow = null, addGroundKey = "";
@@ -33244,6 +33246,26 @@
     // painting's own far hills, tried next, repeated and showed the edges
     // they were cut at. In the painting the sky is bare silk, which is the
     // negative space she first asked for, so it is left so.
+    // THE RISING SUN (owner, 2026-09-30). She asked for pink "somewhere like
+    // the sky", and then, of pink washes painted there: "i just dont see what
+    // the watercolor pink represents". In this tradition a colour in the sky
+    // is always something; this is the sun of a print, the image of a
+    // beginning, beside where the goal is written. One flat pale coral disc
+    // in its own tide line and grain, in clear sky: set against the why
+    // cloud (placed from this same fit), to its right when the window has
+    // room and under it at the edge when it does not, never behind a float.
+    const sunR = Math.max(20, Math.min(ADD_H0 * s * 0.04, W * 0.06));
+    const whyW = Math.min(300, fit.drawnW * 0.49), whyL = Math.min(W - whyW - 8, X(0.49)), whyT = Y(0.085), whyH = 44;
+    let sunX, sunY;
+    if (W - (whyL + whyW) >= 2 * sunR + 90) {
+      sunX = Math.min(W - sunR - 40, whyL + whyW + 40 + sunR + (W - whyL - whyW - 2 * sunR - 80) * 0.35);
+      sunY = whyT + whyH * 0.5 + sunR * 0.3;
+    } else { sunX = W - sunR - 22; sunY = whyT + whyH + sunR + 22; }
+    const sunPath = "M" + Array.from({ length: 48 }, (_, i) => { const a = i / 48 * 6.283;
+      return F(sunX + Math.cos(a) * sunR * (1 + 0.012 * Math.sin(i * 1.7))) + " " + F(sunY + Math.sin(a) * sunR * (1 + 0.012 * Math.cos(i * 2.3))); }).join(" L") + " Z";
+    const sun = `<g opacity="0.9"><g filter="url(#wash-fine)"><path d="${sunPath}" fill="#efc3bc"/>`
+      + `<path d="${sunPath}" fill="none" stroke="#dc9f99" stroke-width="2.6" opacity="0.5"/></g>`
+      + `<g filter="url(#granulate)" opacity="0.18"><path d="${sunPath}" fill="#c98b86"/></g></g>`;
     const x0 = X(0), x1 = X(1), side = Math.min(160, (x1 - x0) * 0.12);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="none" aria-hidden="true">
       <defs>__DEFS__
@@ -33256,6 +33278,7 @@
         <clipPath id="addWaterClip"><path d="${T.water.map(poly).join(" ")}"/></clipPath>
       </defs>
       <rect x="-20" y="-20" width="${W + 40}" height="${H + 40}" fill="${ADD_SILK}"/>
+      ${sun}
       <g transform="translate(-4 3)"><g filter="url(#wash)" opacity="0.7">${washes}</g></g>
       <g filter="url(#wash)">${rims}</g>
       <g clip-path="url(#addWaterClip)"><rect x="-20" y="-20" width="${W + 40}" height="${H + 40}" fill="#aab9bb"/>
