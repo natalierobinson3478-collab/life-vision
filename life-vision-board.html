@@ -9496,6 +9496,9 @@
   /* EVERY VERTICAL MEASURE FROM HERE DOWN IS 0 OR A WHOLE LEAD. That is the
      ruled sheet's own law, and it is the whole of the fix above. */
   .wk-sec { position: relative; margin-top: var(--lead); }
+  /* the check in (2026-10-08): one habit's questions, a breath between habits */
+  .wk-ck-row { margin-bottom: 14px; }
+  .wk-ck-row .ci-review-actions { margin: 2px 0 4px; }
   /* A HEADING MUST NOT BE THE SMALLEST THING UNDER IT — the ruling the Facts
      book already carries, in the owner's own words there: "all the titles
      should be larger than the subtitle and their descriptors." This sat at
@@ -15038,7 +15041,7 @@
       lines: [["things I've", "s"], ["NOTICED", "b"]],
       board: "#9aa9b4", ink: "#2e3941", rule: "#7c8b96", dress: "plain", lean: -1.4, gapAfter: 34, hx: 16,
       tour: "what the plan has noticed about you, with where each line came from, and any line yours to strike." },
-    { door: "weekcheck", aria: "weekly check-in", open: weeklyBookGo,
+    { door: "weekcheck", aria: "check in", open: weeklyBookGo,
       lines: [["LITTLE", "b"], ["WINS", "b"], ["everywhere", "s"]],
       board: "#ddd0b3", ink: "#4d4025", rule: "#ab9d7c", dress: "belly", gapAfter: 3, hx: 44,
       // Friday through Monday night, and only while the week is still open:
@@ -15046,9 +15049,10 @@
       // "edit" is a week already closed — which is nothing waiting, so the
       // book leaves. A skipped week stays skipped (the door never
       // back-fills), so past Monday night the book simply isn't there.
-      show: () => { const d = goals.length ? weekDoorState() : null;
-        return !!(d && d.show && d.mode === "close"); },
-      tour: "it comes out on Friday, and waits there until you've closed your week." },
+      // THE CHECK IN (2026-10-08): on the shelf every day, any time is a
+      // good time, and it stands out of the row once it has been a while.
+      proud: () => checkInDue(),
+      tour: "checking in, any time you like. it stands out when it has been a while." },
     // RETIRED (2026-09-29, the quarters coming out): the quarterly review
     // is a quarter object. Off the shelf, and its sheet stands until the
     // check in book replaces it in sitting 4; `retired` is read by shelfRoster.
@@ -15173,7 +15177,7 @@
   const SEAT_LIFT = { moth: 1.1 };
   const PROUD_PX = 7;          // the shelf: a spine's head clears a flush row
   const PROUD_STACK_PX = 22;   // the stack: must clear the bars' own ±8 stagger
-  const bookProud = bk => !!bk.show;
+  const bookProud = bk => bk.proud ? !!bk.proud() : !!bk.show;
   // The shelf as it stands right now: the roster minus the books whose
   // moment hasn't come. A hidden book's gapAfter falls back onto the visible
   // book before it (the WIDER of the two, never the sum), so a cluster keeps
@@ -22778,6 +22782,286 @@
     mountCompanion(document.getElementById("wkComp"), profileCompanion, { pose: "idle", silent: true, noProp: true, inert: true });
     wireWeekSheet();
     paintWeekBook(mount);
+  }
+
+  // ---- THE CHECK IN (2026-10-08, the quarters coming out) ----
+  // Owner, 29 Sep: "one check in book, any time", replacing the weekly
+  // close and the quarterly review. It lives behind LITTLE WINS, on that
+  // book's own paper, and the book now stands on the shelf every day; it
+  // stands out when it has been a while (CHECKIN_QUIET_DAYS), and never with
+  // a count of days (law 8).
+  //
+  // Per habit on the sand: still happening (yes, sometimes, no), and when it
+  // is not, what got in the way (the tomorrow book's own six tells); the
+  // size (too big, about right, could be more); and, where a habit has a
+  // holder, whether they helped it happen. One open line: what surprised
+  // you. Anything changed: the hours of a bad week. Then what the answers
+  // say, as changes she keeps one by one: a size along the library's levels
+  // (or, for a habit she wrote, half the minutes or one more time a week),
+  // kept for later, let go, or, after it has held check in after check in,
+  // called kept. RULES, never a model. The answers are kept with the week,
+  // and nothing on any page counts them.
+  const CHECKIN_QUIET_DAYS = 14;
+  let ckState = null;
+  function lastCheckInAt() {
+    let at = null;
+    Object.values(weeks || {}).forEach(w => { const a = w && w.checkIn && w.checkIn.at; if (a && (!at || a > at)) at = a; });
+    return at;
+  }
+  // DUE: two weeks since the last check in, or since the plan began when
+  // there has never been one. Only for a board with something on it.
+  function checkInDue(now = appNow()) {
+    if (!goals.some(g => g && g.status === "active" && (g.mechanisms || []).length)) return false;
+    const last = lastCheckInAt() || (discoveryStartedAt ? discoveryStartedAt + "T12:00:00" : null);
+    if (!last) return false;
+    return (now - new Date(last)) / 86400000 >= CHECKIN_QUIET_DAYS;
+  }
+  // The habits a check in asks about: on the sand, recurring, on an active goal.
+  const ckHabits = () => goals.filter(g => g && g.status === "active").flatMap(g => (g.mechanisms || [])
+    .filter(m => m && !m.dropped && m.kind !== "reminder" && m.type !== "setup" && m.type !== "floor"
+      && (m.stage == null || m.stage === "trying" || m.stage === "kept"))
+    .map(m => ({ g, m })));
+  // WHAT THE WEEK ALREADY SAYS, offered as the first answer and hers to
+  // change: every time it asked for, done, is yes. Anything less is left
+  // for her to say: half a week is not "sometimes" on a Wednesday, and a
+  // week with no ticks may be a week nobody ticked, never a no.
+  function ckPrefill(g, m, wk) {
+    let want = 0, done = 0;
+    try { want = occurrenceCountOf(m, g.id, wk); done = doneCountOf(m, g.id, wk); } catch (e) { return null; }
+    return want > 0 && done >= want ? "yes" : null;
+  }
+  // How many check ins before this week said yes for this habit, the most
+  // recent first, stopping at the first that did not.
+  function ckYesRun(mid, wk) {
+    const recs = Object.values(weeks || {}).filter(w => w && w.checkIn && w.week < wk).sort((a, b) => a.week < b.week ? 1 : -1);
+    let n = 0;
+    for (const w of recs) { const a = w.checkIn.answers && w.checkIn.answers[mid]; if (a && a.happening === "yes") n++; else break; }
+    return n;
+  }
+  const CK_LEVELS = ["light", "standard", "full"];
+  function ckLevelStep(m, dir) {
+    if (!LIBRARY || !m.libraryId || !m.level) return null;
+    const i = CK_LEVELS.indexOf(m.level) + dir;
+    const h = LIBRARY.habits[m.libraryId];
+    const L = h && i >= 0 && i < CK_LEVELS.length ? h.levels[CK_LEVELS[i]] : null;
+    return L ? { level: CK_LEVELS[i], L } : null;
+  }
+  function ckLevelPatch(st) {
+    const L = st.L;
+    const n = L.times === "daily" ? 7 : L.times === "once" ? 1 : Math.max(1, Math.round(Number(L.times) || 1));
+    return { level: st.level, durationMin: Math.max(1, Number(L.minutes) || 1), timesPerWeek: n,
+      schedule: L.times === "daily" ? "daily" : n > 1 ? { any: n } : "any",
+      cadence: L.times === "daily" ? "daily" : "weekly",
+      estWeeklyHours: Math.round(libWeekMinutes(L) / 60 * 100) / 100 };
+  }
+  const CK_NUM = ["no", "one", "two", "three", "four", "five", "six", "seven"];
+  // checkInTunes: what the answers say, as changes, each kept only on a tap.
+  function checkInTunes(wk, answers) {
+    const out = [];
+    const nm = m => appVoice(m.weekLabel ?? m.label, wroteIt(m));
+    ckHabits().forEach(({ g, m }) => {
+      const a = (answers || {})[m.id] || {};
+      const push = (verb, label, why, patch) => {
+        const id = verb + ":" + g.id + ":" + m.id;
+        if (!out.some(o => o.id === id)) out.push({ id, verb, goalId: g.id, mechId: m.id, label, why, patch });
+      };
+      const smaller = () => {
+        const st = ckLevelStep(m, -1);
+        if (st) return push("smaller", `make ${nm(m)} ${st.level}: ${appVoice(st.L.text, false)}`, "smaller than the mood, and it still counts", ckLevelPatch(st));
+        // half, on the five minute steps a person thinks in, never under two
+        const mins = Number(m.durationMin) || 10;
+        const to = mins >= 10 ? Math.max(5, Math.round(mins / 2 / 5) * 5) : Math.max(2, Math.round(mins / 2));
+        if (to < mins) push("smaller", `make ${nm(m)} ${to} minutes`, "smaller than the mood, and it still counts", { durationMin: to });
+      };
+      if (a.size === "big" || a.happening === "sometimes" || a.happening === "no") smaller();
+      if (a.size === "more") {
+        const st = ckLevelStep(m, +1);
+        if (st) push("bigger", `grow ${nm(m)} to ${st.level}: ${appVoice(st.L.text, false)}`, "it's asking for more, so it gets more", ckLevelPatch(st));
+        else {
+          const was = Math.max(1, Number(m.timesPerWeek) || 1), t = Math.min(7, was + 1);
+          if (t > was) push("bigger", `make ${nm(m)} ${CK_NUM[t]} times a week`, "it's asking for more, so it gets more",
+            { timesPerWeek: t, schedule: t >= 7 ? "daily" : { any: t } });
+        }
+      }
+      if (a.happening === "no") {
+        push("later", `keep ${nm(m)} for later`, "off the week for now, kept, not gone", { stage: "waiting" });
+        push("letgo", `let ${nm(m)} go`, a.inWay === "unwanted" ? "you said part of you is glad when it doesn't happen"
+          : "letting a habit go is a decision, not a failure", { stage: "letgo" });
+      }
+      if (a.happening === "yes" && (m.stage == null || m.stage === "trying") && ckYesRun(m.id, wk) >= 2)
+        push("kept", `call ${nm(m)} kept`, "it has held, check in after check in", { stage: "kept" });
+    });
+    // what the ticks say (the week that learns), where no answer already did
+    try {
+      weekLearnings(wk).changes.filter(c => !c.kept && !out.some(o => o.mechId === c.mechId))
+        .forEach(c => out.push({ id: c.id, verb: c.verb, goalId: c.goalId, mechId: c.mechId, label: c.label, why: c.why, patch: c.patch }));
+    } catch (e) {}
+    return out;
+  }
+
+  function openCheckIn() {
+    if (!goals.length) { openCheckin(); return false; }
+    const wk = weekKeyOf();
+    const prev = weeks[wk] && weeks[wk].checkIn;
+    ckState = { week: wk, answers: {}, surprise: (prev && prev.surprise) || "", kept: [], done: false, hoursOpen: false };
+    ckHabits().forEach(({ g, m }) => {
+      const p = prev && prev.answers && prev.answers[m.id];
+      ckState.answers[m.id] = p ? Object.assign({}, p) : { happening: ckPrefill(g, m, wk) };
+    });
+    if (!LIBRARY) loadLibrary().then(() => { if (ckState && !ckState.done) renderCheckIn(); }).catch(() => {});
+    try { renderCheckIn(); }
+    catch (err) {
+      console.warn("[check in] render failed, closing instead of trapping:", err);
+      ckState = null; closeWeekSheet();
+      showToast("the check in couldn't open, nothing was changed.");
+      return false;
+    }
+    openBookPage(document.getElementById("weekOverlay"));
+    paintWeekBook(document.getElementById("weekMount"));
+    return true;
+  }
+  function renderCheckIn() {
+    const mount = document.getElementById("weekMount");
+    if (!mount || !ckState) return;
+    const chip = (on, attrs, words) => `<button type="button" class="ci-chip${on ? " on" : ""}" ${attrs}>${escHtml(words)}</button>`;
+    const nm = m => appVoice(m.weekLabel ?? m.label, wroteIt(m));
+    const rows = ckHabits().map(({ g, m }) => {
+      const a = ckState.answers[m.id] || {};
+      const holder = String(m.holder == null ? "" : m.holder).trim().replace(/\s+—\s+/g, ", ");
+      return `<div class="wk-ck-row" data-ck="${escHtml(m.id)}" data-type-area="weekly/tick-row">
+        <div class="wk-goal-name">${escHtml(nm(m))}</div>
+        <div class="wk-ask"><span class="wk-ask-q">still happening?</span></div>
+        <div class="ci-review-actions">${[["yes", "yes"], ["sometimes", "sometimes"], ["no", "no"]].map(([v, w]) =>
+          chip(a.happening === v, `data-ck-happening="${v}"`, w)).join("")}</div>
+        ${a.happening === "sometimes" || a.happening === "no" ? `<div class="wk-ask"><span class="wk-ask-q">what got in the way?</span></div>
+        <div class="ci-review-actions">${TM_TELLS.map(t => chip(a.inWay === t.id, `data-ck-inway="${t.id}"`, t.key)).join("")}</div>` : ``}
+        <div class="wk-ask"><span class="wk-ask-q">the size?</span></div>
+        <div class="ci-review-actions">${[["big", "too big"], ["right", "about right"], ["more", "could be more"]].map(([v, w]) =>
+          chip(a.size === v, `data-ck-size="${v}"`, w)).join("")}</div>
+        ${holder ? `<div class="wk-ask"><span class="wk-ask-q">did ${escHtml(holder)} help it happen?</span></div>
+        <div class="ci-review-actions">${chip(a.held === true, `data-ck-held="1"`, "yes")}${chip(a.held === false, `data-ck-held="0"`, "not this time")}</div>` : ``}
+      </div>`;
+    }).join("");
+    const it = buildIntake();
+    const hrs = (it.capacity && it.capacity.statedHours) || (it.constraints || {}).hoursPerWeek || null;
+    const tunes = checkInTunes(ckState.week, ckState.answers);
+    const tuneRows = tunes.map(t => `<div data-type-area="weekly/learn" class="wk-learn">
+        <span class="wk-learn-what">${escHtml(t.label)}</span><span class="wk-learn-why">${escHtml(t.why)}</span>
+        ${ckState.kept.includes(t.id) ? `<button class="wk-act ch-hi" type="button" data-ck-unkeep="${escHtml(t.id)}">kept, undo</button>`
+          : `<button class="wk-act ch-hi" type="button" data-ck-keep="${escHtml(t.id)}">keep this change</button>`}
+      </div>`).join("");
+    const sec = (label, body) => `<div data-type-area="weekly/section" class="wk-sec"><div data-type-area="weekly/section" class="wk-sec-label">${label}</div><div class="wk-sec-rule"></div>${body}</div>`;
+    const applied = ckState.applied || [];
+    mount.innerHTML = `
+      <div class="wk-wrap">
+        <div class="wk-comp" id="wkComp" aria-hidden="true"></div>
+        <div class="wk-page">
+        <h1 class="wk-title" data-type-area="weekly/header">${ckState.done ? "checked in." : "checking in."}</h1>
+        <div class="wk-span" data-type-area="weekly/header-span">any time is a good time for this.</div>
+        ${ckState.done ? `
+          ${sec("what changed", applied.length ? applied.map(t => `<div data-type-area="weekly/learn" class="wk-learn"><span class="wk-learn-what">${escHtml(t.label)}</span><span class="wk-learn-kept">kept</span></div>`).join("")
+            : `<div data-type-area="weekly/tick-row" class="wk-none-row">nothing changed, and that is an answer too.</div>`)}
+          <div class="wk-acts" data-type-area="weekly/acts"><button class="btn-solid wk-close-btn" id="ckBack" type="button">done, back to your week ${DRAWN_ARROW}</button></div>
+        ` : `
+          ${sec("the habits", rows || `<div data-type-area="weekly/tick-row" class="wk-none-row">nothing on the sand right now. that's data, not debt.</div>`)}
+          ${sec("one line", `<div class="wk-ask" data-type-area="weekly/ask"><span class="wk-ask-q">what surprised you?</span></div>
+            <textarea class="wk-feel" id="ckSurprise" rows="3" data-type-area="weekly/write"
+              placeholder="a line or two, or leave it" aria-label="what surprised you?">${escHtml(ckState.surprise)}</textarea>`)}
+          ${sec("anything changed?", ckState.hoursOpen
+            ? `<div class="wk-ask" data-type-area="weekly/ask"><span class="wk-ask-q">hours in a bad week now:</span>
+                 <input type="number" min="1" max="80" id="ckHoursIn" class="tw-add-input" value="${hrs != null ? hrs : ""}" aria-label="hours in a bad week"></div>
+               <div class="wk-acts" data-type-area="weekly/acts"><button class="wk-act ch-hi" id="ckHoursSet" type="button">keep this number</button></div>`
+            : `<div class="wk-ask" data-type-area="weekly/ask"><span class="wk-ask-q">${hrs != null ? `a bad week has ${escHtml(String(hrs))} hours for this.` : `no hours set yet.`}</span>
+                 <button class="wk-act ch-hi" id="ckHours" type="button">change</button></div>`)}
+          ${sec("what this says", tuneRows || `<div data-type-area="weekly/tick-row" class="wk-none-row">nothing asks to change. keep going as you are.</div>`)}
+          <div class="wk-acts" data-type-area="weekly/acts"><button class="btn-solid wk-close-btn" id="ckDone" type="button">done</button></div>
+        `}
+      </div></div>`;
+    surface(mount.querySelector(".wk-page"), "paper");
+    mountCompanion(document.getElementById("wkComp"), profileCompanion, { pose: "idle", silent: true, noProp: true, inert: true });
+    wireCheckIn(mount);
+    if (document.getElementById("weekOverlay").classList.contains("open")) paintWeekBook(mount);
+  }
+  function wireCheckIn(mount) {
+    const ans = id => (ckState.answers[id] = ckState.answers[id] || {});
+    const rowOf = el => el.closest("[data-ck]").dataset.ck;
+    const keepText = () => { const t = mount.querySelector("#ckSurprise"); if (t) ckState.surprise = t.value; };
+    // the page scrolls in its overlay; a tap keeps her place on it
+    const again = () => { keepText(); const sc = document.getElementById("weekOverlay"); const y = sc ? sc.scrollTop : 0; renderCheckIn(); if (sc) sc.scrollTop = y; };
+    mount.querySelectorAll("[data-ck-happening]").forEach(b => b.addEventListener("click", () => {
+      const a = ans(rowOf(b)); a.happening = a.happening === b.dataset.ckHappening ? null : b.dataset.ckHappening;
+      if (a.happening === "yes") delete a.inWay;
+      again();
+    }));
+    mount.querySelectorAll("[data-ck-inway]").forEach(b => b.addEventListener("click", () => {
+      const a = ans(rowOf(b)); a.inWay = a.inWay === b.dataset.ckInway ? null : b.dataset.ckInway; again();
+    }));
+    mount.querySelectorAll("[data-ck-size]").forEach(b => b.addEventListener("click", () => {
+      const a = ans(rowOf(b)); a.size = a.size === b.dataset.ckSize ? null : b.dataset.ckSize; again();
+    }));
+    mount.querySelectorAll("[data-ck-held]").forEach(b => b.addEventListener("click", () => {
+      const a = ans(rowOf(b)); const v = b.dataset.ckHeld === "1"; a.held = a.held === v ? undefined : v; again();
+    }));
+    mount.querySelectorAll("[data-ck-keep]").forEach(b => b.addEventListener("click", () => {
+      if (!ckState.kept.includes(b.dataset.ckKeep)) ckState.kept.push(b.dataset.ckKeep); again();
+    }));
+    mount.querySelectorAll("[data-ck-unkeep]").forEach(b => b.addEventListener("click", () => {
+      ckState.kept = ckState.kept.filter(x => x !== b.dataset.ckUnkeep); again();
+    }));
+    const hb = mount.querySelector("#ckHours");
+    if (hb) hb.addEventListener("click", () => { ckState.hoursOpen = true; again(); });
+    const hs = mount.querySelector("#ckHoursSet");
+    if (hs) hs.addEventListener("click", () => {
+      const n = Math.round(Number((mount.querySelector("#ckHoursIn") || {}).value));
+      if (n >= 1 && n <= 80) { ciCapacity.statedHours = n; ciCapacity.statedBy = "user"; saveState(); }
+      ckState.hoursOpen = false; again();
+    });
+    const d = mount.querySelector("#ckDone");
+    if (d) d.addEventListener("click", () => { keepText(); finishCheckIn(); });
+    const back = mount.querySelector("#ckBack");
+    if (back) back.addEventListener("click", () => closeWeekSheet());
+  }
+  // DONE: the changes she kept land on their habits, and the answers are
+  // kept with the week. A second check in the same week replaces the first.
+  function finishCheckIn() {
+    if (!ckState) return false;
+    const wk = ckState.week;
+    const tunes = checkInTunes(wk, ckState.answers).filter(t => ckState.kept.includes(t.id));
+    tunes.forEach(t => {
+      const g = goals.find(x => x.id === t.goalId);
+      const m = g && (g.mechanisms || []).find(x => x.id === t.mechId);
+      if (!m) return;
+      Object.assign(m, t.patch);
+      if (t.patch.schedule || t.patch.timesPerWeek) m.whenSource = "user";
+    });
+    const held = {};
+    Object.entries(ckState.answers).forEach(([mid, a]) => { if (a && a.held !== undefined) held[mid] = a.held; });
+    const prior = weeks[wk] || {};
+    const until = new Date(wk + "T00:00:00"); until.setDate(until.getDate() + 8);
+    const ticks = {}, wd = weekDates(wk);
+    goals.forEach(g => {
+      const per = {};
+      (g.mechanisms || []).forEach(m => {
+        const days = wd.map(iso => completionsAt(m, iso) > 0);
+        if (days.some(Boolean)) per[m.id] = { days };
+      });
+      if (Object.keys(per).length) ticks[g.id] = per;
+    });
+    weeks[wk] = Object.assign({}, prior, {
+      week: wk, ticks, held: Object.assign({}, prior.held || {}, held),
+      checkIn: { at: appNow().toISOString(), answers: JSON.parse(JSON.stringify(ckState.answers)),
+        surprise: String(ckState.surprise || "").trim() || null,
+        tunes: tunes.map(t => ({ id: t.id, verb: t.verb, label: t.label, patch: t.patch })) },
+      closedAt: prior.closedAt || appNow().toISOString(),
+      editableUntil: prior.editableUntil || until.toISOString(),
+    });
+    ckState.done = true;
+    ckState.applied = tunes;
+    saveState();
+    deriveGates();
+    try { renderAll(); } catch (e) {}
+    renderCheckIn();
+    return true;
   }
 
 
@@ -43124,6 +43408,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     scheduledDatesFor, completionsAt, totalCompletionsIn, anyCountOf,
     moveOccurrence, movesFor, moveCompletion, scheduleOriginsFor, pruneMoves, clearMoves,
     migrateOccurrences, migrateQuartersOut, occSchema: () => OCC_SCHEMA,
+    openCheckIn, renderCheckIn, finishCheckIn, checkInTunes, checkInDue, lastCheckInAt, ckStateGet: () => ckState,
+    CHECKIN_QUIET_DAYS,
     loadLibrary, libraryGet: () => LIBRARY, chooseHabits, libLevelFor, libWeekMinutes, libraryGoalsFor, libraryGoalKey,
     proposalFor, libraryBudget, acceptLibraryHabit, declineLibraryHabit, setLibraryFact, libraryFacts: () => ciLibrary,
     repairCompletionCounts, repairDuplicateMechIds,
@@ -45370,6 +45656,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
   // state's own CTA.
   function weeklyBookGo() {
     if (!goals.length) { openCheckin(); return; }
+    // THE BOOK OPENS THE CHECK IN (2026-10-08), any day; the week's close
+    // below it stands until the sweep, reached only by its own name.
+    openCheckIn(); return;
     const d = weekDoorState();
     if (d.show) { openWeekSheet(d.week); return; }
     // G2r (145): one line per actual state — doors open FRIDAY. A closed
