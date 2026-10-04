@@ -33370,7 +33370,25 @@
     const doors = over.querySelector(".add-doors");
     if (doors) { doors.style.left = Math.max(10, fit.X(0.015)) + "px"; doors.style.top = fit.Y(0.606) + "px"; }
     const note = over.querySelector(".add-coach-note");
-    if (note) { note.style.left = fit.X(0.36) + "px"; note.style.top = fit.Y(0.705) + "px"; note.style.width = Math.min(440, fit.drawnW * 0.6) + "px"; }
+    if (note) {
+      // ON A PHONE THE NOTE SPANS THE PAGE, and a short page has no room
+      // for it under the doors (4 Oct: in Safari, with its toolbar, it ran
+      // off the foot). Then it opens just above the coach door, and the
+      // doors step down into what room there is so it clears the stones.
+      const narrow = fit.drawnW * 0.6 < 300;
+      note.style.width = (narrow ? W - 24 : Math.min(440, fit.drawnW * 0.6)) + "px";
+      note.style.left = (narrow ? 12 : fit.X(0.36)) + "px";
+      note.style.top = fit.Y(0.705) + "px";
+      const h = note.hidden ? 0 : note.offsetHeight;
+      if (doors && h && fit.Y(0.705) + h > fit.H - 8) {
+        const oy = over.getBoundingClientRect().top, dTop = fit.Y(0.606);
+        const stones = Math.max(...[...over.querySelectorAll("#newCategoryChips .cat-chip")]
+          .map(b => b.getBoundingClientRect().bottom - oy));
+        const step = Math.max(0, Math.min(fit.H - 8 - dTop - doors.offsetHeight, stones + h + 12 - dTop));
+        doors.style.top = (dTop + step) + "px";
+        note.style.top = (dTop + step - h - 6) + "px";
+      }
+    }
     addOverlay.querySelectorAll(".add-fl").forEach(el => {
       if (el.hidden || !el.getClientRects().length) return;
       const w = el.offsetWidth, h = el.offsetHeight;
