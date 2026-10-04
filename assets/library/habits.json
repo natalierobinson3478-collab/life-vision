@@ -11,7 +11,7 @@
   "drivers": "Why the area is hard for the person: control (not in control), skill (don't feel good at it), alone (doing it alone), room (no room for it), unclear (don't know what I want). A habit's drivers are the reasons it fits best.",
   "conditions": "when/unless use the keys in fields. A value can be one option or a list (any match). {rule: '...'} is the library's own code for a condition that needs more than one field; read it as a description. Keys that are not in fields describe the GOAL, not the person: goalKinds, want, shape, stage and focus are read off the goal the habit would serve; fn holds the library's own code and the app treats it as a description until it is written into the choice. unless is a condition that cancels the when; it may be a list, any one of which cancels.",
   "internalOnly": "grade, evidence and sources are for choosing, never shown to the person.",
-  "levelShape": "Each level is {text, times, minutes}: text is the level in the person's words; times is how many times a week (a number, 0.5 for every two weeks, 0.25 for monthly), or 'daily', or 'once' for a thing set up one time; minutes is one time's length. Drafted by a session from the text on 29 Sep 2026 for the owner's redlines; they size the stones on the sand and count against the bad week, and are never shown as text."
+  "levelShape": "Each level is {text, times, minutes}: text is the level in the person's words; times is how many times a week (a number, 0.5 for every two weeks, 0.25 for monthly), or 'daily', or 'once' for a thing set up one time; minutes is one time's length, counting only the time the habit ADDS to the day: a habit that changes how something already done is done (eating seated, a phone left outside the bedroom, a caffeine cut-off) costs the change, not the whole activity. Drafted by a session from the text on 29 Sep 2026 for the owner's redlines; they size the stones on the sand and count against the bad week, and are never shown as text."
  },
  "fields": {
   "focus": {
@@ -1293,17 +1293,17 @@
     "light": {
      "text": "Caffeine-free for the 8 hours before your main sleep.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "standard": {
      "text": "Last coffee 9 hours before your main sleep; last energy drink 12 hours before.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "full": {
      "text": "Last coffee 9 hours before sleep, energy drinks 12, and up to about 400 mg a day (four cups).",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     }
    },
    "ifThenExample": "When I hit my cut-off time, I switch to water or decaf.",
@@ -1634,17 +1634,17 @@
     "light": {
      "text": "Phone away 15 minutes before sleep.",
      "times": "daily",
-     "minutes": 15
+     "minutes": 2
     },
     "standard": {
      "text": "Phone charging outside the bedroom 30 minutes before sleep, plus a 10-minute wind-down.",
      "times": "daily",
-     "minutes": 30
+     "minutes": 10
     },
     "full": {
      "text": "Phone out 60 minutes before sleep, and the same wind-down before every sleep, naps included.",
      "times": "daily",
-     "minutes": 60
+     "minutes": 10
     }
    },
    "ifThenExample": "When I brush my teeth, I put my phone in its overnight spot.",
@@ -2321,17 +2321,17 @@
     "light": {
      "text": "Stand and move for 2 minutes every hour.",
      "times": "daily",
-     "minutes": 10
+     "minutes": 5
     },
     "standard": {
      "text": "2 to 3 minutes of movement every 30 minutes of sitting.",
      "times": "daily",
-     "minutes": 15
+     "minutes": 10
     },
     "full": {
      "text": "Move every 30 minutes, plus one standing or walking meeting a day.",
      "times": "daily",
-     "minutes": 30
+     "minutes": 15
     }
    },
    "levelVariants": [
@@ -2457,17 +2457,17 @@
     "light": {
      "text": "One seated, screen-free meal a day.",
      "times": "daily",
-     "minutes": 20
+     "minutes": 2
     },
     "standard": {
      "text": "Every main meal seated and plated; nothing eaten standing.",
      "times": "daily",
-     "minutes": 20
+     "minutes": 2
     },
     "full": {
      "text": "Every main meal seated and plated, and the fork goes down between bites.",
      "times": "daily",
-     "minutes": 20
+     "minutes": 3
     }
    },
    "ifThenExample": "When I have food ready, I put it on a plate and sit before the first bite.",
@@ -2530,17 +2530,17 @@
     "light": {
      "text": "Add a vegetable or fruit to one meal a day.",
      "times": "daily",
-     "minutes": 5
+     "minutes": 3
     },
     "standard": {
      "text": "Vegetables or fruit at every meal, plus beans or whole grains once a day.",
      "times": "daily",
-     "minutes": 10
+     "minutes": 5
     },
     "full": {
      "text": "The full pattern: plants at every meal, beans, whole grains, nuts and olive oil daily, ultra-processed food rarely.",
      "times": "daily",
-     "minutes": 15
+     "minutes": 10
     }
    },
    "ifThenExample": "When I plate a meal, I add the vegetable first.",
@@ -2613,17 +2613,17 @@
     "light": {
      "text": "One alcohol-free day a week and a cap on any one night, with every drink logged.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "standard": {
      "text": "Two or more alcohol-free days, a cap of three on any one night, and a weekly limit, with every drink logged.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "full": {
      "text": "Three or more alcohol-free days, a cap of three on any one night, and a weekly limit within national guidance, with every drink logged.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     }
    },
    "levelVariants": [
@@ -3347,17 +3347,17 @@
     "light": {
      "text": "Three kind acts a week.",
      "times": 3,
-     "minutes": 10
+     "minutes": 5
     },
     "standard": {
      "text": "One kind act a day.",
      "times": "daily",
-     "minutes": 10
+     "minutes": 5
     },
     "full": {
      "text": "One kind act a day, plus one bigger act on the weekend.",
      "times": "daily",
-     "minutes": 15
+     "minutes": 10
     }
    },
    "ifThenExample": "When I sit down at my desk, I pick today's kind act.",
@@ -3556,17 +3556,17 @@
     "light": {
      "text": "Once a day, with one person.",
      "times": "daily",
-     "minutes": 5
+     "minutes": 2
     },
     "standard": {
      "text": "Every time someone close shares good news.",
      "times": "daily",
-     "minutes": 5
+     "minutes": 2
     },
     "full": {
      "text": "Every time, plus a follow-up later (\"How did the new job's first week go?\").",
      "times": "daily",
-     "minutes": 5
+     "minutes": 3
     }
    },
    "ifThenExample": "When I hear someone's good news, I ask one follow-up question first.",
@@ -6256,17 +6256,17 @@
     "light": {
      "text": "An hour a day in total.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "standard": {
      "text": "About 30 minutes a day in total (10 per app).",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     },
     "full": {
      "text": "30 minutes a day, and none in the first and last hour of the day.",
      "times": "daily",
-     "minutes": 2
+     "minutes": 1
     }
    },
    "ifThenExample": "When I see the app limit pop up, I close the app and stand up.",

@@ -3473,10 +3473,10 @@
   /* G1j (176): a quarter with nothing written is two quiet rules — label,
      invitation — not four rules of vacancy. */
   .rm-qblock.rm-qb-empty { margin-bottom: 0; }
-  .rm-write-step, .rm-add-work, .rm-add-quarter {
+  .rm-write-step, .rm-add-work, .rm-add-lib, .rm-add-quarter {
     font-style: italic; font-weight: 400; font-size: var(--t-label);
     color: var(--ink-soft); text-decoration: none; }
-  .rm-write-step:hover, .rm-add-work:hover, .rm-add-quarter:hover {
+  .rm-write-step:hover, .rm-add-work:hover, .rm-add-lib:hover, .rm-add-quarter:hover {
     color: var(--ink); }
   .rm-mark-rc { background: none; border: none; padding: 2px 0; cursor: pointer;
     font-family: inherit; font-style: italic; font-size: var(--t-label);
@@ -3585,10 +3585,15 @@
     padding: 5px 2px; border-radius: 8px; }
   .rc-move-opt:hover { color: var(--ink); }
   .rm-add-work-row { margin-top: 2px; }
-  .rm-add-work, .rm-add-quarter { background: none; border: none; padding: 2px 0;
+  .rm-add-lib { margin-left: 18px; }
+  .ch-lib-pick { margin: 14px 0 6px; }
+  .ch-lib-pick .rm-work-actions { margin-top: 6px; }
+  .ch-lib-ask { margin: 10px 0 4px; }
+  .ch-lib-ask .ci-review-actions { margin-top: 4px; }
+  .rm-add-work, .rm-add-lib, .rm-add-quarter { background: none; border: none; padding: 2px 0;
     cursor: pointer; font-family: inherit; font-size: var(--t-label); font-weight: 600;
     color: var(--ink-soft); }
-  .rm-add-work:hover, .rm-add-quarter:hover { color: var(--ink); }
+  .rm-add-work:hover, .rm-add-lib:hover, .rm-add-quarter:hover { color: var(--ink); }
   .rm-addq-row { margin: 6px 0 2px; }
   .rm-work-form { margin: 6px 0 10px; display: flex; flex-direction: column; gap: 8px;
     max-width: 420px; }
@@ -4541,50 +4546,10 @@
      sibling (it has to be, to lie across the tear) and it measures its own
      position in rules like everything else, so the unit has to be declared
      somewhere they both inherit it from. */
-  /* `width: 100%` is load-bearing, and its absence was invisible. The page
-     is a flex item in the overlay's column, and CROSS-AXIS AUTO MARGINS
-     CANCEL STRETCH — so `margin: 0 auto` (there to centre it) quietly made
-     it shrink-to-fit, and the sheet rendered at 437px instead of the 620 it
-     declares. Everything still looked deliberate, just narrow: the doors
-     wrapped onto two lines and the measure was tighter than intended. */
-  .av-page { --lead: calc(var(--rule) * 1.5); --rule: 18px;
-    position: relative; width: 100%; max-width: var(--x-w); margin: 0 auto; }
-  .av-paper { position: relative; z-index: 1; transform: rotate(-0.4deg); }
-  .av-sheet { --pad-top: calc(var(--lead) * 2);
-    position: relative;
-    /* Six rules at the foot: the seedbed lies there, and it has to clear
-       the doors' row rather than start inside it. */
-    padding: var(--pad-top) calc(3.6% + 26px) calc(var(--lead) * 6) calc(3.6% + 30px);
-    line-height: var(--lead); text-align: left;
-    /* ---- THE APP'S OWN RULING, LIKE EVERY OTHER BOOK (owner, 2026-08-28:
-       "make the paper the same as the other books, I don't like the jumpy
-       lines any more") ----
-       This page drew its own rules for a while: brush strokes that wandered,
-       varied in weight and broke where the load ran out, redrawn per area in
-       that area's ink. It was a lot of hand for a surface whose job is to be
-       ruled paper, and next to This-week it read as a different stock.
-       So: --rule-top seats the app's ruling at this sheet's own top padding,
-       exactly the way This-week does it, and the ruling comes from
-       .torn-sheet::before with everything else.
-       --margin-alpha: 0 for the same reason This-week carries it — the
-       margin line is drawn in a hue that is red, under a law that says no
-       red anywhere. */
-    /* THE VERTICAL LINE IS BACK (owner: "the page is missing the vertical
-       line the other pages have"). It was suppressed here with
-       --margin-alpha:0 while this page ruled itself; the Facts book leaves
-       the token unset and so gets the app's margin line, and this page is
-       matching that book now. */
-    --rule-top: var(--pad-top); }
   /* ONE RULE, LIKE THIS-WEEK'S TITLE. It had two, so that it could sit in
      a clear band above a ruling that began below it — and a head band is
      only needed by a page that rules itself. On the app's ruling the title
      sits on a line like every other book's does. */
-  /* TWO RULES OF AIR, NOT ONE — and the reason is the study beside it. The
-     scrap's height is bounded by the first written answer, not by the room
-     to its left, so the band it stands in is what limits how big the drawing
-     can be. One more rule under the heading lengthens that band by a line
-     and costs the page 27px it has to spare. */
-  .av-head { margin: 0 0 calc(var(--lead) * 2); }
   /* ---- THE FACTS BOOK'S TYPE, ON THIS PAGE (owner, 2026-08-28) ----
      "Re-do the fonts: style, size, colour. I want to match my favourite
      book, the FAQ book" — with a screenshot lining each thing on this page
@@ -4606,21 +4571,6 @@
      The chapters page took this same ladder from the same source a few
      hours ago; see its note for the second half of the argument. */
   .av-title { color: var(--ink); margin: 0; line-height: var(--lead); }
-  /* ---- WHAT THE PAGE IS, UNDER ITS NAME ----
-     Black and italic, as asked. The slope is not decoration here: it is the
-     same one the example lines and the coach note wear, which is this app's
-     signal for its OWN voice as against the person's — so the page opens by
-     saying what it is in the register it will keep speaking in.
-     One rule tall and no size of its own beyond the page's small tier, so
-     the head grows by exactly one line and everything below it stays on the
-     ruling.
-     FULL INK (owner, 2026-09-29: "hard for me to read ... the text under
-     'add to your life vision.'"). It was the soft ink at 0.72, which on
-     this paper at the small size read as a pencil note. The slope alone
-     says it is the app talking; it does not also need to be faint. */
-  .av-sub { font-style: italic; font-size: var(--t-label);
-    color: var(--ink);
-    margin: 0; line-height: var(--lead); }
   /* Siblings one rule apart; the step between the areas question and the
      two written ones is two. Nothing else declares a margin. */
   /* Every one of these is a ROW in the Facts book's sense — a thing you
@@ -4681,12 +4631,6 @@
      is ~126px; as the window narrows and the overhang is capped away it
      grows back on its own, and the chips fall to two columns rather than
      running under a drawing. */
-  #addOverlay .av-where { margin-bottom: calc(var(--lead) * 2);
-    padding-right: calc(166px - var(--scrap-out) + 16px); }
-  @media (max-width: 640px) {
-    /* No scrap at this width, so no column to reserve. */
-    #addOverlay .av-where { padding-right: 0; }
-  }
   #addOverlay .field label { line-height: var(--lead); margin: 0; }
   /* ---- THE CHIPS ARE THREE AND THREE ----
      A wrapping row put 3/2/1 on the six, which left whichever chip fell
@@ -4749,38 +4693,8 @@
      lines inside it are the same colour at two strengths — one statement,
      not two. It deepens a little under the cursor, which is the editable
      signal the brushed baseline used to carry. */
-  /* THE FLAT BAND RETIRED. It was rgba(--rule-ink, .07) — a rectangle of
-     the ruling's ink, which answered "where do I write" and answered it in
-     the one material this page does not use. The wash behind it does the
-     job now (see .av-field-wash), so the field itself carries no fill. */
-  .av-write-box { display: block; position: relative; }
-  .av-field-wash { position: absolute; inset: 0; z-index: -1;
-    pointer-events: none; line-height: 0; }
-  .av-field-wash-svg { display: block; width: 100%; height: 100%; overflow: visible; }
-  .fw-wash { mix-blend-mode: multiply; }
   /* Weaker than the plate's floods on purpose: this one has WRITING over
      it, and the words are the darkest thing in the box. */
-  /* PALE AT REST, DEEPER WHEN ENTERED. The gap between the two is the
-     whole signal, so it is a real gap: the spill roughly doubles. */
-  .fw-body { fill: rgb(var(--av-cat, var(--accent))); opacity: 0.12; }
-  .fw-pool { fill: rgb(var(--av-cat, var(--accent))); opacity: 0.08; }
-  .fw-rim { fill: none; stroke: rgb(var(--av-cat, var(--accent))); stroke-width: 2.6;
-    vector-effect: non-scaling-stroke; opacity: 0.12; stroke-linejoin: round; }
-  .fw-grain { fill: rgb(var(--av-cat, var(--accent))); opacity: 0.08;
-    mix-blend-mode: multiply; }
-  /* The cursor deepens the spill a shade — the editable signal, kept. */
-  .av-write:focus-within .fw-body { opacity: 0.26; }
-  .av-write:focus-within .fw-pool { opacity: 0.18; }
-  .av-write:focus-within .fw-rim { opacity: 0.3; }
-  .av-write:focus-within .fw-grain { opacity: 0.15; }
-  .fw-body, .fw-pool, .fw-rim, .fw-grain { transition: opacity 0.2s ease; }
-  .av-write textarea { display: block;
-    background-color: transparent; background-image: none;
-    border: none; border-radius: 0; box-shadow: none;
-    font-family: var(--voice-hand); color: var(--ink);
-    font-size: var(--t-read);
-    line-height: var(--lead); padding: 0 2px; resize: none;
-    min-height: calc(var(--lead) * 2); overflow: hidden; }
   /* ---- YOUR WORDS ARE INK; THE APP'S EXAMPLE IS PAINT ----
      The helping line is the app showing what an answer looks like, and it
      goes the moment they type. `--cat-ink`, not `--cat`: every area carries
@@ -4842,25 +4756,9 @@
   /* The example is the CAPTION role — .fq-sub's size and slope — while the
      person's own writing above it is the reading size. The two must not be
      the same: what they write is content, what the app shows is a note. */
-  /* 0.5 WAS TOO FAINT TO READ (owner, 2026-09-29: "its hard for me to read
-     the example text for the two questions"). Half strength, italic, at
-     the small size AND over the field's wash was four quietings stacked on
-     one line. It keeps the slope and stays under the person's full ink, so
-     it still reads as the app's example rather than something written. */
-  .av-write textarea::placeholder {
-    color: var(--ink); opacity: 0.72; font-style: italic;
-    font-size: var(--t-label); }
   /* THE PAPER ANSWERS THE PEN. A damp patch of the area's wash behind the
      field while it has focus — not a box, and not a second set of rules,
      which would now be arguing with the page's own. */
-  /* NO BOX ON FOCUS (owner, 2026-08-28: "when I click on it the little box
-     still appears, like the edit box — I don't want that any more"). This
-     rule was still painting a flat rectangle of the area's colour behind
-     the field, which is the shape the whole page is trying not to be. The
-     WASH is the focus signal now: it sits paler at rest and deepens when
-     the field is entered, so the watercolour does the job the box was
-     doing, and does it in the page's own material. */
-  .av-write textarea:focus { outline: none; }
   /* ---- TWO DOORS, ONE WEIGHT ----
      Identical in family, size, weight and ink, both on a drawn underline,
      neither carrying a fill or a border. The only thing separating them is
@@ -4951,30 +4849,6 @@
      then RESERVED on the chips block below, which is the only content that
      still runs level with it — reserved rather than avoided, so the chips
      wrap inside their own width instead of under a drawing. */
-  /* ---- IT SPENDS THE OVERHANG IT WAS ALREADY PAYING FOR ----
-     Owner, 2026-08-28: "the picture is so small I can't tell what it is."
-     This scrap is positioned rather than laid out FOR ONE REASON — so it can
-     cross the sheet's torn fore-edge, which a child of the masked sheet
-     cannot do. It was then tucked almost wholly inside the paper, which is
-     paying that cost and not using it. Hanging it past the edge buys width
-     that costs the text column nothing, because the part over the page does
-     not grow.
-     CAPPED THE WAY THE BOARD'S MARGIN WAS, and for the same reason: an
-     overhang wider than the room beside the page makes the overlay a scroll
-     container, and the ✕ is positioned against that. Never more than what
-     is spare, and nothing at all once the page fills the window. */
-  .av-page { --scrap-out: min(70px, max(0px, (100vw - var(--x-w)) / 2 - 34px)); }
-  /* The top is set BELOW THE ✕, not by the rhythm: the mark is chrome
-     positioned against the overlay, so it does not move with this page's
-     rules and the study has to clear it by measurement. */
-  .av-scrap { position: absolute; top: calc(var(--lead) * 2.5 + 12px);
-    /* It lay across the board's margin; with no board it lies on the
-       PAPER, inside the fore-edge, where a scrap on a page actually sits. */
-    right: calc(-1 * var(--scrap-out));
-    width: 166px; z-index: 3; pointer-events: none;
-    transform: rotate(3.2deg);
-    filter: drop-shadow(0 6px 12px rgba(24, 30, 34, 0.32)); }
-  .av-scrap-sheet { display: block; padding: 12px 10px 10px; line-height: 0; }
   /* A scrap is UNRULED (item 85) — the page's ruling stops at its edge,
      which is what makes it read as a separate piece of paper. */
   /* A FRESHER PIECE OF PAPER THAN THE PAGE — A SHADE, NOT A DIFFERENT
@@ -4991,9 +4865,6 @@
      most of that work anyway.
      Opaque, because the page's ruling must stop at its edge — a translucent
      scrap would show the rules straight through and give it away. */
-  .av-scrap-sheet.torn-sheet::before { background-color: #F3E5C7; background-image:
-      radial-gradient(circle at 20% 10%, rgba(var(--margin-ink),0.11), transparent 58%),
-      radial-gradient(circle at 86% 90%, rgba(111,91,60,0.1), transparent 55%); }
   .av-spec { display: block; width: 100%; height: auto; overflow: visible; }
   /* ---- THE SPECIMEN'S OWN MATERIALS ----
      Shared: the FAQ and chapters pages draw plates with these too, so they
@@ -5012,45 +4883,6 @@
      0.74 of the app's ink and it was the highest-contrast object on the
      page; at 0.34 it reads as a study on a scrap rather than as the thing
      the page is about. Same ink, less of it. */
-  /* ---- HOLD THE INK BACK, NOT THE PAINT (owner, 2026-08-28) ----
-     "What happened to my colour on my wheat? Some of them are missing."
-     The scrap muted EVERYTHING when it was asked to bring the plate's
-     contrast down, and contrast was never the paint's doing — it was the
-     ink's. Held at 0.26 on cream, the two low-contrast hues simply stopped
-     existing: career's warm brown and growth's olive sit within a few
-     points of the paper's own value, so a quarter-strength wash of either
-     is indistinguishable from nothing, and the plate read as an uncoloured
-     line drawing. The greens and the violet survived, which is exactly why
-     it looked like "some of them" rather than a setting.
-     THE INK STAYS DOWN — 0.34 against the drawing's own 0.74 — because the
-     ink is what made the plate the loudest thing on the sheet and what the
-     rule "nothing here is darker than the heading" was written about. The
-     PAINT goes back up to near its own values: colour at this saturation on
-     this paper was never what was shouting. */
-  .av-scrap .spec-ink { stroke: var(--ink); opacity: 0.34; }
-  .av-scrap .spec-w1 { opacity: 0.38; }
-  .av-scrap .spec-w2 { opacity: 0.3; }
-  .av-scrap .spec-rim { opacity: 0.24; }
-  .av-scrap .spec-grain { opacity: 0.26; }
-  .av-scrap .spec-spatter { opacity: 0.7; }
-  /* THE BLOOM MOVES THE WHOLE DRAWING, NOT ITS LAYERS. Animating the ink
-     group to `opacity: 1` with fill-mode `both` PINS it at 1 when the
-     animation ends — which silently overrode the scrap's held-down
-     contrast and put the plate back to full ink a beat after it appeared.
-     A fill-mode animation is a declaration that outlives its own run; it
-     must therefore land on the value the design wants, or not touch the
-     property the design is setting. This touches neither: it fades and
-     scales the svg, and every layer inside keeps the opacity it was
-     given. */
-  .av-plate.bloom .av-spec { animation: specBloom 0.62s ease-out both; }
-  /* ---- THE FLECKS ----
-     Paint off the same brush that did not land on the plate. UNDER the
-     writing: negative z-index inside the sheet's own mask puts them above
-     the paper and below everything in flow, so no word ever competes with
-     one. Each is a hand-blobbed ellipse at its own angle — a grid of round
-     dots would read as a pattern, which is the one thing spatter is not. */
-  .av-flecks { position: absolute; inset: 0; z-index: -1; pointer-events: none;
-    overflow: hidden; }
   /* ---- THE SEEDBED, AT THE FOOT OF THE SHEET ----
      Left of centre and below the doors, which are right-aligned — so the
      page's last line is a drawing on one side and the two ways forward on
@@ -5058,35 +4890,8 @@
      It is inside the sheet, so the torn mask clips it: the bed can run to
      the paper's edge and be torn off with it, which is what a thing
      painted ON the page does. */
-  /* BIGGER, AND THE FOOT GREW WITH IT (owner, 2026-08-28). The scene was
-     301px across in a 108px foot, which put its top edge INSIDE the doors'
-     row — it only looked clear because the doors are right-aligned and the
-     bed is on the left. Widening it without widening the foot would have
-     walked it up into the buttons, so the sheet's bottom padding goes from
-     four rules to six and the drawing takes the room that opens. Its height
-     follows its width (the viewBox holds the ratio), so one number sizes
-     the whole scene. */
-  .av-bed { position: absolute; left: calc(3.6% + 26px); bottom: 14px;
-    width: min(400px, 68%); line-height: 0; pointer-events: none; z-index: 0; }
-  .av-bed-svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .av-bed-wash { mix-blend-mode: multiply; }
-  /* The earth is the area's colour at a wash, not a brown: this bed is the
-     life the vision is going into, and nothing on this page carries a hue
-     that is not doing that job. */
-  .av-bed-earth { fill: rgb(var(--cat)); opacity: 0.3; }
-  .av-bed-rim { fill: none; stroke: rgb(var(--cat)); stroke-width: 3.4;
-    vector-effect: non-scaling-stroke; opacity: 0.28; stroke-linejoin: round; }
-  .av-bed-grain { fill: rgb(var(--cat)); opacity: 0.2; mix-blend-mode: multiply; }
   /* HELD UNDER THE HEADING, like the scrap's ink. The drawing may be the
      quietest thing here and must never be the first. */
-  .av-bed-ink { stroke: var(--ink); opacity: 0.46; }
-  .av-bed-line { opacity: 0.5; }
-  .av-bed-stone { opacity: 0.72; }
-  @media (max-width: 640px) {
-    /* Wider and a little taller here: it is the only drawing on the page at
-       this width, because the margin study has no margin to lie in. */
-    .av-bed { width: 88%; bottom: 12px; }
-  }
   .av-fleck { position: absolute; display: block; background: rgb(var(--av-cat, var(--accent)));
     border-radius: 58% 42% 47% 53% / 46% 55% 45% 54%; mix-blend-mode: multiply; }
   /* The stain, in the plate's own materials: body, a darker pool inside it,
@@ -5096,29 +4901,10 @@
   @keyframes specBloom { from { opacity: 0; transform: scale(0.94); }
     to { opacity: 1; transform: scale(1); } }
   @keyframes specInk { from { opacity: 0; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .av-plate.bloom .av-spec { animation: none; } }
   @media (max-width: 640px) {
     /* The padding comes down but stays TWO RULES, so the ruling's seat and
        every gap below it survive the breakpoint unchanged. */
     /* Six rules at the foot, as at the frame width. */
-    /* ---- NO TILT WHERE THERE IS NO MARGIN TO TILT IN ----
-       A rotated box is WIDER than the element inside it: at 0.4 degrees a
-       650px-tall sheet grows about 4.5px. That is nothing beside a desktop
-       margin and is more than a phone has, so it made the overlay a scroll
-       container — which on this page is never merely cosmetic, because the
-       exit takes its corner inset from the scroll region. The tilt is a
-       nicety that needs room; at this width the sheet nearly fills the
-       screen and reads as a page without it. */
-    .av-paper { transform: none; }
-    /* THE MARGIN RESERVATION GOES WITH THE MARGIN. At this width the scrap
-       comes out of the margin and into the flow (below), so the column the
-       chips were holding open for it is a column held open for nothing —
-       and at the reading size the chips no longer fit in what is left, so
-       they ran off the sheet. The reservation exists only while there is a
-       margin to reserve. */
-    #addOverlay .av-where { padding-right: 0; }
-    .av-sheet { padding: var(--pad-top) 20px calc(var(--lead) * 6) 24px; }
     /* No margin to hang off at this width: the scrap comes inside the
        sheet's own edge and shrinks, and the chips go two-up so the grid is
        still even (2/2/2) rather than 3/3 overflowing. */
@@ -5139,20 +4925,6 @@
        joins the flow at the foot of the page, pulled up over the bottom
        tear: still a scrap lying across the sheet's edge, on the one band of
        paper nothing else is using. */
-/* ---- THE MARGIN STUDY NEEDS A MARGIN ----
-       In flow at this width it landed BELOW the sheet, hanging off the
-       bottom edge onto nothing — the break the owner reported. There is no
-       placement that works: every line of the sheet runs edge to edge here,
-       so anywhere it lies it lies on a word. It goes, and the seedbed at
-       the foot is the page's drawing at this width. A study with no margin
-       is not a smaller study; it is a different page. */
-    .av-scrap { display: none; }
-    /* FOUR RULES, NOT THREE. The field grows with what the person TYPES,
-       but a placeholder is not a value and moves no scrollHeight — so the
-       app's own example, which wraps one line further at this width, was
-       being clipped by the floor it sits in. The floor fits the longest
-       example. */
-    .av-write textarea { min-height: calc(var(--lead) * 4); }
     /* ---- THE GRID GIVES WAY AT PHONE WIDTH ----
        Two max-content columns still need 332px for the widest pair
        ("personal growth" and "relationships" at the reading size) and the
@@ -5168,11 +4940,10 @@
 
   /* ---- THE ADD PAGE IS TAIGA'S SCROLL (2026-09-30, owner) ----
      The page is the painting, and what she writes on or taps floats in it
-     (see the markup's banner). Everything above this, from `.av-page` to
-     the phone's margin study, styled the torn ruled sheet this page was
-     until today; it matches nothing now and waits in CLAUDE.md's list of
-     the known dead. The rules that still reach a kept class (the doors,
-     the query mark, the chips, the review's words) are met here by name.
+     (see the markup's banner). The torn ruled sheet this page was until
+     30 Sep had its own rules above this; they were taken out on 8 Oct.
+     The rules that still reach a kept class (the doors, the query mark,
+     the chips, the review's words) are met here by name.
      The page stands on its own ground, as the Atlas and the keeping page
      do: the silk of the scroll, a shade lighter up where the sky is, no
      blur, no scrollbar, and the window's reserved strip painted the same. */
@@ -5193,6 +4964,9 @@
     backdrop-filter: none; overscroll-behavior: contain; overflow-x: hidden;
     scrollbar-width: none; scrollbar-gutter: auto; }
   #addOverlay::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  /* laid out for a moment to be measured while the painting is drawn ahead
+     (addGroundWarm), never seen and never under a finger */
+  #addOverlay.add-warm:not(.open) { display: flex; visibility: hidden; pointer-events: none; }
   /* The world is a grid: the title, then the sky (the goal's cloud, or
      phase 2 in its place). The painting is the ground under the whole
      window (drawn to it, so nothing scrolls in phase 1; a long phase 2
@@ -10665,9 +10439,6 @@
     background: rgba(var(--cat, 58, 58, 46), 0.18); outline: none; }
 
   /* G2w: the card's quiet menu handle — rest on touch, hover on fine. */
-  @media (hover: hover) and (pointer: fine) {
-
-  }
   .hb-home-line { font-family: var(--voice-hand); font-style: italic;
     font-size: var(--t-label); color: var(--ink-muted); text-align: center;
     margin: 18px auto 6px; max-width: 56ch; }
@@ -11167,14 +10938,6 @@
      the shadow it casts is the board's colour, not a generic brown. */
   /* One sheet on the wash again, so this is the app's own paper shadow
      rather than the deep one a dark board called for. */
-  /* A LITTLE MORE LIFT THAN THE OTHER SHEETS CARRY. With the board gone
-     the paper and the wash behind it are close in value, and the earlier
-     round's whole diagnosis was that nothing on this page had anywhere to
-     sit. A board is not the only way to answer that: a deeper cast shadow
-     lifts the sheet off the wash without putting a second surface between
-     them, and it costs no colour. */
-  .av-paper { filter: drop-shadow(0 2px 4px rgba(63, 58, 48, 0.16))
-                      drop-shadow(0 14px 26px rgba(63, 58, 48, 0.3)); }
   /* ---- the add page: a book, and its own sheet width ----
      Every other book is --bf-w because every other book is READ — a column
      of rows, an atlas, a week. This one is WRITTEN IN, and 820px of paper
@@ -11773,16 +11536,16 @@
                can be pressed. -->
           <div class="add-doors" data-type-area="add/doors">
             <span class="add-fl av-lead-wrap">
-              <button class="av-door av-door-lead" id="shapeAdd">shape it with coach</button>
+              <button class="av-door av-door-lead" id="shapeAdd">shape it with Coach</button>
               <button class="av-why" id="addWhy" type="button" aria-controls="addCoachNote"
-                aria-expanded="false" aria-label="what does coach do?"
-                title="what does coach do?"></button>
+                aria-expanded="false" aria-label="what does Coach do?"
+                title="what does Coach do?"></button>
             </span>
             <button class="add-fl av-door" id="asWrittenAdd">add it myself</button>
           </div>
           <!-- What the coach door does waits behind the mark that asks it,
                `hidden` rather than removed so a reader can still reach it. -->
-          <p class="add-fl add-coach-note" id="addCoachNote" data-type-area="add/coach-note" hidden>drafts the goal, its quarter-by-quarter steps, and weekly habits, every piece yours to edit</p>
+          <p class="add-fl add-coach-note" id="addCoachNote" data-type-area="add/coach-note" hidden>drafts the goal, how long it may take, and its first steps, every piece yours to edit</p>
         </div>
       </div>
       <div id="addPhase2" class="add-fl add-review-fl" style="display:none;"></div>
@@ -12404,167 +12167,10 @@
     return o;
   }
 
-  // Each specimen returns { ink, wash[], pool[] } — the drawing, the floods
-  // beneath it, and the darker settles where the water stood longest.
-  const SPECIMENS = {
-    // HEALTH — a fern frond. Seven pairs of leaflets sampled off the
-    // rachis, sweeping forward and shortening toward the tip.
-    health() {
-      const S = [[26,134],[38,100],[50,70],[86,22]];
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.7"/>`;
-      for (let i = 0; i < 7; i++) {
-        const t = 0.1 + i * (0.8 / 6), p = specBez(S, t);
-        const len = 26 * (1 - t * 0.6) + SPEC_R(i,3) * 2;
-        [1,-1].forEach((sd, k) => {
-          ink += `<path d="${specLeaf(p.x, p.y, p.a + sd*(0.7 + SPEC_R(i,k+5)*0.16),
-            len, len*0.2, sd*len*0.22)}" stroke-width="${(0.85 + SPEC_R(i,k)*0.4).toFixed(2)}"/>`;
-        });
-      }
-      // the curl at the tip, and two loose strokes at the base
-      ink += `<path d="M 86 22 q 6 -4 4 -10" stroke-width="1.2" stroke-opacity="0.7"/>`
-        + `<path d="M 22 138 q 6 -3 10 -3" stroke-width="1" stroke-opacity="0.5"/>`;
-      return { ink, offset: [-4, 3], wash: [specWashAlong([[28,132],[34,108],[42,88],[56,66]], 20, 14, 2, 4),
-               specWashAlong([[52,74],[62,58],[72,44],[90,20]], 16, 10, 3, 4)],
-        pool: [specWashAlong([[34,120],[44,98],[54,76],[74,44]], 10, 6, 5, 4)],
-        reserve: [specGap(50, 82, 26, 3.4, -0.95, 91), specGap(74, 44, 17, 2.6, -0.8, 93),
-                  specGap(32, 116, 13, 2.2, -1.1, 95)] };
-    },
-    // CAREER — an ear of wheat: grains up the axis, awns above them.
-    career() {
-      const S = [[60,138],[57,112],[56,86],[57,66]];
-      const E = [[57,66],[56,52],[57,34],[58,16]];
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.8"/>`;
-      for (let i = 0; i < 9; i++) {
-        const t = i / 8, p = specBez(E, t), len = 18 - t * 6;
-        [1,-1].forEach(sd => {
-          const a = p.a + sd * 0.6;
-          ink += `<path d="${specLeaf(p.x, p.y, a, len, len*0.38, sd*2)}" stroke-width="1.15"/>`;
-          const tx = p.x + Math.cos(a)*len, ty = p.y + Math.sin(a)*len;
-          ink += `<path d="M ${tx.toFixed(1)} ${ty.toFixed(1)} Q ${(tx + sd*3).toFixed(1)}`
-            + ` ${(ty - 12).toFixed(1)} ${(tx + sd*(4 + SPEC_R(i,4)*4)).toFixed(1)}`
-            + ` ${(ty - 24 - SPEC_R(i,9)*8).toFixed(1)}" stroke-width="0.75" stroke-opacity="0.8"/>`;
-        });
-      }
-      ink += `<path d="${specLeaf(58, 108, -1.15, 38, 8, 10)}" stroke-width="1.3"/>`;
-      return { ink, offset: [5, 2.5], wash: [specWashAlong(E, 22, 13, 11, 5), specWashAlong(S, 8, 11, 13, 4)],
-        pool: [specWashAlong([[57,62],[56,50],[57,34],[58,20]], 10, 6, 17, 4)],
-        reserve: [specGap(51, 42, 24, 2.6, 1.5, 96), specGap(64, 98, 20, 2.2, 1.45, 98),
-                  specGap(66, 28, 13, 2, 1.4, 100)] };
-    },
-    // FINANCE — honesty, Lunaria annua: flat coin pods, seeds showing
-    // through the ones the light is behind.
-    finance() {
-      const S = [[64,138],[56,112],[62,86],[56,58]];
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.8"/>`;
-      const pods = [[32,96,15],[82,76,13],[48,42,16],[86,32,9]];
-      pods.forEach(([cx, cy, r], i) => {
-        const p = specBez(S, 0.16 + i * 0.25);
-        ink += `<path d="M ${p.x.toFixed(1)} ${p.y.toFixed(1)} Q ${((p.x+cx)/2).toFixed(1)}`
-          + ` ${((p.y+cy)/2 + 5).toFixed(1)} ${cx} ${cy}" stroke-width="1"/>`
-          + `<path d="${specRing(cx, cy, r, 40+i, 0.1)}" stroke-width="1.3"/>`
-          + `<path d="${specRing(cx, cy, r*0.76, 60+i, 0.12)}" stroke-width="0.6" stroke-opacity="0.5"/>`;
-        if (i % 2 === 0) ink += `<path d="${specRing(cx - r*0.3, cy + 1, 2.4, 70+i, 0.2)}" stroke-width="0.85"/>`
-          + `<path d="${specRing(cx + r*0.32, cy - r*0.22, 2.1, 80+i, 0.2)}" stroke-width="0.85"/>`;
-      });
-      return { ink, wash: pods.map(([cx, cy, r], i) => specWashRound(cx, cy, r * 1.16, 23 + i))
-          .concat([specWashAlong(S, 6, 8, 27, 5)]),
-        pool: [specWashRound(32, 96, 10, 29), specWashRound(48, 42, 10, 31)],
-        offset: [-4, -3],
-        reserve: [specGap(29, 91, 15, 2.6, -0.5, 99), specGap(52, 38, 16, 2.8, 0.4, 101),
-                  specGap(84, 73, 12, 2.2, -0.7, 103)] };
-    },
-    // RELATIONSHIPS — two on one stem. The pair is the whole point, so
-    // they hang from one fork and neither is the bigger fruit.
-    relationships() {
-      const S = [[58,12],[56,30],[54,42],[54,56]];
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.8"/>`
-        + `<path d="M 54 56 C 46 70, 38 82, 32 92" stroke-width="1.5"/>`
-        + `<path d="M 54 56 C 66 68, 76 78, 82 88" stroke-width="1.5"/>`
-        + `<path d="${specRing(30, 112, 18, 70, 0.09)}" stroke-width="1.55"/>`
-        + `<path d="${specRing(84, 108, 16, 77, 0.09)}" stroke-width="1.55"/>`
-        // the light left on each: a short unclosed arc, never a highlight blob
-        + `<path d="M 20 106 q 3 -8 12 -10" stroke-width="0.75" stroke-opacity="0.55"/>`
-        + `<path d="M 76 102 q 3 -7 10 -8" stroke-width="0.75" stroke-opacity="0.55"/>`
-        + `<path d="${specLeaf(55, 44, -0.2, 32, 10, -8)}" stroke-width="1.3"/>`
-        + `<path d="M 55 44 Q 69 40 85 37" stroke-width="0.65" stroke-opacity="0.5"/>`;
-      return { ink, wash: [specWashRound(30, 112, 21, 31), specWashRound(84, 108, 19, 33),
-               specWashAlong([[57,16],[55,34],[52,46],[40,74]], 5, 7, 35, 4)],
-        pool: [specWashRound(28, 116, 12, 39), specWashRound(86, 112, 10, 41)],
-        offset: [4, -3.5],
-        reserve: [specGap(24, 104, 15, 3, -0.9, 105), specGap(79, 100, 13, 2.6, -0.9, 107)] };
-    },
-    // GROWTH — a fiddlehead. The crozier is a real spiral, still unwinding;
-    // the pinnae along the stem are furled, not yet open.
-    growth() {
-      const S = [[52,138],[48,110],[58,86],[70,66]];
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.9"/>`;
-      const cx = 64, cy = 40, r0 = 26;
-      let d = "";
-      for (let i = 0; i <= 170; i++) {
-        const th = (i/170) * 2.2 * Math.PI * 2 + 1.4, r = r0 * (1 - (i/170) * 0.88);
-        d += (i ? " L " : "M ") + (cx + Math.cos(th)*r).toFixed(2) + " "
-          + (cy + Math.sin(th)*r*0.94).toFixed(2);
-      }
-      ink += `<path d="${d}" stroke-width="1.9"/>`;
-      // The pinnae are still furled — each a little hook off the stem, not
-      // a straight spine. Length and angle both wander, or five identical
-      // pairs read as a fish skeleton (they did).
-      for (let i = 0; i < 5; i++) {
-        const t = 0.1 + i * 0.19, p = specBez(S, t);
-        [1,-1].forEach((sd, k) => {
-          const len = (15 - i * 1.6) * (0.8 + SPEC_R(i, k + 3) * 0.45);
-          const a = p.a + sd * (0.85 + SPEC_R(i, k + 9) * 0.4);
-          const tx = p.x + Math.cos(a)*len, ty = p.y + Math.sin(a)*len;
-          ink += `<path d="M ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
-            + ` Q ${(p.x + Math.cos(a)*len*0.7 - Math.sin(a)*sd*3).toFixed(1)}`
-            + ` ${(p.y + Math.sin(a)*len*0.7 + Math.cos(a)*sd*3).toFixed(1)}`
-            + ` ${tx.toFixed(1)} ${ty.toFixed(1)}`
-            + ` q ${(sd*-2.5).toFixed(1)} ${(-3).toFixed(1)} ${(sd*1.5).toFixed(1)} ${(-4.5).toFixed(1)}"`
-            + ` stroke-width="1.05"/>`;
-        });
-      }
-      return { ink, wash: [specWashRound(64, 40, 29, 43), specWashAlong(S, 13, 10, 45, 5)],
-        pool: [specWashRound(66, 44, 15, 47)],
-        offset: [-4.5, 2],
-        reserve: [specGap(58, 32, 18, 3, 0.6, 109), specGap(50, 108, 15, 2.4, 1.4, 111)] };
-    },
-    // MEANING — a thistle: an armoured cup, and the fire on top of it.
-    meaning() {
-      const S = [[58,138],[54,114],[58,98],[57,86]];
-      // THE CUP IS AN URN, NOT A BALL — wider at the shoulder, drawn in
-      // by the waist, so the tuft sits ON something. A circle with lines
-      // across it read as a beach ball, which it did.
-      let ink = `<path d="${specCurve(S)}" stroke-width="1.9"/>`
-        + `<path d="${specBlob([[58,50],[80,56],[84,74],[74,92],[58,97],[42,92],[32,74],[36,56]], 51, 3)}"`
-        + ` stroke-width="1.6"/>`;
-      // the bracts: overlapping rows of short scales, each tipped with its
-      // own spine — armour, which is what a thistle's cup is
-      for (let r = 0; r < 4; r++) {
-        const y = 60 + r * 9.5, half = 22 - r * 2.4, n = 5 - (r > 2 ? 1 : 0);
-        for (let i = 0; i < n; i++) {
-          const x = 58 - half + (i + (r % 2) * 0.5) * (half * 2 / n);
-          ink += `<path d="M ${x.toFixed(1)} ${y.toFixed(1)} q ${(half*2/n*0.5).toFixed(1)} 5`
-            + ` ${(half*2/n*0.94).toFixed(1)} 0" stroke-width="0.75" stroke-opacity="0.6"/>`
-            + `<path d="M ${(x + half*2/n*0.47).toFixed(1)} ${(y + 4.4).toFixed(1)} l`
-            + ` ${((SPEC_R(i,r)-0.5)*3).toFixed(1)} 3.4" stroke-width="0.6" stroke-opacity="0.5"/>`;
-        }
-      }
-      for (let i = 0; i < 21; i++) {
-        const a = -Math.PI/2 + (i - 10) * 0.105 + (SPEC_R(i,53)-0.5)*0.09;
-        const len = 24 + SPEC_R(i,59) * 13;
-        const x0 = 58 + (i - 10) * 1.9, y0 = 51;
-        ink += `<path d="M ${x0.toFixed(1)} ${y0} Q ${(x0 + Math.cos(a)*len*0.5 + (SPEC_R(i,61)-0.5)*7).toFixed(1)}`
-          + ` ${(y0 + Math.sin(a)*len*0.5).toFixed(1)} ${(x0 + Math.cos(a)*len).toFixed(1)}`
-          + ` ${(y0 + Math.sin(a)*len).toFixed(1)}" stroke-width="${(0.7 + SPEC_R(i,67)*0.6).toFixed(2)}"`
-          + ` stroke-opacity="${(0.6 + SPEC_R(i,71)*0.4).toFixed(2)}"/>`;
-      }
-      return { ink, wash: [specBlob([[58,26],[80,32],[86,52],[58,58],[30,52],[36,32]], 53, 7),
-               specWashRound(58, 74, 27, 55), specWashAlong(S, 7, 9, 57, 4)],
-        pool: [specWashRound(58, 78, 16, 59)],
-        offset: [3.5, 3],
-        reserve: [specGap(46, 70, 14, 2.2, -0.7, 113), specGap(72, 34, 11, 2, 0.8, 115)] };
-    },
-  };
+  // The six specimen plates (SPECIMENS, specimenSvg) were drawn here until
+  // 2026-10-08: the board and the chapter draw the area prints now
+  // (areaPrintSvg) and the add page is Taiga's scroll, so nothing drew them.
+  // The brush helpers around them stay: the moon gate and the prints use them.
   // ---- THE LINES YOU WRITE ON ARE THE COLOUR OF THE LIFE YOU PICKED ----
   // The rules under the two writing fields were one fixed green-grey, drawn
   // once and pasted into the stylesheet. They are drawn per area now: same
@@ -12749,39 +12355,6 @@
   //   THE RESERVE. Two or three shapes are held back to bare paper — the
   //   white the painter leaves rather than the highlight they add. It is a
   //   mask, so the gaps punch through every flood at once.
-  let specPlateSeq = 0;
-  function specimenSvg(area) {
-    const key = SPECIMENS[area] ? area : "growth";
-    const c = CATS[key] || CATS.Other, S = SPECIMENS[key]();
-    // ONE ID PER DRAWING, NOT PER AREA (2026-08-28). This was `"spec-" + key`,
-    // which is unique only while no two plates of the SAME AREA are on screen
-    // at once — true until the board grew a plate on every goal card, and then
-    // false for anyone whose board and open chapter share an area. Duplicate
-    // ids do not error: the FIRST in document order wins for every reference,
-    // so the chapter's wash was masked by the card's mask, which is positioned
-    // for a different box, and the paint vanished while the ink (masked by
-    // nothing) stayed. The plate read as a bare line drawing and the bug
-    // looked exactly like "the colour is gone".
-    const uid = "spec-" + key + "-" + (++specPlateSeq);
-    const paint = (cls, ds) => ds.map(d => `<path class="${cls}" d="${d}"/>`).join("");
-    const rim = ds => ds.map(d => `<path class="spec-rim" d="${d}"/>`).join("");
-    const gaps = (S.reserve || []).map(d => `<path d="${d}" fill="#000"/>`).join("");
-    const off = S.offset || [-3.5, 2.5];
-    return `<svg class="av-spec ${c.cls}" viewBox="0 0 120 150" role="img"
-      aria-label="${escHtml(c.label)}, drawn"><title>${escHtml(c.label)}</title>
-      <mask id="${uid}" maskUnits="userSpaceOnUse" x="-10" y="-10" width="140" height="170">
-        <rect x="-10" y="-10" width="140" height="170" fill="#fff"/>${gaps}</mask>
-      <g mask="url(#${uid})" transform="translate(${off[0]} ${off[1]})">
-        <g class="spec-wash" filter="url(#wash)">
-          ${paint("spec-w1", S.wash)}${paint("spec-w2", S.pool)}${rim(S.wash)}</g>
-        <g class="spec-grain" filter="url(#granulate)">${paint("", S.wash)}</g>
-      </g>
-      <g class="spec-ink" filter="url(#rough)" fill="none"
-         stroke-linecap="round" stroke-linejoin="round">${S.ink}</g>
-      <g class="spec-spatter">${specSpatter(key.length * 7 + 3, 14, [12, 14, 96, 122])}</g>
-    </svg>`;
-  }
-
   // ---- THE SEVENTH SPECIMEN: a sycamore key (2026-08-27) ----
   // Facts About Life gets a plate of its own, and it had to be a plant the
   // six do not own. THE SHAPE IS AS MUCH OF THE IDENTIFICATION AS THE
@@ -19743,8 +19316,84 @@
         <div class="ch-q-rule"></div>
         <div class="ch-work">${workRows()}</div>
         ${cutFold}
-        <div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" type="button">+ add a habit</button></div>
+        <div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" type="button">+ add a habit</button><button class="rm-add-lib" type="button" aria-expanded="${o.lib ? "true" : "false"}">+ from my library</button></div>
       </div>`;
+    // ---- FROM MY LIBRARY (2026-10-08, the quarters coming out) ----
+    // The habits her library offers this goal, chosen by THE CHOICE. First
+    // she says which of the library's own goals is closest to hers (her
+    // pick, from the few in this goal's area); then the library asks only
+    // what the habits it would offer depend on; then each habit stands as a
+    // ruled entry with its size in the library's own words, and she adds it
+    // to her week, keeps it for later, or says it is not for her (never
+    // offered again). Nothing is added until she taps.
+    const libSize = pk => {
+      const t = pk.times;
+      const often = t === "daily" ? "every day" : t === "once" ? "once" : t === 1 ? "once a week"
+        : t === 0.5 ? "every two weeks" : t === 0.25 ? "once a month" : Number(t) < 0.25 ? "now and then"
+        : t + " times a week";
+      return `${pk.level}, ${often}, ${pk.minutes} min`;
+    };
+    const libBlock = (() => {
+      if (!o.lib) return ``;
+      const head = `<div class="ch-q-head"><span class="ch-q-label rm-qlabel">from my library</span></div><div class="ch-q-rule"></div>`;
+      if (!LIBRARY) return `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="library">${head}<p class="ch-none-work">opening the library.</p></div>`;
+      const options = libraryGoalsFor(LIBRARY, g.category);
+      if (!g.libraryGoal) {
+        return `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="library">${head}
+          <div class="ch-lib-ask"><div class="ch-step">which of these is closest to this goal?</div>
+          <div class="ci-review-actions">${options.map(x => `<button type="button" class="ci-chip" data-lib-goal="${escHtml(libraryGoalKey(x))}">${escHtml(appVoice(x.goal, false))}</button>`).join("")}
+          <button type="button" class="ci-chip" data-lib-goal="none">none of these</button></div></div></div>`;
+      }
+      if (g.libraryGoal === "none") {
+        return `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="library">${head}
+          <div class="ch-sk-note">your library has nothing close to this one yet, so "+ add a habit" is the way to write your own.
+          <button type="button" class="ch-work-back" data-lib-goal-change="1">choose again</button></div></div>`;
+      }
+      const lg = libraryGoalOf(LIBRARY, g.libraryGoal);
+      const prop = proposalFor(g);
+      const fields = LIBRARY.fields || {};
+      // A question she has answered folds into one line of her answers,
+      // which opens again to change one. A field that takes several answers
+      // (what her body needs worked around) toggles each, and "none of
+      // these" answers it with none.
+      const facts = ciLibrary.facts;
+      const isOn = (k, v) => [].concat(facts[k] == null ? [] : facts[k]).map(String).includes(String(v));
+      const askOne = k => `<div class="ch-lib-ask"><div class="ch-sk-note">${escHtml(appVoice(fields[k].label, false))}</div>
+          <div class="ci-review-actions">${Object.entries(fields[k].options).map(([v, label]) =>
+            `<button type="button" class="ci-chip${isOn(k, v) ? " on" : ""}" data-lib-fact="${escHtml(k)}" data-lib-val="${escHtml(v)}"${fields[k].multi ? ` data-lib-multi="1"` : ``}>${escHtml(appVoice(label, false))}</button>`).join("")}${
+            fields[k].multi ? `<button type="button" class="ci-chip${Array.isArray(facts[k]) && !facts[k].length ? " on" : ""}" data-lib-fact="${escHtml(k)}" data-lib-val="" data-lib-none="1">none of these</button>` : ``}</div></div>`;
+      const answered = prop.factsAsked.filter(k => !prop.factsNeeded.includes(k));
+      const answerWords = k => [].concat(facts[k]).map(v => (fields[k].options || {})[v]).filter(Boolean)
+        .map(w => appVoice(w, false)).join(" and ") || "none of these";
+      const ask = prop.factsNeeded.map(askOne).join("") + (answered.length ? (o.libAsk ? answered.map(askOne).join("")
+          + `<div class="ch-sk-note"><button type="button" class="ch-work-back" data-lib-ask-done="1">done</button></div>`
+        : `<div class="ch-sk-note">the library knows: ${escHtml(answered.map(answerWords).join(", "))}. <button type="button" class="ch-work-back" data-lib-ask="1">change</button></div>`) : ``);
+      const b = libraryBudget();
+      const weekLine = b.budgetMin != null
+        ? `<div class="ch-sk-note">my week has ${Math.round(b.budgetMin / 6) / 10} hours, and ${Math.round(b.spentMin / 6) / 10} are already spoken for.</div>` : ``;
+      const main = prop.picks.filter(pk => !pk.support), side = prop.picks.filter(pk => pk.support);
+      const pickRow = pk => `<div class="ch-lib-pick" data-pick="${escHtml(pk.id)}" data-type-area="chapters/work">
+          <div class="ch-step">${escHtml(appVoice(pk.name, false))}</div>
+          <div class="ch-sk-note">${escHtml(appVoice(pk.promise, false))}</div>
+          <div class="ch-q-note">${escHtml(libSize(pk))}</div>
+          <div class="ch-sk-note">${escHtml(appVoice(pk.levelText, false))}</div>
+          ${pk.fit.map(f => `<div class="ch-sk-note">${escHtml(appVoice(f, false))}</div>`).join("")}
+          ${typeof pk.safety === "string" && pk.safety ? `<div class="ch-sk-note">${escHtml(appVoice(pk.safety, false))}</div>` : ``}
+          ${pk.reason ? `<div class="ch-sk-note">${escHtml(pk.reason)}</div>` : ``}
+          <div class="rm-work-actions">
+            <button type="button" class="${pk.stage === "trying" ? "btn-solid" : "rm-quiet-act"}" data-lib-add="trying">add to my week</button>
+            <button type="button" class="${pk.stage === "waiting" ? "btn-solid" : "rm-quiet-act"}" data-lib-add="waiting">keep for later</button>
+            <button type="button" class="rm-quiet-act" data-lib-no="1">not for me</button>
+          </div></div>`;
+      return `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="library">${head}
+        <div class="ch-sk-note">closest to: ${escHtml(appVoice(lg ? lg.goal : g.libraryGoal, false))}
+          <button type="button" class="ch-work-back" data-lib-goal-change="1">change</button></div>
+        ${weekLine}${ask}
+        ${main.length ? main.map(pickRow).join("") : `<p class="ch-none-work">everything your library has for this goal is already on it.</p>`}
+        ${side.length ? (o.libMore ? side.map(pickRow).join("")
+          : `<button type="button" class="rm-add-lib" data-lib-more="1">${side.length} more that help this goal from the side</button>`) : ``}
+      </div>`;
+    })();
     const mount = document.getElementById(o.mount || "roadmapMount");
     // ---- THE CHAPTER, ON PAPER ----
     // The header band was bark and it was the heaviest thing on the page.
@@ -19782,6 +19431,7 @@
           </div>
           <div class="rm-body">
           ${nowBlock}
+          ${libBlock}
           ${waitingBlock}
           ${letGoBlock}
           ${notesBlock}
@@ -19823,6 +19473,59 @@
     inkUnderline(document.getElementById("rmDelete"), 1, "currentColor");
     inkUnderline(document.getElementById("rmPause"), 2, "currentColor");
 
+    // ---- FROM MY LIBRARY, wired ----
+    const libDoor = mount.querySelector(".rm-add-work-row .rm-add-lib");
+    if (libDoor) libDoor.addEventListener("click", () => {
+      if (o.lib) { again({ lib: false, libMore: false }); return; }
+      again({ lib: true });
+      if (!LIBRARY) loadLibrary().then(() => again({ lib: true })).catch(() => showToast("the library didn't open, try again in a moment."));
+    });
+    const gLive = () => goals.find(x => x.id === g.id) || g;
+    mount.querySelectorAll("[data-lib-goal]").forEach(btn => btn.addEventListener("click", () => {
+      gLive().libraryGoal = btn.dataset.libGoal;
+      saveState();
+      again({ lib: true });
+    }));
+    mount.querySelectorAll("[data-lib-goal-change]").forEach(btn => btn.addEventListener("click", () => {
+      gLive().libraryGoal = null;
+      saveState();
+      again({ lib: true });
+    }));
+    mount.querySelectorAll("[data-lib-fact]").forEach(btn => btn.addEventListener("click", () => {
+      const k = btn.dataset.libFact, v = btn.dataset.libVal;
+      if (btn.dataset.libNone) setLibraryFact(k, []);
+      else if (btn.dataset.libMulti) {
+        const cur = [].concat(ciLibrary.facts[k] == null ? [] : ciLibrary.facts[k]).map(String);
+        setLibraryFact(k, cur.includes(v) ? cur.filter(x => x !== v) : cur.concat(v));
+      } else setLibraryFact(k, v);
+      saveState();
+      // a field that takes several answers stays open while she picks
+      again({ lib: true, libAsk: o.libAsk || !!btn.dataset.libMulti });
+    }));
+    mount.querySelectorAll("[data-lib-ask]").forEach(btn => btn.addEventListener("click", () => again({ lib: true, libAsk: true })));
+    mount.querySelectorAll("[data-lib-ask-done]").forEach(btn => btn.addEventListener("click", () => again({ lib: true, libAsk: false })));
+    mount.querySelectorAll("[data-lib-more]").forEach(btn => btn.addEventListener("click", () => again({ lib: true, libMore: true })));
+    mount.querySelectorAll(".ch-lib-pick").forEach(row => {
+      const id = row.dataset.pick;
+      const pickNow = () => proposalFor(gLive()).picks.find(pk => pk.id === id);
+      row.querySelectorAll("[data-lib-add]").forEach(btn => btn.addEventListener("click", () => {
+        const pk = pickNow();
+        if (!pk) return;
+        const m = acceptLibraryHabit(gLive(), pk, btn.dataset.libAdd);
+        if (!m) return;
+        saveState();
+        renderAll();
+        again({ lib: true });
+        if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+        showToast(m.stage === "waiting" ? `"${appVoice(m.label, false).slice(0, 40)}" is kept for later.` : `"${appVoice(m.label, false).slice(0, 40)}" is on your week.`);
+      }));
+      const no = row.querySelector("[data-lib-no]");
+      if (no) no.addEventListener("click", () => {
+        declineLibraryHabit(gLive(), id);
+        saveState();
+        again({ lib: true });
+      });
+    });
     // A WAITING HABIT STARTS, A LET-GO ONE COMES BACK: both by one tap,
     // both to `trying`, both written on the live goal at the tap.
     mount.querySelectorAll("[data-start-mech], [data-back-stage]").forEach(btn => btn.addEventListener("click", () => {
@@ -27834,6 +27537,202 @@
   // and went red the day placement added a rung, reporting a schema fault
   // where there was none.
   const OCC_SCHEMA = 3;
+  // ---- THE CHOICE (2026-10-08, the quarters coming out) ----
+  // Owner, 2026-09-29: goals hold habits, from the library she wrote. This is
+  // the part that chooses. It is RULES, not a model: the same goal, the same
+  // answers and the same week give the same proposal every time, and every
+  // habit it offers is one of hers, at one of its three sizes.
+  //
+  // THE LIBRARY is assets/library/habits.json, fetched once and kept. It
+  // ships with the phone's copy (sw.js lists it), so it is there offline.
+  let LIBRARY = null, libraryLoading = null;
+  function loadLibrary() {
+    if (LIBRARY) return Promise.resolve(LIBRARY);
+    if (!libraryLoading) libraryLoading = fetch("assets/library/habits.json")
+      .then(r => { if (!r.ok) throw new Error("library " + r.status); return r.json(); })
+      .then(j => (LIBRARY = j))
+      .catch(e => { libraryLoading = null; throw e; });
+    return libraryLoading;
+  }
+  // The library goals of one area, for the "closest to" pick.
+  const libraryGoalsFor = (lib, area) => ((lib && lib.goals) || []).filter(x => x.area === area);
+  // A goal's library goal is written as "<area>:<id>", because the library's
+  // goal ids repeat across areas ("enjoy" is a growth goal and a career goal).
+  const libraryGoalKey = x => x.area + ":" + x.id;
+  const libraryGoalOf = (lib, key) => ((lib && lib.goals) || []).find(x => libraryGoalKey(x) === key) || null;
+
+  // A CONDITION, READ AGAINST HER ANSWERS. A condition names fields; it holds
+  // when every field it names has an answer among the values it lists. A field
+  // with no answer yet does not hold (the habit is not ruled out on a guess),
+  // and the few keys that describe the goal rather than the person (goalKinds,
+  // want, fn) cannot be read from answers, so they never hold.
+  const LIB_GOAL_SIDE = new Set(["fn", "rule", "goalKinds", "want", "shape", "stage", "focus"]);
+  function libCondHolds(cond, facts) {
+    if (!cond || typeof cond !== "object") return false;
+    const keys = Object.keys(cond);
+    if (!keys.length) return false;
+    return keys.every(k => {
+      if (LIB_GOAL_SIDE.has(k)) return false;
+      const v = facts[k];
+      if (v == null || v === "") return false;
+      const want = [].concat(cond[k]).map(String);
+      return [].concat(v).map(String).some(x => want.includes(x));
+    });
+  }
+  // when … unless …: the unless may be one condition or a list of them.
+  const libApplies = (n, facts) => libCondHolds(n.when, facts)
+    && !(n.unless && [].concat(n.unless).some(u => libCondHolds(u, facts)));
+  // The fields a condition reads that are hers to answer.
+  const libFieldsOf = (cond, fields) => [].concat(cond || []).flatMap(c =>
+    Object.keys(c || {}).filter(k => !LIB_GOAL_SIDE.has(k) && fields[k]));
+
+  // THE STARTING SIZE. Light, unless she has said she builds steadily or wants
+  // pushing, and the month has not been more than she can keep up with. Full
+  // is never where a habit starts: it is where one grows to, in the check in.
+  function libLevelFor(facts) {
+    const steady = facts.ambition === "steady" || facts.ambition === "push";
+    const strained = facts.stress === "high" || String(facts.lowmood) === "true";
+    return steady && !strained ? "standard" : "light";
+  }
+  // One week of a level, in minutes. Daily is seven; a thing done once costs
+  // its minutes in the week it is done; every two weeks costs half.
+  const libWeekMinutes = L => !L ? 0
+    : L.times === "daily" ? 7 * L.minutes
+    : L.times === "once" ? L.minutes
+    : Math.round(Number(L.times) * L.minutes);
+
+  // chooseHabits: one goal's proposal.
+  //   lib        the library
+  //   goalKey    the goal's library goal, "<area>:<id>"
+  //   facts      her answers
+  //   onGoal     library ids already on this goal (never offered twice)
+  //   declined   library ids she said were not for her, for this goal
+  //   budgetMin  her bad week, in minutes (null: not stated)
+  //   spentMin   what the habits already on her week take, in minutes
+  // Returns { picks, factsNeeded }. Every pick carries the stage it is
+  // offered at: "trying" (on the week now) or "waiting" (set aside, with the
+  // reason in words), and nothing becomes real until she accepts it.
+  const LIB_NOW_MAX = 2;
+  const LIB_NEVER_ASKED = new Set(["lowmood"]);
+  function chooseHabits(o) {
+    const lib = o.lib, fields = (lib && lib.fields) || {};
+    const facts = o.facts || {};
+    const g = libraryGoalOf(lib, o.goalKey);
+    if (!g) return { picks: [], factsNeeded: [], factsAsked: [] };
+    const onGoal = new Set(o.onGoal || []), declined = new Set(o.declined || []);
+    const order = g.habits.slice().sort((a, b) => a.step - b.step)
+      .map(x => ({ id: x.id, step: x.step }))
+      .concat((g.support || []).map(id => ({ id, step: 9, support: true })));
+    const seen = new Set();
+    const cands = order.filter(c => {
+      if (seen.has(c.id) || !lib.habits[c.id] || onGoal.has(c.id) || declined.has(c.id)) return false;
+      seen.add(c.id); return true;
+    });
+    const level = libLevelFor(facts);
+    const budget = o.budgetMin == null ? null : Number(o.budgetMin);
+    // how many may start now: two per goal, and fewer when the board's own
+    // cap (a history of dropping things allows three in all) has less left
+    const nowCap = Math.min(LIB_NOW_MAX, o.nowLeft == null ? Infinity : Math.max(0, o.nowLeft));
+    let spent = Number(o.spentMin) || 0, now = 0;
+    const picks = [];
+    cands.forEach(c => {
+      const h = lib.habits[c.id];
+      const out = (h.notFor || []).find(n => libApplies(n, facts));
+      if (out) return;   // not for her, by the library's own rule: not offered at all
+      const L = h.levels[level] || h.levels.light;
+      const wk = libWeekMinutes(L);
+      let stage = "trying", reason = "";
+      if (c.step > 1) { stage = "waiting"; reason = c.support ? "it helps this goal from the side, for when the first ones are going" : "for later, once the first ones are going"; }
+      else if (now >= nowCap) { stage = "waiting"; reason = nowCap < LIB_NOW_MAX ? "a few at a time is the version that survives a bad week" : "two at a time is how a new start holds"; }
+      else if (budget != null && spent + wk > budget) {
+        stage = "waiting";
+        reason = `your week has ${Math.round(budget / 60 * 10) / 10} hours, and this would put it over`;
+      }
+      if (stage === "trying") { now++; spent += wk; }
+      const fit = (h.fitNotes || []).filter(n => libApplies(n, facts)).map(n => n.text);
+      const ifThen = ((h.ifThenExamplesFor || []).find(n => libApplies(n, facts)) || {}).text || h.ifThenExample || "";
+      picks.push({ id: c.id, step: c.step, support: !!c.support, name: h.name, promise: h.promise, core: h.core,
+        level, levelText: L.text, times: L.times, minutes: L.minutes, weekMin: wk,
+        stage, reason, fit, ifThen, safety: h.safety || null });
+    });
+    // THE QUESTIONS WORTH ASKING: only the fields that rule a habit offered
+    // here in or out, and the two the starting size reads. A fit note (time,
+    // place, cost) uses an answer when there is one, but is never the reason
+    // to ask: asked for every fit note, two goals came to thirteen questions.
+    // NEVER ASKED OUTRIGHT: `lowmood`, which the library words as a clinical
+    // screen. Unanswered, it rules nothing out, as for anyone; whether and
+    // how to ask it is the owner's decision, not a chip.
+    const need = new Set();
+    cands.forEach(c => (lib.habits[c.id].notFor || []).forEach(n =>
+      [...libFieldsOf(n.when, fields), ...libFieldsOf(n.unless, fields)].forEach(k => need.add(k))));
+    if (picks.length) { need.add("ambition"); need.add("stress"); }
+    LIB_NEVER_ASKED.forEach(k => need.delete(k));
+    const factsAsked = Object.keys(fields).filter(k => need.has(k));
+    const factsNeeded = factsAsked.filter(k => facts[k] == null || facts[k] === "");
+    return { picks, factsNeeded, factsAsked };
+  }
+
+  // THE WEEK THE PROPOSAL MUST FIT (law 3): her stated hours, and what the
+  // habits already on the sand take. A habit she wrote counts first (law 4),
+  // which is simply that it is already spent before anything is offered.
+  // THE SAME BUDGET LAW the plan has always kept (mechanismBudget): her
+  // bad-week number, halved with a cap of three habits when she has written
+  // about dropping things before, and said so on the page.
+  function libraryBudget() {
+    const it = buildIntake();
+    const stated = (it.capacity && it.capacity.statedHours) || (it.constraints || {}).hoursPerWeek || null;
+    const mb = mechanismBudget(it);
+    const hrs = stated == null ? null : mb.hours;
+    let spent = 0, trying = 0;
+    goals.filter(g => g && g.status === "active").forEach(g => (g.mechanisms || []).forEach(m => {
+      if (!m || m.dropped || m.type === "floor" || m.kind === "reminder") return;
+      if (m.stage === "waiting" || m.stage === "letgo" || m.stage === "paused") return;
+      spent += (weeklyHoursOf(m, g.id) || 0) * 60;
+      if (m.type !== "setup") trying++;
+    }));
+    return { budgetMin: hrs == null ? null : Number(hrs) * 60, spentMin: Math.round(spent),
+      share: mb.share, stated, nowLeft: Number.isFinite(mb.maxHabits) ? mb.maxHabits - trying : null };
+  }
+  // A goal's proposal, read off the live board.
+  function proposalFor(g) {
+    if (!LIBRARY || !g || !g.libraryGoal) return { picks: [], factsNeeded: [], factsAsked: [] };
+    const b = libraryBudget();
+    return chooseHabits({ lib: LIBRARY, goalKey: g.libraryGoal, facts: ciLibrary.facts,
+      onGoal: (g.mechanisms || []).filter(m => m && m.libraryId && !m.dropped).map(m => m.libraryId),
+      declined: ciLibrary.declined.filter(d => d.split("|")[0] === g.title).map(d => d.split("|")[1]),
+      budgetMin: b.budgetMin, spentMin: b.spentMin, nowLeft: b.nowLeft });
+  }
+  // A PICK ACCEPTED becomes a habit on the goal, at the stage she chose. Its
+  // name and size are the library's, and from then on they are hers to change.
+  function acceptLibraryHabit(g, pick, stage) {
+    const L = { times: pick.times, minutes: pick.minutes };
+    const n = L.times === "daily" ? 7 : L.times === "once" ? 1 : Math.max(1, Math.round(Number(L.times) || 1));
+    const m = addUserWork(g, null, { label: pick.name, type: L.times === "once" ? "setup" : "habit",
+      timesPerWeek: n, durationMin: L.minutes,
+      estWeeklyHours: Math.max(0.1, Math.round(libWeekMinutes(L) / 60 * 10) / 10),
+      schedule: L.times === "daily" ? "daily" : n > 1 ? { any: n } : "any" });
+    if (!m) return null;
+    // THE LIBRARY'S SIZE, EXACTLY. A hand-written length is stepped to the
+    // quarter hour; a library habit keeps the minutes its level says, so a
+    // two-minute habit is never booked as fifteen.
+    m.durationMin = Math.max(1, Math.round(Number(L.minutes) || 1));
+    m.estWeeklyHours = Math.round(libWeekMinutes(L) / 60 * 100) / 100;
+    m.hoursSource = "library";
+    m.source = "library";
+    m.libraryId = pick.id;
+    m.level = pick.level;
+    m.why = pick.promise;
+    m.stage = stage === "waiting" ? "waiting" : "trying";
+    if (L.times === "daily") { m.cadence = "daily"; m.timesPerWeek = 7; }
+    else if (Number(L.times) > 0 && Number(L.times) < 1) m.cadence = Number(L.times) <= 0.25 ? "monthly" : "weekly";
+    return m;
+  }
+  function declineLibraryHabit(g, id) {
+    const key = g.title + "|" + id;
+    if (!ciLibrary.declined.includes(key)) ciLibrary.declined.push(key);
+  }
+  function setLibraryFact(k, v) { ciLibrary.facts[k] = v; }
+
   // ---- THE QUARTERS FOLD INTO THE GOAL (2026-09-29, the quarters coming out) ----
   // Once per goal, on the first load that finds it still carrying
   // `objectives`, and again after the discovery commits a fresh draft (which
@@ -33411,8 +33310,8 @@
   // float is measured and given its oval or its cloud. Runs on opening, on
   // a pick, on the query mark, when a line grows, when phase 2 changes and
   // when the window does. A float that is not showing keeps the oval it had.
-  function paintAddPage() {
-    if (!addOverlay.classList.contains("open")) return;
+  // the fit for the page as it stands: the window, and the heading's foot
+  function addFitForPage() {
     const W = addOverlay.clientWidth, H = addOverlay.clientHeight;
     const title = addOverlay.querySelector(".add-head");
     const tb = Math.round(title.getBoundingClientRect().bottom - addOverlay.getBoundingClientRect().top + addOverlay.scrollTop);
@@ -33421,7 +33320,30 @@
     // the height sets it and the painting starts under the heading
     const sW = W / ADD_W0, sH = (H - tb + 6) / (ADD_FOOT * ADD_H0);
     const top = sW < sH ? Math.max(0, Math.min(tb + 56 - 0.07 * ADD_H0 * sW, H - ADD_FOOT * ADD_H0 * sW)) : tb - 6;
-    const fit = addFit(W, H, top); addFitNow = fit;
+    return addFit(W, H, top);
+  }
+  // THE PAINTING IS READY BEFORE THE BOOK OPENS (2026-10-08, owner, of "the
+  // painting can take a moment to appear": "Can you fix all of this?"),
+  // keeping in mind's own recipe (keepWaterWarm): a few seconds after the
+  // app has opened, the trace is fetched and the ground drawn and baked into
+  // the closed page at the size it will open at, so paintAddPage finds it
+  // there and draws nothing. The page is laid out for the measure without
+  // being seen (.add-warm), and a finger on the glass puts it off.
+  function addGroundWarm(tries) {
+    if (addOverlay.classList.contains("open") || addGroundKey) return;
+    const n = tries || 0;
+    if (Date.now() - keepTouchedAt < 1000 && n < 5) { setTimeout(() => addGroundWarm(n + 1), 1000); return; }
+    addTraceLoad().then(() => {
+      if (addOverlay.classList.contains("open") || addGroundKey) return;
+      addOverlay.classList.add("add-warm");
+      try { addGroundPaint(addFitForPage()); }
+      catch (e) { addGroundKey = ""; }
+      finally { addOverlay.classList.remove("add-warm"); }
+    }).catch(() => {});
+  }
+  function paintAddPage() {
+    if (!addOverlay.classList.contains("open")) return;
+    const fit = addFitForPage(), W = fit.W; addFitNow = fit;
     if (addTrace) addGroundPaint(fit);
     const over = addOverlay.querySelector(".add-over");
     over.querySelectorAll("#newCategoryChips .cat-chip").forEach(b => {
@@ -34290,7 +34212,7 @@
         <div class="add-title" id="addTitle" contenteditable="true" role="textbox" aria-label="your goal, in your words">${escHtml(title)}</div>
         ${addOut && addOut.goal.description ? `<p class="add-desc">${escHtml(addOut.goal.description)}</p>` : ``}
         ${horizonLabel ? `<p class="add-meta">≈ ${horizonLabel}${addOut.goal.horizon.basis ? `, ${escHtml(addOut.goal.horizon.basis)}` : ``}${addOut.estWeeklyHours ? ` · wants ~${addOut.estWeeklyHours} hrs/week` : ``}</p>` : ``}
-        ${near.length ? `<div class="add-firstq"><div class="lv-note-label">first quarter</div>
+        ${near.length ? `<div class="add-firstq"><div class="lv-note-label">first steps</div>
           ${near.map(o => `<div class="add-obj">• ${escHtml(o.label)}</div>`).join("")}</div>` : ``}
         ${addOut && addOut.anchor ? `<p class="add-anchor">${escHtml(addOut.anchor)}</p>` : ``}
         </div>
@@ -34382,8 +34304,9 @@
       }));
     }
 
-    // FIX 3 — a weeks-scale push is offered as this quarter's focus under the
-    // most relevant existing goal instead of being forced into a card. Declining
+    // FIX 3 — a weeks-scale push is offered as a step under the most
+    // relevant existing goal instead of being forced into a card (a step is
+    // one of the goal's notes since the quarters came out). Declining
     // — or having no goal to put it under — keeps it standalone at its honest
     // short timescale.
     let addPlaceIn = null;
@@ -34393,10 +34316,10 @@
         const pm = addPhase2.querySelector("#placementMount");
         const w = horizonWeeksOf(addOut.goal.horizon);
         pm.innerHTML = `<div class="add-mirror"><div class="add-mirror-kind">where it fits</div>
-          <p>This is a ${w}-week push, and the board thinks in quarters. Want it as your
-          ${escHtml((CATS[host.category] || CATS.Other).label)} goal's focus for this quarter?</p>
+          <p>This is a ${w}-week push. Want it as a step under your
+          ${escHtml((CATS[host.category] || CATS.Other).label)} goal instead of a card of its own?</p>
           <div class="ci-review-actions">
-            <button class="ci-chip on" data-v="focus">Yes, this quarter's focus under “${escHtml(host.title.slice(0, 40))}”</button>
+            <button class="ci-chip on" data-v="focus">yes, a step under “${escHtml(host.title.slice(0, 40))}”</button>
             <button class="ci-chip" data-v="own">no, its own card</button>
           </div></div>`;
         addPlaceIn = host.id;
@@ -34457,17 +34380,18 @@
     addPhase2.querySelector("#addConfirm").addEventListener("click", () => {
       const finalTitle = (addPhase2.querySelector("#addTitle").textContent || "").trim() || title;
 
-      // FIX 3, accepted: the short goal lands in the host goal's this-quarter
-      // slot — an objective in the current quarter — not as a new card.
+      // FIX 3, accepted: the short goal lands as a step under the host goal,
+      // one of its notes (the quarters came out on 29 Sep: a goal's steps are
+      // `notes` now, never a new `objectives` entry), not as a new card.
       const placeId = getPlacement();
       if (addOut && placeId != null) {
         const host = goals.find(x => x.id === placeId);
         if (host) {
-          host.objectives = host.objectives || [];
-          host.objectives.push({ id: "uq-" + Date.now().toString(36), label: finalTitle,
-            kind: "objective", when: boardQuarterName(), theme: false, source: "user", done: false });
+          host.notes = Array.isArray(host.notes) ? host.notes : [];
+          host.notes.push({ id: "uq-" + Date.now().toString(36), text: finalTitle,
+            when: null, source: "user", done: false, obstacle: null, obstaclePlan: null });
           closeAdd(); renderAll(); saveState();
-          showToast(`On the board, this quarter's focus under "${host.title.slice(0, 30)}".`);
+          showToast(`On the board, a step under "${host.title.slice(0, 30)}".`);
           return;
         }
       }
@@ -34522,6 +34446,12 @@
       if (pg) pg.status = "parked";
     });
     goals.push(g);
+    // THE COACH'S STEPS FOLD AT ONCE (2026-10-08): the coach still drafts its
+    // first steps as `objectives`, and the quarters' fold only ran on the
+    // next load, so until then a new goal carried the old shape, and once the
+    // objectives table is retired a step written before that load would be
+    // lost. The new goal goes through the same fold the moment it lands.
+    if (Array.isArray(g.objectives)) migrateQuartersOut();
     closeAdd(); renderAll(); saveState();
     showToast(g.status === "parked" ? "On the board, parked, sequencing is not deleting."
                                     : "It's on the board. Yours.");
@@ -34784,6 +34714,13 @@
   // and mechanisms budget against that proposal. It rides inside the intake
   // (the accumulating-intake pattern from PIPELINE-SPEC.md), so every stage's
   // payload carries it and any stage's output may amend it.
+  // THE LIBRARY'S QUESTIONS, ANSWERED (2026-10-08, the quarters coming out).
+  // `facts` holds her answers to the library's own fields (schedule, money,
+  // household, stress, ambition...), asked only when a habit being offered
+  // depends on one; `declined` holds "goalTitle|libraryId" for every habit she
+  // said was not for her, so it is never offered again for that goal (law 5).
+  // Both ride the intake whole, like the capacity below.
+  const ciLibrary = { facts: {}, declined: [] };
   const ciCapacity = {
     statedHours: null,     // the person's claim, hours/week; null until stated
     statedBy: null,        // "chip" | "user" | "observed" — who set the number
@@ -35191,6 +35128,7 @@
         (ciJournal.situation && ciJournal.situation.trim()) ? { situation: ciJournal.situation.trim() } : {}),
       patterns: Object.assign({}, ciPatterns),
       dismissedTensions: ciDismissedTensions.slice(),
+      library: { facts: Object.assign({}, ciLibrary.facts), declined: ciLibrary.declined.slice() },
     };
   }
 
@@ -35812,14 +35750,87 @@
   let modelTransport = realTransport;
 
   // ---------- Supabase: auth + persistence ----------
+
+  // ---- THE SIGN IN KEEPS ITS OWN TIME (2026-10-04, owner: "shouldnt people
+  // be able to sign in even if they change their date and time?") ----
+  // A sign in is an hour long pass, and the account writes when it ends
+  // (expires_at) on the SERVER's clock. supabase-js holds that up against
+  // this device's clock. On a Mac set four days ahead, every pass looked
+  // four days dead the moment it arrived, so every getSession() traded it
+  // for a new one; each new one fired TOKEN_REFRESHED, which renders the
+  // account (renderAccount, so getSession again), which traded again, until
+  // the account refused the flood. The library reads a refused refresh as a
+  // sign out: the save straight after signing in said not_signed_in, and
+  // the next open asked her to sign in all over again.
+  //
+  // So the pass is timed on this device's own clock. The access token
+  // carries the server's iat and exp, and their difference is how long the
+  // pass lasts. This storage notes when the device first saw a token
+  // (received_at) and, on every read, hands supabase-js an expires_at of
+  // received_at plus that lifetime: this device's clock all the way
+  // through. A clock that is merely wrong is then no problem at all. A clock
+  // CHANGED while a pass is held (set back to the right time, say) reads as
+  // expired once, and one ordinary refresh starts a new pass on the new
+  // time. Anything that is not a session, and a token that will not decode,
+  // goes through untouched.
+  function clockSafeStorage(ls) {
+    const lifeOf = (token) => {
+      try {
+        const b = String(token).split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+        const p = JSON.parse(atob(b + "===".slice((b.length + 3) % 4)));
+        const life = p.exp - p.iat;
+        return Number.isFinite(life) && life > 0 ? life : null;
+      } catch (e) { return null; }
+    };
+    const parse = (v) => { try { return JSON.parse(v); } catch (e) { return null; } };
+    const isSession = (s) => !!(s && typeof s === "object" && s.access_token && "expires_at" in s);
+    const nowS = () => Math.round(Date.now() / 1000);
+    return {
+      getItem(k) {
+        const v = ls.getItem(k);
+        const s = parse(v);
+        if (!isSession(s) || typeof s.received_at !== "number") return v;
+        const life = lifeOf(s.access_token);
+        if (life == null) return v;
+        const now = nowS();
+        // the clock went back since this pass arrived: renew it, on the new time
+        s.expires_at = now < s.received_at - 60 ? now - 1 : s.received_at + life;
+        return JSON.stringify(s);
+      },
+      setItem(k, v) {
+        const s = parse(v);
+        if (isSession(s)) {
+          // The same token saved again keeps the moment it first arrived,
+          // unless the clock has since gone back past that moment. Then the
+          // moment means nothing, and the token is one the account has only
+          // just handed over (two renewals inside one second mint the same
+          // token twice), so its hour starts now.
+          const prev = parse(ls.getItem(k));
+          const now = nowS();
+          s.received_at = isSession(prev) && prev.access_token === s.access_token
+            && typeof prev.received_at === "number" && prev.received_at <= now + 60
+            ? prev.received_at : now;
+          v = JSON.stringify(s);
+        }
+        ls.setItem(k, v);
+      },
+      removeItem(k) { ls.removeItem(k); },
+    };
+  }
+
   // Same config as the Edge Function call. If the CDN script didn't load, or these
   // are blank, `sb` stays null and the whole app runs local-only — nothing saves,
   // and the account panel says so rather than failing silently.
   const sb = (() => {
     if (!window.supabase || !BACKEND.projectUrl || !BACKEND.anonKey) return null;
+    // A browser with storage turned off gets the library's own fallback, as before.
+    let storage = null;
+    try { window.localStorage.getItem("lv-clock-probe"); storage = clockSafeStorage(window.localStorage); }
+    catch (e) { storage = null; }
     try {
       return window.supabase.createClient(BACKEND.projectUrl, BACKEND.anonKey, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+        auth: Object.assign({ persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+          storage ? { storage } : {}),
       });
     } catch (e) {
       console.warn("Supabase client failed to initialise:", e);
@@ -35906,6 +35917,7 @@
           // or they would be dropped on every load; the objectives below
           // stay one round, until 0025 retires the table.
           directions: g.directions || [], notes: g.notes || [],
+          libraryGoal: g.library_goal || null,   // 0025: the library goal she picked
           objectives: (byGoal[g.id] || []).map(o => ({
             id: o.ext_id || o.id, label: o.label, kind: o.kind, when: o.when_label,
             theme: o.is_theme, source: o.source, done: o.done, evidence: o.evidence,
@@ -36701,6 +36713,10 @@
     // Rehydrate the intake into the stores the flow actually reads, so a returning
     // user's check-in sees everything the first run did.
     const i = state.intake;
+    // the library's answers replace what is in memory, like the rest of the
+    // intake, and an intake without them leaves none behind
+    ciLibrary.facts = Object.assign({}, (i && i.library && i.library.facts) || {});
+    ciLibrary.declined = ((i && i.library && i.library.declined) || []).slice();
     if (i) {
       // The saved intake is the whole answer set, so it REPLACES what's in
       // memory. Merging let a previous board's — or a fixture's — answers
@@ -36761,6 +36777,8 @@
       // dropped on every load, because this list is the whole of a goal
       directions: Array.isArray(g.directions) ? g.directions.map(d => Object.assign({}, d)) : [],
       notes: Array.isArray(g.notes) ? g.notes.map(n => Object.assign({}, n)) : [],
+      // the library goal she picked as closest (2026-10-08), "<area>:<id>"
+      libraryGoal: g.libraryGoal || null,
       // one name, everywhere, forever: the stored handle (and the draft-era
       // barName it derives from) survive every state application
       handle: g.handle || null, barName: g.barName || null,
@@ -37807,7 +37825,8 @@
     // class only carries it out.
     let went = false;
     const go = () => { if (!went && curtainLifted) { went = true; el.classList.add("lifted");
-      setTimeout(() => keepWaterWarm(), 2500); } };   // keeping in mind's water, painted ahead
+      setTimeout(() => keepWaterWarm(), 2500);         // keeping in mind's water, painted ahead
+      setTimeout(() => addGroundWarm(), 4500); } };    // and the add page's painting after it
     try { requestAnimationFrame(() => requestAnimationFrame(go)); } catch (e) {}
     setTimeout(go, 150);
   }
@@ -39946,7 +39965,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                <div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">\u2190 Back</button>
                  ${ciGoalsPhase === 1
                    ? `<button class="btn-solid" onclick="window.__ciTune()">next, how long and how much \u2192</button>`
-                   : `<button class="btn-solid" onclick="window.__ciNext()">next, draft the quarters \u2192</button>`}</div>`;
+                   : `<button class="btn-solid" onclick="window.__ciNext()">next, your habits \u2192</button>`}</div>`;
           // Which torn-sheet overlay (the ledger / the silences) is open —
           // step-local view state, never written to the draft (items 25/27).
           let covView = null;
@@ -40648,453 +40667,121 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
           });
         }},
 
-      // v3 STEP TWO (and, for this slice, three): the quarters, then the
-      // habits and tasks — drafted only for the goals kept at step one, from
-      // the words, timelines, and statuses exactly as the person left them.
-      // Re-entering after a step-one edit re-drafts ONLY what changed. Per
-      // DEFINITIONS.md, paused goals hold their place and get no quarters
-      // until they wake.
-      { render: async b => {
+      // ---- YOUR HABITS, FROM YOUR LIBRARY (2026-10-08, the quarters coming out) ----
+      // Owner, 8 Oct: the library on each chapter and in the quiz, and the
+      // match hers to pick. This one page replaces the quarters page and the
+      // habits page the model wrote. For each goal she kept: which of her
+      // library's goals is closest (her pick, from that goal's area); then
+      // the library asks only what the habits it would offer depend on, once
+      // for the whole page; then each goal's habits stand with their size in
+      // the library's words, offered now or for later by THE CHOICE, and she
+      // can move any of them to now, later, or not for me. Saving is the
+      // accepting: nothing is a habit until she saves. The companion is still
+      // chosen here, and the week still starts tomorrow.
+      { id: "habits", render: async b => {
           if (!ciDraft) { ciStepIdx = Math.max(0, ciStepIdx - 1); ciRender(); return; }
           const tok = ciRenderSeq;
           const kept = ciDraft.goals.filter(g => !g.dropped);
           const actives = kept.filter(g => g.status !== "parked");
-          // What the plan was written against. Their answers join it: a plan
-          // that ignores an answer they just gave is worse than not asking.
-          const sigOf = g => JSON.stringify([g.title, g.target ?? null, g.status, goalAnswers(g)]);
-          const stalePlans = actives.filter(g => !(g.objectives || []).length || g.plannedSig !== sigOf(g));
-          if (stalePlans.length) {
-            // Wait state: the header names what's happening (item 12) and the
-            // cards carry category + title only (item 32) — the rotating
-            // caption at the bottom is the one status line.
-            b.innerHTML = stepHeader(
-                stalePlans.length === actives.length
-                  ? "Laying out the road for each life goal."
-                  : "Re-drafting only what you changed.",
-                "About a minute.")
-              + `<div class="rv-list">` + actives.map(g => {
-                  const c = CATS[g.category] || CATS.growth;
-                  return `<div class="rv-item rv-ruled" data-plangid="${escHtml(g.draftId)}"><div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
-                    <div class="rv-title">${escHtml(g.title)}</div>
-                    <div class="rv-objs rv-objs-pending"></div>
-                  </div>`; }).join("") + `</div>`
-              + thinkingBlock("plans");
-            paperify(b, ".rv-item");
-            narrate("s-quarters-open");
-            const stopWait = startWait("plans");
-            try {
-              const intakeNow = buildIntake();
-              // Wave 1: each goal's quarters land on its waiting card the
-              // moment its call resolves — validated data, per-goal felt time.
-              const ctxNow = Object.assign(planContext(ciDraft, intakeNow), {
-                onGoalPlanned: (g) => {
-                  if (tok !== ciRenderSeq) return;
-                  const card = b.querySelector(`.rv-item[data-plangid="${CSS.escape(g.draftId)}"] .rv-objs`);
-                  if (!card) return;
-                  card.classList.remove("rv-objs-pending");
-                  card.innerHTML = (g.objectives || []).filter(o => !o.theme)
-                    .map(o => `<div class="rv-obj-line">${escHtml(o.when || "")}${o.when ? " · " : ""}${escHtml(o.label)}</div>`).join("");
-                },
-              });
-              await draftQuarters(stalePlans, intakeNow, ctxNow);
-              stalePlans.forEach(g => { g.plannedSig = sigOf(g); });
-            } catch (err) {
-              stopWait();
-              if (tok !== ciRenderSeq) return;
-              b.innerHTML = stepHeader("The quarters") + analysisErrorHtml(err);
-              return;
-            }
-            stopWait();
-            if (tok !== ciRenderSeq) return;
-          }
-          const keptById = id => kept.find(g => g.draftId === id);
-          const objOf = g => (g.objectives || []).find(o => !o.theme && !o.sketch) || null;
-          // The obstacle and its counter-move read as ONE sentence — "If
-          // <obstacle>, then <plan>." — and are re-split on the first "then"
-          // as the person types. The data model stays obstacle/obstaclePlan.
-          // The prompt asks for short lowercase clauses (≤12 / ≤15 words, no
-          // terminal period) that complete "If …, then …." — the compose side
-          // still defends: shed one trailing period, lowercase the first
-          // character, and flag (not fix) an old-data obstacle that runs long.
-          // HOISTED (2026-09-05): the sentence is parsed by one rule app-wide,
-          // ifThenClause / parseIfThenSentence beside TOMORROW, AND TOMORROW.
-          const clause = ifThenClause;
-          const ifThenText = o => {
-            if (((o.obstacle || "").match(/\S+/g) || []).length > 25) {
-              console.warn("[quarters] stored obstacle is over 25 words, old data shown as-is:",
-                JSON.stringify(o.obstacle));
-            }
-            return `If ${clause(o.obstacle) || "…"}, then ${clause(o.obstaclePlan) || "…"}.`;
-          };
-          const parseIfThen = parseIfThenSentence;
-          // A quarter dot on the road: drawn with the rough filter, filled
-          // ink for the committed quarter, an open ring (paper-filled, so it
-          // masks the line behind it) for a sketch.
-          const roadDot = filled => `<svg viewBox="0 0 20 20" aria-hidden="true">
-            <path filter="url(#rough)" d="M10 3.2 C 14.5 3.2, 17 6.6, 17 10 S 13.8 16.8, 10 16.8 S 3 13.7, 3 10 S 5.8 3.4, 10 3.2"
-              fill="${filled ? "currentColor" : "var(--paper-sheet)"}" stroke="currentColor" stroke-width="1.7" opacity="${filled ? ".88" : ".8"}"/>
-          </svg>`;
-          // THE ROAD IS DRAWN IN THE PAPER'S OWN INK (2026-09-10, owner
-          // picked it off three candidates rendered on the page). It was
-          // #b9ae8c, a mid tan under the bleed filter on tan paper, so it
-          // could not win and three dots read as a bullet list rather than a
-          // road. --rule-ink is the grey green the sheet's own ruled lines
-          // are drawn in, so the road belongs to the page instead of sitting
-          // on it, and it costs no new colour: the ink budget counts text,
-          // and this line is neither text nor a mark that means anything on
-          // its own. The area's own colour and the writing ink were the
-          // other two, and both were declined for spending colour on a
-          // structural line.
-          const roadLine = `<div class="qr-line" aria-hidden="true"><svg viewBox="0 0 10 100" preserveAspectRatio="none">
-            <path filter="url(#bleed)" d="M5 1 C 4.3 20, 5.7 38, 4.8 55 S 5.4 88, 5 99"
-              stroke="rgb(var(--rule-ink))" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg></div>`;
-          // Hoisted to roadEndMark: it reads the years the person chose, the
-          // estimate only when they chose nothing, the same as the card.
-          const endMark = roadEndMark;
-          function paintB() {
-            const shown = kept.filter(g => g.status !== "parked");
-            const pausedCount = kept.length - shown.length;
-            const clock = quarterClock();
-            const shortQ = clock.weeksLeftInQuarter < SHORT_QUARTER_WEEKS;
-            const whenLabel = w => w === clock.quarter && shortQ
-              ? `${w} · ${clock.weeksLeftInQuarter} week${clock.weeksLeftInQuarter === 1 ? "" : "s"} left` : (w || "");
-            // "sketch" rides the quarter it describes rather than sitting at
-            // the right edge as a tag (owner, 2026-09-10: "lets make it make
-            // more sense what those 'reality check' and 'sketch' are
-            // referring to"). The Atlas ruling already said why: a row is a
-            // paragraph, and a label parked in its own column reads as
-            // belonging to the wrong step the moment the clause wraps.
-            const skLabel = w => w ? `${w} · sketch` : "sketch";
-            b.innerHTML = stepHeader("The quarters",
-              "The road for each life goal. Some quarters are set, others are sketched and come into focus as time goes on.")
-              + `<div class="rv-list">` + shown.map(g => {
-                  const c = CATS[g.category] || CATS.growth;
-                  const fulls = (g.objectives || []).filter(x => !x.theme && !x.sketch);
-                  const o = fulls[0];
-                  const laterFulls = fulls.slice(1);
-                  const sketches = (g.objectives || []).filter(x => !x.theme && x.sketch);
-                  const loose = (g.objectives || []).filter(x => x.theme);
-                  const open = !!g.qTuneOpen;
-                  const end = endMark(g);
-                  const arc = arcGapLine(g);
-                  return `<div class="rv-item rv-ruled">
-                    <div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
-                    <div class="rv-title">${escHtml(g.title)}</div>
-                    ${o ? `<div class="qr-track">${roadLine}
-                      <div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
-                        <span class="qr-when">${escHtml(whenLabel(o.when))}</span>
-                        <span class="qr-label edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="this quarter's step, in your words">${escHtml(appVoice(o.label, wroteIt(o)))}</span></div>
-                      ${laterFulls.map(x => `<div class="qr-q"><span class="qr-dot">${roadDot(true)}</span>
-                        <span class="qr-when">${escHtml(whenLabel(x.when))}</span>
-                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span></div>`).join("")}
-                      ${sketches.map(x => `<div class="qr-q qr-sk"><span class="qr-dot">${roadDot(false)}</span>
-                        <span class="qr-when">${escHtml(skLabel(x.when))}</span>
-                        <span class="qr-label">${escHtml(appVoice(x.label, wroteIt(x)))}</span></div>`).join("")}
-                      ${end ? `<div class="qr-end">${escHtml(end)}</div>` : ``}
-                    </div>
-                    ${arc ? `<div class="qr-arc">${escHtml(arc)}</div>` : ``}
-                      <div class="qv-block">
-                        <div class="qv-block-label">if it goes wrong</div>
-                        <div class="qv-if edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}" role="textbox" aria-label="if it goes wrong, then what">${escHtml(ifThenText(o))}</div>
-                        <div class="qv-if-hint">naming this now roughly doubles the odds you follow through.</div>
-                      </div>
-                    <div class="rv-bottom"><span class="rv-bottom-line"></span>
-                      <button class="rv-tune qr-tune" data-gid="${g.draftId}">${open ? "done ↑" : "tune →"}</button></div>
-                    <div class="rv-tuned qv-fold" style="display:${open ? "block" : "none"}">
-                      ${evidenceOf(g) ? `` : `<div class="rv-rc-missing">no reality check in this plan yet, add one: a step where the world gets to respond.</div>`}
-                      ${g.tension && !g.tension.resolved && g.tension.kind === "stated" ? `<div class="qv-block">
-                        <div class="qv-block-label">worth a second look</div>
-                        <div class="qv-alt">${escHtml(g.tension.question)}</div>
-                        ${g.tension.reasoning ? `<div class="qv-said">${escHtml(g.tension.reasoning)}</div>` : ``}
-                        ${g.tension.instead ? `<div class="qv-said">you might mean: ${escHtml(g.tension.instead)}</div>
-                          <button class="qv-swap qv-retitle" data-gid="${g.draftId}">use those words for the goal</button>` : ``}
-                        <button class="qv-swap qv-setaside" data-gid="${g.draftId}">set this aside</button>
-                      </div>` : ``}
-                      ${o.alt && o.alt.label ? `<div class="qv-block">
-                        <div class="qv-block-label">another way to say it</div>
-                        <div class="qv-alt">${escHtml(appVoice(o.alt.label, o.alt.source === "user"))}</div>
-                        <button class="qv-swap" data-gid="${g.draftId}">use these words instead</button>
-                      </div>` : ``}
-                      <div class="qv-block">
-                        <div class="qv-block-label">loose directions, not commitments</div>
-                        <ul class="qv-loose-list">${loose.map(x => `<li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span>${escHtml(appVoice(x.label, wroteIt(x)))}${
-                          x.pinned
-                            ? `<span class="qv-pinned">keeping this in mind</span>`
-                            : `<button class="qv-pin" data-gid="${g.draftId}" data-oid="${escHtml(x.id || "")}">keep this in mind</button>`}</li>`).join("")}
-                          <li><span class="qv-bullet" aria-hidden="true">${drawnBullet(false)}</span><span
-                            class="qv-loose-new edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}"
-                            role="textbox" aria-label="a loose direction of your own"
-                            data-empty="write one of your own"></span></li></ul>
-                      </div>
-                    </div>` : `<div class="rv-objs">no objective landed for this quarter, write your own here.</div>
-                      <div class="qr-write edit-signal" contenteditable="plaintext-only" data-gid="${g.draftId}"
-                        role="textbox" aria-label="this quarter's step, in your words"
-                        data-empty="write this quarter's step"></div>`}
-                  </div>`; }).join("") + `</div>`
-              + (pausedCount ? `<div class="qv-paused-line">${pausedCount} goal${pausedCount === 1 ? "" : "s"} paused, they hold their place and get a quarter the day they wake.</div>` : ``)
-              + `<div class="ci-nav"><button class="ci-back" onclick="window.__ciBack()">← Back, change the goals</button>
-                   <button class="btn-solid" onclick="window.__ciNext()">Next, build the habits ${DRAWN_ARROW}</button></div>`;
-
-            paperify(b, ".rv-item");
-            b.querySelectorAll(".qr-tune").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                if (g) { g.qTuneOpen = !g.qTuneOpen; paintB(); }
-              });
-            });
-
-            b.querySelectorAll(".qr-label[data-gid]").forEach(el => {
-              el.addEventListener("input", () => {
-                const o = objOf(keptById(el.dataset.gid));
-                if (!o) return;
-                // Law 1: an edited step is the person's, and the budget
-                // protection downstream treats it that way.
-                o.label = el.textContent;
-                o.source = "user";
-                saveDraft();
-              });
-            });
-            b.querySelectorAll(".qv-if[data-gid]").forEach(el => {
-              el.addEventListener("input", () => {
-                const o = objOf(keptById(el.dataset.gid));
-                if (!o) return;
-                const parsed = parseIfThen(el.textContent);
-                o.obstacle = parsed.obstacle;
-                o.obstaclePlan = parsed.obstaclePlan;
-                saveDraft();
-              });
-            });
-            // The line a goal gets when its plan came back empty. It is the
-            // same authoring the quarter's own line does, which is what
-            // DEFINITIONS held answer 2 actually guarantees: one step per
-            // quarter, theirs, replacing the proposal rather than stacking
-            // on it. The button that used to live here is gone, so this is
-            // the only case the inline line could not already cover.
-            b.querySelectorAll(".qr-write[data-gid]").forEach(el => {
-              el.addEventListener("input", () => {
-                const g = keptById(el.dataset.gid);
-                const text = el.textContent.trim();
-                if (!g || !text) return;
-                let o = objOf(g);
-                if (!o) {
-                  o = { id: "o" + ((g.objectives || []).length + 1), label: text, kind: "objective",
-                        when: boardQuarterName(), theme: false, source: "user" };
-                  g.objectives = [o].concat(g.objectives || []);
-                } else {
-                  o.label = text;
-                  o.source = "user";
-                }
-                saveDraft();
-              });
-            });
-            // A loose direction of their own. It is a theme on the goal, the
-            // same shape the planner writes and the same one "keeping in
-            // mind" reads, so nothing new is stored and it rides the
-            // quarterly review like the rest. Until today themes could only
-            // ARRIVE, from the model or from a demoted extra; there was no
-            // door on the person's side of this list.
-            b.querySelectorAll(".qv-loose-new[data-gid]").forEach(el => {
-              el.addEventListener("input", () => {
-                const g = keptById(el.dataset.gid);
-                const text = el.textContent.trim();
-                if (!g || !text) return;
-                if (!el.dataset.oid) {
-                  const t = { id: userId("th"), label: text, when: null, theme: true,
-                              sketch: false, source: "user" };
-                  g.objectives = (g.objectives || []).concat([t]);
-                  el.dataset.oid = t.id;
-                } else {
-                  const t = (g.objectives || []).find(x => x.id === el.dataset.oid);
-                  if (t) t.label = text;
-                }
-                saveDraft();
-              });
-            });
-            // PINNED, SO SHE SEES IT (owner, 2026-09-10). A direction is not
-            // a task, so it lands as a reminder: no duration, no hours, no
-            // pebble, nothing on the rose, and no debt if it is never done
-            // (law 8). tomorrowLand already carries text out of a page and
-            // into the week exactly this way.
-            // THE OFFER IS A SWAP, NEVER A LOSS (law 1 as amended). Taking it
-            // exchanges the two wordings on the same objective, so the line
-            // she wrote is still there to take back on the next tap. Whoever
-            // wrote the words on the page owns them, so `source` travels with
-            // the text: that is what appVoice reads, and it must never say
-            // the app's sentence is hers.
-            b.querySelectorAll(".qv-swap").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                const ob = objOf(g);
-                if (!ob || !ob.alt || !ob.alt.label) return;
-                const mine = { label: ob.label, source: ob.source || "ai" };
-                ob.label = ob.alt.label;
-                ob.source = ob.alt.source || "ai";
-                ob.alt = mine;
-                saveDraft();
-                paintB();
-              });
-            });
-            // SET ASIDE IS FOREVER (law 5), and it is the same store the rest
-            // of the app dismisses into, so the question cannot come back on
-            // the board wearing the id it was dismissed under here.
-            b.querySelectorAll(".qv-setaside").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                if (!g || !g.tension) return;
-                if (ciDismissedTensions.indexOf(g.tension.id) === -1) ciDismissedTensions.push(g.tension.id);
-                g.tension.resolved = true;
-                saveDraft();
-                paintB();
-              });
-            });
-            // THE REWORDING IS A PROPOSAL, TAKEN BY HAND OR NOT AT ALL. Law 1
-            // is untouched by it: their title is kept on the goal, so the tap
-            // is reversible in the same breath as the quarter's own swap, and
-            // taking it marks the title as theirs BECAUSE they chose it.
-            b.querySelectorAll(".qv-retitle").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                if (!g || !g.tension || !g.tension.instead) return;
-                const mine = g.title;
-                g.title = g.tension.instead;
-                g.titleSource = "user";
-                g.tension.instead = mine;          // theirs, one tap back
-                saveDraft();
-                paintB();
-              });
-            });
-            b.querySelectorAll(".qv-pin").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = keptById(btn.dataset.gid);
-                const t = ((g || {}).objectives || []).find(x => x.id === btn.dataset.oid);
-                if (!t || t.pinned) return;
-                // TO THE KEEPINGS, NOT TO THE WEEK (2026-09-11). The field is
-                // `text`, where addReminder took `label`: pass the wrong one
-                // and addKeeping returns null on empty text, the guard below
-                // swallows it, and the pin does nothing at all without a word
-                // said. Test 231 asks for the record itself for that reason.
-                // `kind` is stated rather than left to the default, because
-                // the default is the only thing standing between a direction
-                // and the wrong chapter of that page.
-                // `goalId` is the DRAFT's id, which the board goal keeps
-                // (__ciFinish copies the draft whole), so it resolves for this
-                // run. It is numbered per run, so a later re-run's "d2" is a
-                // different goal: provenance for a door back, never an
-                // identity to match a goal by.
-                if (!addKeeping({ text: t.label, kind: "reminder", goalId: g.draftId })) return;
-                t.pinned = true;
-                saveDraft();
-                paintB();
-                // The destination is no longer the page she is looking at, so
-                // it is named. The old pin needed no receipt because "this
-                // week" was the page it said it was going to.
-                showToast("kept. it is in the firefly on your week page, under keeping in mind.");
-              });
-            });
-            saveDraft();
-            narrate("s-quarters-ready");
-          }
-          paintB();
-        }},
-
-      // v3 STEP THREE — the habits and tasks, drafted from the objectives
-      // exactly as the person edited them at step two. Re-entering after an
-      // objective edit re-drafts only that goal's weekly work; the shared
-      // budget re-allocates across the whole board either way, so the hours
-      // stay honest.
-      { render: async b => {
-          if (!ciDraft) { ciStepIdx = Math.max(0, ciStepIdx - 2); ciRender(); return; }
-          const tok = ciRenderSeq;
-          const kept = ciDraft.goals.filter(g => !g.dropped);
-          const actives = kept.filter(g => g.status !== "parked");
-          const habitsSigOf = g => {
-            const o = (g.objectives || []).find(x => !x.theme);
-            return JSON.stringify([g.title, o && o.label, o && o.kind, g.status]);
-          };
-          const stale = actives.filter(g => !g.mechanismCandidates || g.habitsSig !== habitsSigOf(g));
-          if (stale.length) {
-            b.innerHTML = stepHeader(
-                stale.length === actives.length
-                  ? "Working out the weekly rhythm."
-                  : "Re-drafting only where the objective changed.",
-                "Sized against the hours you actually have.")
-              + `<div class="rv-list">` + actives.map(g => {
-                  const c = CATS[g.category] || CATS.growth;
-                  return `<div class="rv-item"><div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
-                    <div class="rv-title">${escHtml(g.title)}</div>
-                  </div>`; }).join("") + `</div>`
-              + thinkingBlock("mechanisms");
-            paperify(b, ".rv-item");
-            narrate("s-habits-open");
-            const stopWait = startWait("mechanisms");
-            try {
-              await draftHabits(stale, kept, buildIntake());
-              stale.forEach(g => { g.habitsSig = habitsSigOf(g); });
-            } catch (err) {
-              stopWait();
-              if (tok !== ciRenderSeq) return;
-              b.innerHTML = stepHeader("The habits and tasks") + analysisErrorHtml(err);
-              return;
-            }
-            stopWait();
-            if (tok !== ciRenderSeq) return;
-          }
-          // when · duration, right-aligned per row. The model now sends the
-          // anchor in `when`; the label-parse stays only as the fallback for
-          // work drafted before the field existed.
-          // The schedule text and its parsing live at top level now (items
-          // 35/44) — one implementation for the habits step and This-week.
-          const whenLine = whenLineFor;
-          const intakeNow = buildIntake();
-          const activeCount = actives.length;
-          const GROUPS = [["setup", "do once"], ["habit", "every week"], ["capability", "builds up"], ["floor", "floor"]];
           const pausedCount = kept.length - actives.length;
-          const anyLoad = actives.map(g => g.mechanismLoad).find(l => l && l.budget);
-          // The split, seen: hours per goal (billed work only — floors ride
-          // free) and a short name pulled from the title. Drag-to-adjust
-          // hooks in here later: each .hb-bar gets pointer handlers that call
-          // setGoalShare and re-run allocateMechanisms.
-          const spentOf = g => Math.round((g.mechanisms || [])
-            .filter(m => m.type !== "floor")
-            .reduce((a, m) => a + weeklyHoursOf(m, g.id), 0) * 10) / 10;
-          const barFor = g => {
-            const hrs = spentOf(g);
-            return `<div class="hb-bar" style="flex:${Math.max(hrs, 0.4)} 1 0">
-              <svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
-                <path filter="url(#bleed)" d="M2 6 C 30 5.3, 62 6.7, 98 6"
-                  stroke="rgb(92,108,73)" stroke-width="6.2" fill="none" stroke-linecap="round" opacity=".85"/>
-              </svg>
-              <div class="hb-bar-label">${escHtml(goalHandle(g))} ${hrs}</div>
-            </div>`;
-          };
+          if (!LIBRARY) {
+            b.innerHTML = stepHeader("your habits", "opening your library.");
+            try { await loadLibrary(); }
+            catch (err) { if (tok === ciRenderSeq) b.innerHTML = stepHeader("your habits") + analysisErrorHtml(err); return; }
+            if (tok !== ciRenderSeq) return;
+          }
+          const intakeNow = buildIntake();
           const say = (ciDraft.capacity && ciDraft.capacity.say) || "";
-          // The companion is chosen HERE, client-side, so the step can show
-          // it — from the person's chosen themes and pull patterns. A re-run
-          // keeps a previously saved companion unless the person swaps it.
           if (!ciCompanion) {
             ciCompanion = profileCompanion
               ? Object.assign({}, profileCompanion)
               : freshCompanion(chooseCompanion(intakeNow));
           }
           askCompanionProp(intakeNow);
-          function paintH() {
-            b.innerHTML = stepHeader("The habits and tasks",
-              "Here's the week I drafted. Save it and it becomes your list.")
+          const fields = LIBRARY.fields || {};
+          const stated = (intakeNow.capacity && intakeNow.capacity.statedHours) || (intakeNow.constraints || {}).hoursPerWeek || null;
+          const mb = mechanismBudget(intakeNow);
+          const hrs = stated == null ? null : mb.hours;
+          const declinedFor = g => ciLibrary.declined.filter(d => d.split("|")[0] === g.title).map(d => d.split("|")[1]);
+          const choiceOf = (g, pk) => (g.libChoices && g.libChoices[pk.id]) || pk.stage;
+          // ONE WEEK, SHARED: each goal's proposal is chosen against what the
+          // goals before it already start now.
+          const proposals = () => { let spent = 0, started = 0; return actives.map(g => {
+            if (!g.libraryGoal || g.libraryGoal === "none") return { g, prop: null };
+            const prop = chooseHabits({ lib: LIBRARY, goalKey: g.libraryGoal, facts: ciLibrary.facts,
+              onGoal: (g.mechanisms || []).filter(m => m && m.libraryId).map(m => m.libraryId),
+              declined: declinedFor(g), budgetMin: hrs == null ? null : hrs * 60, spentMin: spent,
+              nowLeft: Number.isFinite(mb.maxHabits) ? mb.maxHabits - started : null });
+            prop.picks.forEach(pk => { if (choiceOf(g, pk) === "trying") { spent += pk.weekMin; started++; } });
+            return { g, prop };
+          }); };
+          const libSize = pk => {
+            const t = pk.times;
+            const often = t === "daily" ? "every day" : t === "once" ? "once" : t === 1 ? "once a week"
+              : t === 0.5 ? "every two weeks" : t === 0.25 ? "once a month" : Number(t) < 0.25 ? "now and then"
+              : t + " times a week";
+            return `${pk.level}, ${often}, ${pk.minutes} min`;
+          };
+          const isOn = (k, v) => [].concat(ciLibrary.facts[k] == null ? [] : ciLibrary.facts[k]).map(String).includes(String(v));
+          const askOne = k => `<div class="ch-lib-ask"><div class="ch-sk-note">${escHtml(appVoice(fields[k].label, false))}</div>
+              <div class="ci-review-actions">${Object.entries(fields[k].options).map(([v, label]) =>
+                `<button type="button" class="ci-chip${isOn(k, v) ? " on" : ""}" data-lib-fact="${escHtml(k)}" data-lib-val="${escHtml(v)}"${fields[k].multi ? ` data-lib-multi="1"` : ``}>${escHtml(appVoice(label, false))}</button>`).join("")}${
+                fields[k].multi ? `<button type="button" class="ci-chip${Array.isArray(ciLibrary.facts[k]) && !ciLibrary.facts[k].length ? " on" : ""}" data-lib-fact="${escHtml(k)}" data-lib-val="" data-lib-none="1">none of these</button>` : ``}</div></div>`;
+          let askOpen = false;
+          function paintL() {
+            const P = proposals();
+            const order = Object.keys(fields);
+            const need = order.filter(k => P.some(x => x.prop && x.prop.factsNeeded.includes(k)));
+            const asked = order.filter(k => P.some(x => x.prop && x.prop.factsAsked.includes(k)));
+            const answered = asked.filter(k => !need.includes(k));
+            const answerWords = k => [].concat(ciLibrary.facts[k]).map(v => (fields[k].options || {})[v]).filter(Boolean)
+              .map(w => appVoice(w, false)).join(" and ") || "none of these";
+            const nowMin = P.reduce((n, x) => n + (x.prop ? x.prop.picks.filter(pk => choiceOf(x.g, pk) === "trying").reduce((a, pk) => a + pk.weekMin, 0) : 0), 0);
+            const askBlock = (need.length || answered.length) ? `<div class="rv-item rv-ruled hb-lib-ask">
+                <div class="rv-title">a few things your library asks, to fit these to you</div>
+                ${need.map(askOne).join("")}
+                ${answered.length ? (askOpen ? answered.map(askOne).join("") + `<div class="ch-sk-note"><button type="button" class="ch-work-back" data-lib-ask-done="1">done</button></div>`
+                  : `<div class="ch-sk-note">your library knows: ${escHtml(answered.map(answerWords).join(", "))}. <button type="button" class="ch-work-back" data-lib-ask="1">change</button></div>`) : ``}
+              </div>` : ``;
+            const pickRow = (g, pk) => {
+              const ch = choiceOf(g, pk);
+              return `<div class="ch-lib-pick" data-gid="${escHtml(g.draftId)}" data-pick="${escHtml(pk.id)}">
+                <div class="ch-step">${escHtml(appVoice(pk.name, false))}</div>
+                <div class="ch-sk-note">${escHtml(appVoice(pk.promise, false))}</div>
+                <div class="ch-q-note">${escHtml(libSize(pk))}</div>
+                <div class="ch-sk-note">${escHtml(appVoice(pk.levelText, false))}</div>
+                ${pk.fit.map(f => `<div class="ch-sk-note">${escHtml(appVoice(f, false))}</div>`).join("")}
+                ${pk.reason && ch === pk.stage ? `<div class="ch-sk-note">${escHtml(pk.reason)}</div>` : ``}
+                <div class="ci-review-actions">
+                  <button type="button" class="ci-chip${ch === "trying" ? " on" : ""}" data-lib-choice="trying">now</button>
+                  <button type="button" class="ci-chip${ch === "waiting" ? " on" : ""}" data-lib-choice="waiting">later</button>
+                  <button type="button" class="ci-chip${ch === "no" ? " on" : ""}" data-lib-choice="no">not for me</button>
+                </div></div>`;
+            };
+            const card = ({ g, prop }) => {
+              const c = CATS[g.category] || CATS.growth;
+              const options = libraryGoalsFor(LIBRARY, g.category);
+              const lg = g.libraryGoal && g.libraryGoal !== "none" ? libraryGoalOf(LIBRARY, g.libraryGoal) : null;
+              const body = !g.libraryGoal
+                ? `<div class="ch-step">which of these is closest to this goal?</div>
+                   <div class="ci-review-actions">${options.map(x => `<button type="button" class="ci-chip" data-gid="${escHtml(g.draftId)}" data-lib-goal="${escHtml(libraryGoalKey(x))}">${escHtml(appVoice(x.goal, false))}</button>`).join("")}
+                   <button type="button" class="ci-chip" data-gid="${escHtml(g.draftId)}" data-lib-goal="none">none of these</button></div>`
+                : g.libraryGoal === "none"
+                ? `<div class="ch-sk-note">your library has nothing close to this one yet, so you can write your own on its chapter once you've saved. <button type="button" class="ch-work-back" data-gid="${escHtml(g.draftId)}" data-lib-goal-change="1">choose again</button></div>`
+                : `<div class="ch-sk-note">closest to: ${escHtml(appVoice(lg ? lg.goal : g.libraryGoal, false))} <button type="button" class="ch-work-back" data-gid="${escHtml(g.draftId)}" data-lib-goal-change="1">change</button></div>
+                   ${prop.picks.filter(pk => !pk.support).map(pk => pickRow(g, pk)).join("") || `<div class="ch-sk-note">nothing more in your library for this one.</div>`}`;
+              return `<div class="rv-item rv-ruled hb-lib-goal" data-gid="${escHtml(g.draftId)}"><div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
+                <div class="rv-title">${escHtml(g.title)}</div>${body}</div>`;
+            };
+            b.innerHTML = stepHeader("your habits",
+                "for each goal, the habits your library has for it. save it and it becomes your list.")
               + `<div class="hb-scrap-slot"><div class="hb-scrap torn-paper"><div class="torn-sheet hb-scrap-sheet">
                   ${say ? `<div>${escHtml(say)}</div>` : ``}
-                  <!-- SAID BEFORE IT HAPPENS, not discovered afterwards
-                       (2026-09-11). The plan begins on the next whole day
-                       whatever time this is finished, so the page that hands
-                       it over is where that belongs. -->
                   <div class="hb-starts">your week starts tomorrow, so today stays as it is.</div>
-                  <div class="hb-bars">${actives.map(barFor).join("")}</div>
-                  ${anyLoad ? `<div class="hb-total">${anyLoad.spent} of ${anyLoad.budget.hours} hrs a week${
+                  ${hrs != null ? `<div class="hb-total">the habits starting now take ${Math.round(nowMin / 6) / 10} of your ${hrs} hours a week${
                     // THE ONE TIME THE PLAN ASKS FOR LESS THAN THEY OFFERED,
-                    // it says so and says why, in their own words. A number
-                    // half the size of the answer somebody typed, with no
-                    // sentence beside it, reads as the app not believing them.
-                    anyLoad.budget.share === 0.5 ? `, half of what you said you could give. you wrote about things you have dropped before, so this is the version that survives a bad week.`
-                    : anyLoad.spent < anyLoad.budget.hours ? ". Under capacity on purpose." : ""}</div>` : ``}
+                    // it says so and says why, in their own words.
+                    mb.share === 0.5 ? `, half of what you said you could give. you wrote about things you have dropped before, so this is the version that survives a bad week.` : `.`}</div>` : ``}
                 </div></div></div>`
               + `<div class="hb-comp-slot"><div class="hb-comp torn-paper"><div class="torn-sheet hb-comp-sheet">
                   <div class="hb-comp-art" id="hbCompArt"></div>
@@ -41102,56 +40789,13 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                   <button class="hb-comp-swap" id="hbCompSwap" type="button">not this one? ${DRAWN_ARROW}</button>
                   <div class="hb-comp-picker" id="hbCompPicker" hidden></div>
                 </div></div></div>`
-              + `<div class="rv-list">` + actives.map(g => {
-                  const c = CATS[g.category] || CATS.growth;
-                  const mechs = g.mechanisms || [];
-                  const deferred = g.deferredMechanisms || [];
-                  const sketchIds = new Set((g.objectives || []).filter(o => !o.theme && o.sketch).map(o => o.id));
-                  const objById = id => (g.objectives || []).find(o => o.id === id) || null;
-                  const earlyTag = m => {
-                    if (!sketchIds.has(m.drivesObjectiveId)) return ``;
-                    const tgt = objById(m.unlocksObjectiveId || m.drivesObjectiveId);
-                    if (!tgt) return ``;
-                    const q = (tgt.when || "").split(" ")[0];
-                    return tgt.hardDate ? `<span class="hv-early">for ${escHtml(q || monthOf(tgt.hardDate))}’s deadline</span>` : ``;
-                  };
-                  // A drawn ring, same stroke as This-week's ticks — a preview
-                  // of the page this list becomes, so it is not interactive.
-                  // UT1.5h (192): the labels are the person's to edit right
-                  // here, and the when-control wears its editable underline
-                  // on this page too, not only on This-week.
-                  const row = m => `<div class="hw-row"><span class="hw-ring hw-bullet" aria-hidden="true">${drawnBullet(false)}</span>
-                      <span class="hw-label hw-label-edit edit-signal" role="button" tabindex="0" data-gid="${g.draftId}" data-mid="${escHtml(m.id)}"
-                        title="tap to reword it">${escHtml(m.label)}${earlyTag(m)}</span>
-                      <button class="hw-when when-edit edit-signal" type="button" data-gid="${g.draftId}" data-mid="${escHtml(m.id)}"
-                        title="change the day, time or length">${escHtml(whenLine(m))}</button>${m.type === "floor" ? ` <span class="hw-nocount">· no hours counted</span>` : ``}
-                    </div>`;
-                  const groups = GROUPS.map(([type, header]) => {
-                    const of = mechs.filter(m => m.type === type);
-                    return of.length ? `<div class="hv-group"><div class="hv-group-h">${header}</div>${of.map(row).join("")}</div>` : ``;
-                  }).join("");
-                  const goalSpent = spentOf(g);
-                  const goalBudget = perGoalHours(g, intakeNow, activeCount);
-                  const cutOpen = !!g.hvCutOpen;
-                  const arc = arcGapLine(g);
-                  return `<div class="rv-item rv-ruled">
-                    <div class="rv-head"><div class="rv-cat ${c.cls}">${c.label}</div></div>
-                    <div class="rv-title">${escHtml(g.title)}${g.kind === "floor" ? `<span class="qv-floor-tag">keeping the door open</span>` : ``}</div>
-                    ${arc ? `<div class="qr-arc">${escHtml(arc)}</div>` : ``}
-                    ${groups || `<div class="rv-objs"><em>nothing fit this goal's share of the week, the check-ins can grow it.</em></div>`}
-                    <div class="hv-addown-row"><button class="rm-see-week-inline hv-add-own" type="button" data-gid="${g.draftId}">+ add your own</button></div>
-                    <div class="rv-bottom"><span class="hv-goal-load">${goalSpent} of ${goalBudget} hrs this goal</span>
-                      ${deferred.length ? `<button class="rv-tune hv-cut" data-gid="${g.draftId}">${cutOpen ? "done ↑" : "what was left out and why →"}</button>` : ``}</div>
-                    ${deferred.length ? `<div class="rv-tuned" style="display:${cutOpen ? "block" : "none"}">
-                      <div class="qv-loose"><span>left out on purpose:</span>
-                      ${deferred.map(d => `<div class="qv-cut-item"><div class="qv-cut-label">${escHtml(d.label)}</div>${d.reason ? `<div class="qv-cut-reason">${escHtml(d.reason)}</div>` : ``}</div>`).join("")}</div>
-                    </div>` : ``}
-                  </div>`; }).join("") + `</div>`
-              + (pausedCount ? `<div class="qv-paused-line">${pausedCount} goal${pausedCount === 1 ? "" : "s"} paused, they hold their place and get a quarter the day they wake.</div>` : ``)
+              + askBlock
+              + `<div class="rv-list">` + P.map(card).join("") + `</div>`
+              + (pausedCount ? `<div class="qv-paused-line">${pausedCount} goal${pausedCount === 1 ? "" : "s"} paused, they hold their place and get habits the day they wake.</div>` : ``)
               + `<p class="hb-home-line">this becomes your home page: the list you'll live in,
                    ticking things off as they happen.</p>`
-              + `<div class="ci-nav"><button class="btn-ghost-link" onclick="window.__ciBack()">← Back, change the quarters</button>
-                   <button class="btn-solid" onclick="window.__ciFinish()">Save, go to This week ${DRAWN_ARROW}</button></div>`;
+              + `<div class="ci-nav"><button class="btn-ghost-link" onclick="window.__ciBack()">← Back, change your goals</button>
+                   <button class="btn-solid" id="hbSave" type="button">Save, go to This week ${DRAWN_ARROW}</button></div>`;
             paperify(b, ".rv-item");
             // The companion scrap: arriving pose with its prop; taps do the
             // chain but say nothing — the voice starts on This-week. The
@@ -41212,81 +40856,53 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
                 }
               });
             }
-            // The when control on the habits step (item 35): a commit is the
-            // person's schedule and repaints the step (bars, totals, rows).
-            b.querySelectorAll(".hw-when[data-mid]").forEach(btn => {
-              btn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                const g = actives.find(x => x.draftId === btn.dataset.gid);
-                const m = g && (g.mechanisms || []).find(x => x.id === btn.dataset.mid);
-                if (!g || !m) return;
-                openWhenPicker(btn, m, () => { paintH(); saveDraft(); });
-              });
-            });
-            // UT1.5h (192): a label tap opens an inline reword; committing
-            // makes the words theirs (source "user"), permanently.
-            b.querySelectorAll(".hw-label-edit[data-mid]").forEach(sp => {
-              const open = () => {
-                const g = actives.find(x => x.draftId === sp.dataset.gid);
-                const m = g && (g.mechanisms || []).find(x => x.id === sp.dataset.mid);
-                if (!g || !m) return;
-                const inp = document.createElement("input");
-                inp.type = "text"; inp.maxLength = 80; inp.value = m.label;
-                inp.className = "rm-work-label hw-label-input";
-                sp.replaceWith(inp);
-                inp.focus(); inp.select();
-                const commit = () => {
-                  const v = inp.value.trim();
-                  if (v && v !== m.label) { m.label = v; m.source = "user"; saveDraft(); }
-                  paintH();
-                };
-                inp.addEventListener("keydown", (e) => {
-                  if (e.key === "Enter") { e.preventDefault(); commit(); }
-                  if (e.key === "Escape") { e.preventDefault(); paintH(); }
+            const draftGoal = id => actives.find(x => x.draftId === id);
+            b.querySelectorAll("[data-lib-goal]").forEach(btn => btn.addEventListener("click", () => {
+              const g = draftGoal(btn.dataset.gid); if (!g) return;
+              g.libraryGoal = btn.dataset.libGoal; g.libChoices = {};
+              saveDraft(); paintL();
+            }));
+            b.querySelectorAll("[data-lib-goal-change]").forEach(btn => btn.addEventListener("click", () => {
+              const g = draftGoal(btn.dataset.gid); if (!g) return;
+              g.libraryGoal = null; g.libChoices = {};
+              saveDraft(); paintL();
+            }));
+            b.querySelectorAll("[data-lib-fact]").forEach(btn => btn.addEventListener("click", () => {
+              const k = btn.dataset.libFact, v = btn.dataset.libVal;
+              if (btn.dataset.libNone) setLibraryFact(k, []);
+              else if (btn.dataset.libMulti) {
+                const cur = [].concat(ciLibrary.facts[k] == null ? [] : ciLibrary.facts[k]).map(String);
+                setLibraryFact(k, cur.includes(v) ? cur.filter(x => x !== v) : cur.concat(v));
+                askOpen = true;
+              } else setLibraryFact(k, v);
+              saveDraft(); paintL();
+            }));
+            b.querySelectorAll("[data-lib-ask]").forEach(btn => btn.addEventListener("click", () => { askOpen = true; paintL(); }));
+            b.querySelectorAll("[data-lib-ask-done]").forEach(btn => btn.addEventListener("click", () => { askOpen = false; paintL(); }));
+            b.querySelectorAll(".ch-lib-pick [data-lib-choice]").forEach(btn => btn.addEventListener("click", () => {
+              const row = btn.closest(".ch-lib-pick");
+              const g = draftGoal(row.dataset.gid); if (!g) return;
+              g.libChoices = Object.assign({}, g.libChoices, { [row.dataset.pick]: btn.dataset.libChoice });
+              saveDraft(); paintL();
+            }));
+            // SAVING IS THE ACCEPTING. Each habit chosen for now or later
+            // becomes a habit on its goal at that stage; each "not for me" is
+            // remembered so it is never offered again for that goal.
+            b.querySelector("#hbSave").addEventListener("click", () => {
+              proposals().forEach(({ g, prop }) => {
+                if (!prop) return;
+                prop.picks.filter(pk => !pk.support).forEach(pk => {
+                  const ch = choiceOf(g, pk);
+                  if (ch === "no") declineLibraryHabit(g, pk.id);
+                  else acceptLibraryHabit(g, pk, ch);
                 });
-                inp.addEventListener("blur", commit);
-              };
-              sp.addEventListener("click", open);
-              sp.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
-            });
-            // UT1.5h: "+ add your own" — the roadmap composer's little row,
-            // here. A habit lands on the quarter's live step, theirs from
-            // birth (addUserWork stamps source "user").
-            b.querySelectorAll(".hv-add-own[data-gid]").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = actives.find(x => x.draftId === btn.dataset.gid);
-                if (!g) return;
-                const rowEl = btn.closest(".hv-addown-row");
-                rowEl.innerHTML = `<div data-type-area="roadmap/add-quarter" class="rm-addq-row hv-own-compose">
-                    <input class="rm-work-label" type="text" maxlength="80" placeholder="what is it?" aria-label="what is it?">
-                    <button class="ci-chip" type="button" data-own-add>add it</button>
-                    <button class="wk-quiet" type="button" data-own-cancel>never mind</button>
-                  </div>`;
-                const inp = rowEl.querySelector(".rm-work-label");
-                inp.focus();
-                const commit = () => {
-                  const label = inp.value.trim();
-                  if (!label) { paintH(); return; }
-                  const live = (g.objectives || []).find(o => !o.theme && !o.sketch);
-                  addUserWork(g, live ? live.id : null, { label, type: "habit", estWeeklyHours: 1, timesPerWeek: 1 });
-                  saveDraft();
-                  paintH();
-                };
-                rowEl.querySelector("[data-own-add]").addEventListener("click", commit);
-                inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } });
-                rowEl.querySelector("[data-own-cancel]").addEventListener("click", () => paintH());
+                g.libChoices = {};
               });
-            });
-            b.querySelectorAll(".hv-cut").forEach(btn => {
-              btn.addEventListener("click", () => {
-                const g = kept.find(x => x.draftId === btn.dataset.gid);
-                if (g) { g.hvCutOpen = !g.hvCutOpen; paintH(); }
-              });
+              saveDraft();
+              window.__ciFinish();
             });
           }
-          paintH();
-          saveDraft();
-          narrate("s-habits-ready");
+          paintL();
         }},
     ];
   }
@@ -43490,6 +43106,8 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     scheduledDatesFor, completionsAt, totalCompletionsIn, anyCountOf,
     moveOccurrence, movesFor, moveCompletion, scheduleOriginsFor, pruneMoves, clearMoves,
     migrateOccurrences, migrateQuartersOut, occSchema: () => OCC_SCHEMA,
+    loadLibrary, libraryGet: () => LIBRARY, chooseHabits, libLevelFor, libWeekMinutes, libraryGoalsFor, libraryGoalKey,
+    proposalFor, libraryBudget, acceptLibraryHabit, declineLibraryHabit, setLibraryFact, libraryFacts: () => ciLibrary,
     repairCompletionCounts, repairDuplicateMechIds,
     repairStaleWeekRecords, scheduleFloats,
     reminderList, addReminder, removeReminder, remindersInWeek, remindersOn, tickReminder,
@@ -43599,7 +43217,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The specimen plates: exported so the six can be drawn and measured
     // without driving six clicks, and so a plate that stops taking its
     // area's colour fails a test rather than being noticed by eye.
-    specimenSvg, paintAddPage, addRiver: ADD_RIVER, areaPrintSvg,
+    paintAddPage, addRiver: ADD_RIVER, areaPrintSvg,
     // the trace of the painting, its arrival and the fit it is drawn to (test 162)
     addTraceReady: addTraceLoad, addFitNow: () => addFitNow,
     releaseWishesGet: () => releaseWishes,
@@ -43637,7 +43255,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // The round-trip test points the real supabaseStore at a local Supabase.
     // Null restores the configured client (which may itself be null).
     setSupabaseClient(c) { sbc = c || sb; },
-    supabaseStore,
+    supabaseStore, clockSafeStorage,
     saveDraft, restoreDraft, clearDraft,
     // The journal's single writer and the fresh-start reset, so the suite can
     // prove a previous run's answers cannot reach the next run's payload.
