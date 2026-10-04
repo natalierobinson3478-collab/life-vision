@@ -12093,7 +12093,10 @@
                          "lifevision.mirror.v1",
                          // the last board this device knew to be in the
                          // account (2026-09-07, the merge): same rule
-                         "lifevision.base.v1"];
+                         "lifevision.base.v1",
+                         // the board as it stood before the quarters came
+                         // out (2026-09-29), written once, never again
+                         "lifevision.v3backup.v1"];
   // Published to storage, not just held in this window, because the write that
   // actually did the damage came from ANOTHER TAB: a live page sitting open
   // through a run, holding board state from before it, flushing a debounced
@@ -14589,6 +14592,16 @@
 
   // The step's inline edit is real: blur persists the person's words on
   // the objective and flips its provenance — user edits are truth.
+  // A DIRECTION REWORDED (2026-10-08): directions live on the goal since
+  // the quarters came out; written over by her, the words are hers.
+  function setDirectionLabel(g, dirId, text) {
+    const d = (g.directions || []).find(x => x && String(x.id) === String(dirId));
+    const t = (text || "").trim();
+    if (!d || !t || t === d.label) return false;
+    d.label = t;
+    d.source = "user";
+    return true;
+  }
   function setObjectiveLabel(g, oid, text) {
     const o = (g.objectives || []).find(x => x.id === oid);
     const t = (text || "").trim();
@@ -14632,7 +14645,9 @@
     const type = (spec && spec.type) || "habit";
     if (!label || !["setup", "habit", "capability"].includes(type)) return null;
     const m = { id: userId("um"), type, label, source: "user",
-      drivesObjectiveId: oid || null, hoursSource: "user",
+      // on the sand from the moment it is written (2026-09-29); the objective
+      // id stays one round for boards the fold has not reached
+      stage: "trying", drivesObjectiveId: oid || null, hoursSource: "user",
       estWeeklyHours: Number(spec.estWeeklyHours) > 0 ? Number(spec.estWeeklyHours) : 1 };
     if (type === "habit") {
       m.cadence = "weekly";
@@ -15192,7 +15207,8 @@
   const keepPlaceId = (goalId, dirId) => "keep-place-" + goalId + "-" + dirId;
   function keepDirectionOf(goalId, dirId) {
     const g = goals.find(x => x && String(x.id) === String(goalId));
-    const d = g && (g.objectives || []).find(o => o && String(o.id) === String(dirId));
+    // on the goal since the quarters came out (2026-09-29)
+    const d = g && (g.directions || []).find(o => o && String(o.id) === String(dirId));
     return d ? { g, d } : null;
   }
   // AND WHERE ACROSS THE WATER (2026-09-30, owner: "would it be feasible to
@@ -15303,22 +15319,24 @@
   // line hidden here but kept on the goal would only come back at the check-in
   // as something she had already put down. The sync keys a goal's objectives
   // by id, so a direction taken off here stays off on every device.
+  // A goal's directions live on the goal itself since the quarters came out
+  // (2026-09-29); they were theme objectives before.
   function removeGoalDirection(goalId, dirId) {
     const g = goals.find(x => x && x.id === goalId);
-    const objs = g && g.objectives;
-    const at = objs ? objs.findIndex(o => o && o.theme && o.id === dirId) : -1;
+    const dirs = g && g.directions;
+    const at = dirs ? dirs.findIndex(d => d && d.id === dirId) : -1;
     if (at < 0) return null;
-    const rec = JSON.parse(JSON.stringify(objs[at]));
-    objs.splice(at, 1);
+    const rec = JSON.parse(JSON.stringify(dirs[at]));
+    dirs.splice(at, 1);
     saveState();
     return { goalId, at, rec };
   }
   function restoreGoalDirection(gone) {
     const g = gone && goals.find(x => x && x.id === gone.goalId);
     if (!g) return false;
-    g.objectives = g.objectives || [];
-    if (!g.objectives.some(o => o && o.id === gone.rec.id)) {
-      g.objectives.splice(Math.max(0, Math.min(gone.at, g.objectives.length)), 0, JSON.parse(JSON.stringify(gone.rec)));
+    g.directions = g.directions || [];
+    if (!g.directions.some(d => d && d.id === gone.rec.id)) {
+      g.directions.splice(Math.max(0, Math.min(gone.at, g.directions.length)), 0, JSON.parse(JSON.stringify(gone.rec)));
     }
     saveState();
     return true;
@@ -15404,7 +15422,14 @@
       lines: [["a week in the", "s"], ["CERULEAN", "b"], ["SEA", "b"]],
       board: "#c8c5a9", ink: "#4a4331", rule: "#9a9678", dress: "frame", gapAfter: 4, hx: 26,
       tour: "your week lives in here, the list you'll tick through." },
-    { door: "atlas", aria: "open quarter by quarter", open: openAtlas, library: true,
+    // PUT AWAY FOR GOOD (2026-09-29, the quarters coming out): the atlas is
+    // a quarter object through and through, and the portrait is a model's
+    // writing off quarter records. Both are off the shelf, out of the
+    // library's catalogue and off the pile, and cannot be set back; their
+    // regions stand until the sweep, so a session in flight there is not
+    // broken. `retired` is read by shelfRoster, shelfAway, openBooksSheet
+    // and shelfSet, and nowhere else.
+    { door: "atlas", aria: "open quarter by quarter", open: openAtlas, library: true, retired: true,
       lines: [["the", "s"], ["MIDNIGHT", "b"], ["ATLAS", "b"]],
       board: "#7d8a6d", ink: "#f0ecd8", rule: "#657252", dress: "bands", gapAfter: 2, hx: 64,
       tour: "every goal, quarter by quarter, the long view." },
@@ -15434,7 +15459,7 @@
       // privacy is worse than no promise at all. What replaced it says what
       // actually happens, and points at the book where the reading shows up.
       tour: "your journal. write freely, and what it teaches the plan shows up in THINGS I'VE NOTICED, yours to strike." },
-    { door: "portrait", aria: "things I've noticed, what the plan has learned about you", open: openPortrait, library: true,
+    { door: "portrait", aria: "things I've noticed, what the plan has learned about you", open: openPortrait, library: true, retired: true,
       lines: [["things I've", "s"], ["NOTICED", "b"]],
       board: "#9aa9b4", ink: "#2e3941", rule: "#7c8b96", dress: "plain", lean: -1.4, gapAfter: 34, hx: 16,
       tour: "what the plan has noticed about you, with where each line came from, and any line yours to strike." },
@@ -15449,7 +15474,10 @@
       show: () => { const d = goals.length ? weekDoorState() : null;
         return !!(d && d.show && d.mode === "close"); },
       tour: "it comes out on Friday, and waits there until you've closed your week." },
-    { door: "quartercheck", aria: "quarterly check-in", open: quarterlyBookGo,
+    // RETIRED (2026-09-29, the quarters coming out): the quarterly review
+    // is a quarter object. Off the shelf, and its sheet stands until the
+    // check in book replaces it in sitting 4; `retired` is read by shelfRoster.
+    { door: "quartercheck", aria: "quarterly check-in", open: quarterlyBookGo, retired: true,
       lines: [["the sorcerer's", "s"], ["QUARTERS", "b"]],
       // SAGE, and the page reads it from here (owner, 2026-08-28: "sage
       // green colour theme"). The spine and the sheet are one colour or
@@ -15585,7 +15613,7 @@
       // A BOOK IN THE LIBRARY IS OFF THE SHELF THE SAME WAY A CHECK-IN THAT
       // IS NOT DUE IS (2026-09-07): absent, never dimmed. It is still a
       // permanent book, with no come-and-go rule of its own.
-      if (stands ? !stands(bk) : ((bk.show && !bk.show()) || (bk.library && !shelfOn(bk.door)))) {
+      if (bk.retired || (stands ? !stands(bk) : ((bk.show && !bk.show()) || (bk.library && !shelfOn(bk.door))))) {
         const prev = out[out.length - 1];
         if (prev) prev.gapAfter = Math.max(prev.gapAfter || 0, bk.gapAfter || 0);
         return;
@@ -15607,7 +15635,7 @@
   // so it cannot become a count, and it stays small, because less on the
   // shelf is the reason they left.
   const PUT_AWAY_FLAT = [{ len: 104, t: 18, dx: 0 }, { len: 94, t: 16, dx: 7 }, { len: 99, t: 17, dx: -2 }];
-  const shelfAway = () => SHELF_BOOKS.filter(bk => bk.library && !shelfOn(bk.door));
+  const shelfAway = () => SHELF_BOOKS.filter(bk => bk.library && !bk.retired && !shelfOn(bk.door));
   // Laid from the floor up, from (x, floorY), in the layout's units, at k.
   function putAwayPile(x, floorY, k) {
     const away = shelfAway().slice(0, PUT_AWAY_FLAT.length);
@@ -17094,9 +17122,17 @@
   // business being a year's archive. Forward stops ONE week past this one:
   // next week can be reasoned about, and the week after that is a guess
   // wearing a schedule's clothes.
+  // HOW FAR BACK THE WEEK TURNS (2026-09-29): it was the quarter's first
+  // week. With no quarters it is the earliest of thirteen weeks back, the
+  // first week the plan has on record, and the week the discovery began, so
+  // a person can always turn back to where their record starts, never past it.
   function twWeekBounds() {
-    const b = quarterBounds(appNow());
-    const first = weekKeyOf(new Date(b.start.getFullYear(), b.start.getMonth(), 1, 12));
+    const back = new Date(weekKeyOf() + "T12:00:00"); back.setDate(back.getDate() - 7 * 13);
+    const firsts = [weekKeyOf(back)];
+    const recs = Object.keys(weekPlans || {}).sort();
+    if (recs.length) firsts.push(recs[0]);
+    if (discoveryStartedAt) firsts.push(weekKeyOf(new Date(discoveryStartedAt + "T12:00:00")));
+    const first = firsts.sort()[0];
     const nx = new Date(weekKeyOf() + "T12:00:00"); nx.setDate(nx.getDate() + 7);
     return { first, last: localDateKey(nx) };
   }
@@ -17135,12 +17171,10 @@
       (g.mechanisms || []).forEach(m => {
         if (!m || m.kind === "reminder") return;
         items.push({ gid: g.id, cat: g.category, mid: m.id,
-          // WHICH STEP IT DRIVES rides the snapshot too. weeklyWorkFor only
-          // lists a mechanism that drives this quarter's step, so a snapshot
-          // without it rebuilds a week in which nothing qualifies as work —
-          // which is how every past week first came back empty.
-          drivesObjectiveId: m.drivesObjectiveId || null,
-          unlocksObjectiveId: m.unlocksObjectiveId || null,
+          // ITS STAGE rides the snapshot (2026-09-29): weeklyWorkFor lists a
+          // habit by its stage, so a snapshot without one would rebuild a week
+          // read the old way, by a step that no longer exists.
+          stage: m.stage || "trying",
           label: m.weekLabel || m.label || "",
           schedule: JSON.parse(JSON.stringify(scheduleOf(m, g.id, weekKeyOf()))),
           durationMin: minutesOf(m, g.id, weekKeyOf()), type: m.type || "habit" });
@@ -17190,9 +17224,7 @@
         .map(iso => TW_DAYS[wd.indexOf(iso)]);
       if (!days.length || seen[g.id + "|" + m.id]) return;
       seen[g.id + "|" + m.id] = 1;
-      items.push({ gid: g.id, cat: g.category, mid: m.id,
-        drivesObjectiveId: m.drivesObjectiveId || null,
-        unlocksObjectiveId: m.unlocksObjectiveId || null,
+      items.push({ gid: g.id, cat: g.category, mid: m.id, stage: m.stage || "trying",
         label: m.weekLabel || m.label || "", schedule: days,
         durationMin: minutesOf(m, g.id, key), type: m.type || "habit", inferred: true });
     }));
@@ -17217,13 +17249,13 @@
       const comps = plan.kind === "future" ? {}
         : (liveM && liveM.completions ? liveM.completions : {});
       if (!byGoal[it.gid]) byGoal[it.gid] = { id: it.gid, title: live ? live.title : "",
-        category: it.cat, status: "active", provenance: "user",
-        objectives: live ? (live.objectives || []) : [], mechanisms: [] };
+        category: it.cat, status: "active", provenance: "user", mechanisms: [] };
+      // A WEEK SEALED BEFORE THE QUARTERS CAME OUT carries no stage, only the
+      // step it drove; everything it listed was on that week's sand, so it
+      // reads as `trying`.
       byGoal[it.gid].mechanisms.push({ id: it.mid, type: it.type, label: it.label,
         weekLabel: it.label, cadence: "weekly", schedule: it.schedule,
-        drivesObjectiveId: it.drivesObjectiveId
-          || (liveM ? liveM.drivesObjectiveId : null) || null,
-        unlocksObjectiveId: it.unlocksObjectiveId || null,
+        stage: it.stage || (liveM && liveM.stage) || "trying",
         durationMin: it.durationMin, occSchema: 2, completions: comps });
     });
     return Object.keys(byGoal).map(k => byGoal[k]);
@@ -17282,12 +17314,12 @@
     (goalList || goals).filter(g => g.status === "active").forEach(g => {
       const k = ROSE_AREAS.indexOf(g.category) >= 0 ? g.category : null;
       if (!k || out[k]) return;
-      // THE QUARTER'S STEP: an objective landing in this quarter that is
-      // neither a theme nor a sketch. No step means no goal this quarter,
-      // which means a bud - not an empty petal.
-      const o = (g.objectives || []).find(x => !x.theme && !x.sketch && x.when === cur);
-      if (!o) return;
-      const mechs = (g.mechanisms || []).filter(m => m && m.kind !== "reminder");
+      // THE QUARTER'S STEP is gone (2026-09-29, the quarters coming out): a
+      // petal is drawn for any active goal with work on the sand, and no step
+      // is asked for. The old lookup drew a bud for a goal without an
+      // objective this quarter, which is every goal once they are folded.
+      const o = null;
+      const mechs = (g.mechanisms || []).filter(m => m && m.kind !== "reminder" && m.stage !== "letgo" && m.stage !== "waiting");
       if (!mechs.length) return;
       // WHAT THE QUARTER ASKS: the cadence the person set, across the weeks
       // the quarter has. Derived, never stored - a second number to keep in
@@ -17319,9 +17351,9 @@
       // goalBarName, not goalHandle: the handle getter WRITES g.handle when
       // the goal has none, and a render pass has no business mutating the
       // model it is drawing. Same string, no side effect.
-      out[k] = { k, goalId: g.id, oid: o.id, title: g.title || o.label,
+      out[k] = { k, goalId: g.id, oid: null, title: g.title,
                  name: String(g.handle || "").trim() || goalBarName(g),
-                 ask, done, week, rc, rcDone: !!o.evidenceDoneAt };
+                 ask, done, week, rc, rcDone: false };
     });
     return out;
   }
@@ -19548,30 +19580,11 @@
     // only way this function re-enters itself.
     const again = extra => openRoadmap(goals.find(x => x.id === g.id) || g, Object.assign({}, o, extra || {}));
     const c = CATS[g.category];
-    const objs = g.objectives || [];
-    const committed = objs.filter(o => !o.theme && !o.sketch);
-    const sketchObjs = objs.filter(o => !o.theme && o.sketch);
-    // Item 80 (single-sheet ruling, 23 Aug): the roadmap is ONE bark sheet
-    // read top to bottom — five quarters as list blocks, then the KEEP
-    // block carrying the standing themes one per line, then the firming
-    // line. Firmness is ink, never opacity; labels are "Q3 2026" only
-    // (item 81 — kind words never reach the UI). No cards inside the
-    // sheet, no borders, no second torn paper on the page.
-    const seq = quarterSeq(5);
-    const byWhen = {};
-    committed.forEach(o => { if (o.when && !byWhen[o.when]) byWhen[o.when] = { o, type: "committed" }; });
-    sketchObjs.forEach(o => { if (o.when && !byWhen[o.when]) byWhen[o.when] = { o, type: "sketch" }; });
-    const slots = seq.map(label => byWhen[label]
-      ? Object.assign({ label }, byWhen[label]) : { label, o: null, type: "empty" });
-    // Item 106: quarters added BEYOND the five-quarter window still show —
-    // the runway the person extended, in order, after the window's slots.
-    const windowSet = new Set(seq);
-    const beyond = [...committed, ...sketchObjs]
-      .filter(o => o.when && !windowSet.has(o.when))
-      .sort((a, b) => quarterSeq(12).indexOf(a.when) - quarterSeq(12).indexOf(b.when))
-      .map(o => ({ label: o.when, o, type: o.sketch ? "sketch" : "committed" }));
-    const current = slots[0];
-    const ev = evidenceOf(g);
+    // THE QUARTERS ARE GONE FROM THIS PAGE (2026-09-29, the quarters coming
+    // out). A chapter is the goal and its habits, in three runs on the ruled
+    // sheet: NOW (on the sand), WAITING (chosen for later, one tap starts
+    // it), and LET GO (over, one word brings it back). Nothing here is a
+    // step, a sketch, an obstacle or a reality check any more.
     // The header carries title · horizon · what the week costs. The
     // "N pieces of weekly work · see this week →" line under the current
     // quarter is GONE (2026-08-27): it existed because the work itself was
@@ -19599,48 +19612,20 @@
               ${deferredList.map(d => `<div class="qv-cut-item"><div class="qv-cut-label">${escHtml(d.label)}</div>${d.reason ? `<div class="qv-cut-reason">${escHtml(d.reason)}</div>` : ``}</div>`).join("")}` : ``}
           </div>
         </div>` : ``;
-    // The warning scrap (82/84), anchored to the current quarter's block:
-    // the auto mark explains itself; a plan with no evidence asks plainly.
-    // It is the ONLY scrap on the sheet — unrotated, inside the edge.
-    // Item 109: it sits BELOW the quarters now, so it points back up.
-    const warn = ev && ev.evidenceSource === "auto"
-      ? "I've marked one of the steps above as the reality check, change it if another fits better."
-      : !ev ? NO_MILESTONE_NOTE + " Mark the step above where someone outside your head gets to answer."
-      : null;
-    const rcLink = o => (!o.evidence && (!ev || ev.evidenceSource === "auto"))
-      ? `<button class="rm-mark-rc" data-rc="${escHtml(o.id)}">mark as the reality check</button>` : ``;
-    // Hard date is small-caps text after the label — the 📌 pill is retired.
-    const labelBits = o => `${o && o.hardDate ? ` · by ${escHtml(fmtDate(o.hardDate))}` : ``}`;
-    // DONE IS A LINE, NOT A BUTTON (2026-09-07, owner: "I answer it, then it
-    // still shows that button even though it's done. Where is this
-    // logged?"). Answered, the row says when the world answered and, when
-    // one was written, what it said; the ask stays a button until then.
-    const rcDone = o => {
-      const cap = g.rcCapture && g.rcCapture.oid === o.id && g.rcCapture.text ? g.rcCapture.text : "";
-      const day = String(o.evidenceDoneAt || "").slice(0, 10);
-      return `<span class="rm-meta-txt rc-done-line">the world answered${/^\d{4}-\d{2}-\d{2}$/.test(day) ? ", " + escHtml(fmtDate(day)) : ""}${
-        cap ? `: “${escHtml(wordTrunc(cap, 90))}”` : ``}</span>`;
-    };
-    const metaRow = o => o && o.evidence
-      ? `<div data-type-area="roadmap/rc" class="rm-rc-row">${o.evidenceDoneAt ? rcDone(o) : `<button class="rm-q-rc rm-rc-ask"
-          data-rcsheet="${escHtml(o.id)}" title="what this is, and its choices">reality check</button>`}${
-          o.source === "user" ? `<span class="rm-meta-txt">your step</span>` : ``}</div>`
-      : ``;
-    const ifBlock = o => o.obstacle ? `<div class="rm-block-label">${o.kind === "exploration" ? "What you're finding out" : "If it goes wrong"}</div>
-        <div class="rm-if-line">If ${escHtml(rmClause(o.obstacle))}${o.obstaclePlan ? `, then ${escHtml(rmClause(o.obstaclePlan))}` : ``}.</div>` : ``;
-    // ---- THE WEEKLY WORK, UNDER THE QUARTER IT DRIVES ----
-    // This page used to say "2 pieces of weekly work" and send you to
-    // This-week to see what they were. The chapter is the hub now: the work
-    // is listed where it belongs, under the step it exists to move, and its
-    // name, its schedule and its length are all changed here. Rows are
-    // This-week's own grammar — the drawn type mark, the name, the figures
-    // on the right in the instrument — with ONE difference stated out loud:
-    // THE MARK IS NOT A CHECKBOX. This-week owns completion; a second place
-    // to tick a thing is how two records of one fact start disagreeing.
-    const workFor = o => (g.mechanisms || []).filter(m =>
-      m.drivesObjectiveId === o.id && !m.dropped);
-    const offFor = o => (g.mechanisms || []).filter(m =>
-      m.drivesObjectiveId === o.id && m.dropped);
+    // ---- THE HABITS, BY THEIR STAGE ----
+    // The chapter is the hub: a habit's name, its schedule and its length
+    // are all changed here. Rows are This-week's own grammar — the drawn
+    // type mark, the name, the figures on the right — with ONE difference
+    // stated out loud: THE MARK IS NOT A CHECKBOX. This-week owns
+    // completion; a second place to tick a thing is how two records of one
+    // fact start disagreeing. A habit with no stage yet (a board the fold
+    // has not reached) reads as on the sand.
+    const all = (g.mechanisms || []);
+    const stageOf = m => m.stage == null ? "trying" : m.stage;
+    const nowRows = all.filter(m => !m.dropped && ["trying", "kept", "paused"].includes(stageOf(m)));
+    const waitingRows = all.filter(m => !m.dropped && stageOf(m) === "waiting");
+    const letGoRows = all.filter(m => !m.dropped && stageOf(m) === "letgo");
+    const offRows = all.filter(m => m.dropped);
     // OFF FOR A DAY OR A WEEK, AND THE WAY BACK (2026-09-07, owner: "if
     // someone deletes for that day or week, if they go to the chapters
     // they have the option to bring it back"). A row's box and the swipes
@@ -19687,66 +19672,77 @@
       return `<div class="ch-work-held" data-held-mech="${escHtml(m.id)}" data-type-area="chapters/work">held by ${escHtml(h)}${
         toDo ? `<span class="ch-work-held-todo">, once you set it up</span>` : ``}</div>`;
     };
-    const workRows = o => {
-      const ms = workFor(o), off = offFor(o);
-      const rows = ms.map(m => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
+    // THE LEVEL WORD (2026-09-29): a library habit says which of its three
+    // sizes it is being done at, in one small word beside its figures.
+    const levelWord = m => m.level ? `<span class="ch-q-note ch-work-level">${escHtml(m.level)}</span>` : ``;
+    const workRow = (m, act) => `<div class="ch-work-row" data-mech="${escHtml(m.id)}" data-type-area="chapters/work">
         <i class="ch-work-mark" aria-hidden="true">${twRowMark(m, false)}</i>
         <span class="ch-work-name edit-signal" contenteditable="true" role="textbox"
           spellcheck="false" data-mech="${escHtml(m.id)}"
           aria-label="what this is">${escHtml(appVoice(m.weekLabel ?? m.label, wroteIt(m)))}</span>
-        <span class="ch-work-meta">
+        <span class="ch-work-meta">${levelWord(m)}
           <button type="button" class="ch-work-when" data-when-mech="${escHtml(m.id)}"
             aria-label="when and how long, change">${escHtml(whenLineFor(m))}</button>
-          <button type="button" class="ch-work-drop" data-drop-mech="${escHtml(m.id)}"
-            aria-label="stop doing this">remove</button>
+          ${act}
         </span>
-      </div>${heldLine(m)}${absLine(m)}`).join("");
+      </div>${heldLine(m)}${absLine(m)}`;
+    const workRows = () => {
+      const rows = nowRows.map(m => workRow(m, `<button type="button" class="ch-work-drop" data-drop-mech="${escHtml(m.id)}"
+            aria-label="stop doing this">remove</button>`)).join("");
       // OFF YOUR WEEK, AND THE WAY BACK (2026-09-07, owner: a series swiped
       // off by accident, and the undo gone by the time she looked). A
       // removed thing is only marked, never deleted (its ticks stay
       // attached to it), so it is listed here under its quarter, a shade
       // quieter, with the one word that brings it back.
-      const back = off.map(m => `<div class="ch-work-row ch-work-off" data-off-mech="${escHtml(m.id)}" data-type-area="chapters/work">
+      const back = offRows.map(m => `<div class="ch-work-row ch-work-off" data-off-mech="${escHtml(m.id)}" data-type-area="chapters/work">
         <i class="ch-work-mark" aria-hidden="true">${twRowMark(m, false)}</i>
         <span class="ch-work-name ch-work-name-off">${escHtml(appVoice(m.weekLabel ?? m.label, wroteIt(m)))}</span>
         <span class="ch-work-meta"><span>off your week</span>
           <button type="button" class="ch-work-back" data-back-mech="${escHtml(m.id)}"
             aria-label="bring this back to your week">bring back</button></span>
       </div>`).join("");
-      if (!rows && !back) return `<p class="ch-none-work">nothing weekly under this one yet.</p>`;
+      if (!rows && !back) return `<p class="ch-none-work">nothing on the sand for this one yet.</p>`;
       return rows + back;
     };
-    // A quarter: its name, the inky line, the step written on it, and the
-    // weekly work beneath. Three of the four things this page exists to
-    // change are in this block; the fourth is the goal's own name above.
-    const qBlock = (slot, i) => {
-      const o = slot.o;
-      const sk = slot.type === "sketch";
-      const isCurrent = i === 0;
-      return `<div data-type-area="chapters/quarter" class="ch-q rm-qblock${sk ? " sketch" : ""}${!o ? " empty" : ""}${i > 0 ? " future" : ""}"${o ? ` data-oid="${escHtml(o.id)}"` : ``}>
-        <div class="ch-q-head">
-          <span class="ch-q-label rm-qlabel">${escHtml(slot.label)}</span>
-          ${isCurrent && o ? `<span class="ch-q-now ch-hi">you are here</span>` : ``}
-          ${o && o.hardDate ? `<span class="ch-q-note">by ${escHtml(fmtDate(o.hardDate))}</span>` : ``}
-          ${sk ? `<span class="ch-q-note">sketch</span>` : ``}
-        </div>
+    // WAITING: chosen for later, off the sand, one tap starts it. LET GO:
+    // over by a decision, a shade quieter, one word brings it back.
+    const waitingBlock = waitingRows.length ? `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="waiting">
+        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">waiting</span><span class="ch-q-note">set aside for later</span></div>
         <div class="ch-q-rule"></div>
-        ${o ? `<div class="ch-step${sk ? " sketch" : " edit-signal"}"${!sk ? ` contenteditable="true" role="textbox" spellcheck="false" aria-label="what this quarter is for"` : ``}>${escHtml(appVoice(o.label, wroteIt(o)))}</div>` : ``}
-        ${!o ? `<button class="rm-write-step" data-when="${escHtml(slot.label)}" type="button">${DRAWN_PENCIL_INLINE}write this quarter's step</button>` : ``}
-        ${sk && o && o.note ? `<div class="ch-sk-note">${escHtml(o.note)}</div>` : ``}
-        ${o && !sk ? ifBlock(o) : ``}
-        ${o && !sk ? `<div class="ch-work">${workRows(o)}</div>` : ``}
-        ${isCurrent ? cutFold : ``}
-        ${o && !sk ? (o.evidence ? metaRow(o) : rcLink(o)) : ``}
-        ${o && !sk ? `<div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" data-oid="${escHtml(o.id)}" type="button">+ add weekly work</button></div>` : ``}
+        <div class="ch-work">${waitingRows.map(m => workRow(m, `<button type="button" class="ch-work-back" data-start-mech="${escHtml(m.id)}"
+            aria-label="start this now">start it</button>`)).join("")}</div>
+      </div>` : ``;
+    // FROM YOUR QUARTERS (2026-10-08): the steps the quarters held, folded
+    // onto the goal as notes when the quarters came out, in her words, with
+    // the quarter each was for. Read here so nothing she wrote goes out of
+    // sight (law 1). Nothing to do with them, so no control on the line.
+    const notes = (g.notes || []).filter(n => n && String(n.text || "").trim());
+    const notesBlock = notes.length ? `<div data-type-area="chapters/run" class="ch-q ch-run future" data-run="notes">
+        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">from your quarters</span></div>
+        <div class="ch-q-rule"></div>
+        ${notes.map(n => `<div class="ch-step ch-note" data-note="${escHtml(String(n.id))}">${escHtml(appVoice(n.text, wroteIt(n)))}${
+          n.when ? ` <span class="ch-q-note">${escHtml(n.when)}${n.done ? ", done" : ""}</span>` : ``}</div>${
+          n.obstacle ? `<div class="rm-if-line">If ${escHtml(rmClause(n.obstacle))}${n.obstaclePlan ? `, then ${escHtml(rmClause(n.obstaclePlan))}` : ``}.</div>` : ``}`).join("")}
+      </div>` : ``;
+    const letGoBlock = letGoRows.length ? `<div data-type-area="chapters/run" class="ch-q ch-run future" data-run="letgo">
+        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">let go</span></div>
+        <div class="ch-q-rule"></div>
+        <div class="ch-work">${letGoRows.map(m => `<div class="ch-work-row ch-work-off" data-letgo-mech="${escHtml(m.id)}" data-type-area="chapters/work">
+        <i class="ch-work-mark" aria-hidden="true">${twRowMark(m, false)}</i>
+        <span class="ch-work-name ch-work-name-off">${escHtml(appVoice(m.weekLabel ?? m.label, wroteIt(m)))}</span>
+        <span class="ch-work-meta"><span>let go</span>
+          <button type="button" class="ch-work-back" data-back-stage="${escHtml(m.id)}"
+            aria-label="bring this back">bring back</button></span>
+      </div>`).join("")}</div>
+      </div>` : ``;
+    // NOW: what is on the sand, then the budget fold, then "+ add a habit".
+    const nowBlock = `<div data-type-area="chapters/run" class="ch-q ch-run" data-run="now">
+        <div class="ch-q-head"><span class="ch-q-label rm-qlabel">now</span></div>
+        <div class="ch-q-rule"></div>
+        <div class="ch-work">${workRows()}</div>
+        ${cutFold}
+        <div data-type-area="chapters/add-work" class="rm-add-work-row"><button class="rm-add-work" type="button">+ add a habit</button></div>
       </div>`;
-    };
-    // THE GOAL'S DIRECTIONS LIVE IN THE KEEPING BOOK (2026-09-29, owner: "i
-    // dont think we need the keeping in mind in here for each category. We
-    // already have it in a seperate book"). The chapter used to end on a
-    // "keeping in mind" block of the goal's themes; they are read on the
-    // keeping in mind page now, in this goal's colour, beside her own lines.
-    const anySketch = slots.some(sl => sl.type === "sketch" || !sl.o);
     const mount = document.getElementById(o.mount || "roadmapMount");
     // ---- THE CHAPTER, ON PAPER ----
     // The header band was bark and it was the heaviest thing on the page.
@@ -19771,8 +19767,7 @@
                    two facts bolted to its end. -->
               <div data-type-area="chapters/vow" class="ch-vow">${horizonEditable(g)}</div>
               <div data-type-area="chapters/horizon" class="ch-horizon rm-horizon-line"><span>${g.status === "parked" ? "paused" : "active"}${costLine}</span>
-                ${quarterBubblesHtml(g)}${o.inBook ? `` : `<button class="rm-atlas-door" id="rmAtlasDoor" type="button" title="every goal, quarter by quarter">every goal ${DRAWN_ARROW}</button>
-                <button class="rm-atlas-door" id="rmChaptersDoor" type="button" title="every chapter">all chapters ${DRAWN_ARROW}</button>`}</div>
+                ${o.inBook ? `` : `<button class="rm-atlas-door" id="rmChaptersDoor" type="button" title="every chapter">all chapters ${DRAWN_ARROW}</button>`}</div>
               ${g.description ? `
               <div class="rm-about">
                 <button class="rm-about-toggle" id="rmAboutToggle" type="button">about this goal ${DRAWN_ARROW}</button>
@@ -19784,19 +19779,10 @@
             </div>
           </div>
           <div class="rm-body">
-          ${(() => {
-            const mw = markerWindow();
-            const m = mw.active ? markerLineFor(g) : null;
-            if (!m) return ``;
-            return `<div class="rm-marker">Halfway through the quarter. ${m.done
-              ? `The reality check is done.`
-              : `<button class="tw-marker-ask" data-marker-oid="${escHtml(m.oid)}">the reality check hasn't happened yet, want a smaller one?</button>`}</div>`;
-          })()}
-          ${slots.map(qBlock).join("")}
-          ${beyond.map(sl => qBlock(sl, -1)).join("")}
-          <div data-type-area="chapters/add-quarter" class="rm-addq-row"><button class="rm-add-quarter" type="button">+ add a quarter</button></div>
-          ${warn ? `<div class="rm-warn-scrap scrap"><div class="torn-paper"><div class="torn-sheet rm-warn-sheet">${escHtml(warn)}</div></div></div>` : ``}
-          ${anySketch ? `<div data-type-area="chapters/firming" class="rm-firming">these firm up at your check-ins.</div>` : ``}
+          ${nowBlock}
+          ${waitingBlock}
+          ${letGoBlock}
+          ${notesBlock}
           </div>
         </div>
 
@@ -19835,20 +19821,20 @@
     inkUnderline(document.getElementById("rmDelete"), 1, "currentColor");
     inkUnderline(document.getElementById("rmPause"), 2, "currentColor");
 
-    mount.querySelectorAll('.ch-step[contenteditable]').forEach(el => {
-      const block = el.closest("[data-oid]");
-      if (!block) return;
-      el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
-      el.addEventListener("blur", () => {
-        const o2 = (g.objectives || []).find(x => x.id === block.dataset.oid);
-        if (setObjectiveLabel(g, block.dataset.oid, el.textContent)) {
-          saveState();
-          again();
-        } else if (o2) {
-          el.textContent = appVoice(o2.label, wroteIt(o2));   // empty or unchanged: the word stands
-        }
-      });
-    });
+    // A WAITING HABIT STARTS, A LET-GO ONE COMES BACK: both by one tap,
+    // both to `trying`, both written on the live goal at the tap.
+    mount.querySelectorAll("[data-start-mech], [data-back-stage]").forEach(btn => btn.addEventListener("click", () => {
+      const gNow = goals.find(x => x.id === g.id) || g;
+      const mid = btn.dataset.startMech || btn.dataset.backStage;
+      const m = (gNow.mechanisms || []).find(x => x.id === mid);
+      if (!m) return;
+      m.stage = "trying";
+      saveState();
+      renderAll();
+      again();
+      if (document.getElementById("thisWeekOverlay").classList.contains("open")) renderThisWeek();
+      showToast(`"${appVoice(m.weekLabel ?? m.label, wroteIt(m)).slice(0, 40)}" is on your week.`);
+    }));
     // ---- THE WEEKLY WORK'S THREE EDITS, ALL IN THE ROW ----
     // The name is written where it is read; the schedule and the length open
     // the app's own when-picker INSIDE the row rather than as a floating
@@ -19936,23 +19922,6 @@
         showToast(`"${appVoice(m.weekLabel ?? m.label, wroteIt(m)).slice(0, 40)}" is off your week.`);
       });
     });
-    const rmMarker = mount.querySelector(".rm-marker .tw-marker-ask");
-    if (rmMarker) rmMarker.addEventListener("click", () => {
-      const target = mount.querySelector(`[data-oid="${rmMarker.dataset.markerOid}"]`);
-      if (target) target.scrollIntoView({ block: "center", behavior: "smooth" });
-    });
-    // G2l: the chip is a door — the sheet holds the ask and the move.
-    mount.querySelectorAll("[data-rcsheet]").forEach(btn => btn.addEventListener("click", () =>
-      openRcSheet(g, btn.dataset.rcsheet)));
-    // First encounters (G2l): the concept's one-time scrap, when its line
-    // exists (post-G2x). Anchored at the first instance on the sheet.
-    firstEncounter("rc", mount.querySelector(".rm-q-rc"));
-    firstEncounter("sketch", mount.querySelector(".ch-q.sketch .ch-q-label"));
-    wireHelpDot(mount);
-    const atDoor = document.getElementById("rmAtlasDoor");
-    if (atDoor) atDoor.addEventListener("click", () => { leaveChapter(o); openAtlas(); });
-    // Only the standing-alone roadmap draws this — in the workshop the
-    // chapter IS the page, so there is nowhere for it to go.
     const chDoor = document.getElementById("rmChaptersDoor");
     if (chDoor) chDoor.addEventListener("click", () => { closeRoadmap(); openChapters(); });
     const aboutT = document.getElementById("rmAboutToggle");
@@ -19983,7 +19952,6 @@
                           : `"${g.title.slice(0, 40)}" is paused, it stays on the board.`);
     });
 
-    wireQuarterBubbles(mount);
     // ---- item 106: the hand-writing affordances (every goal) ----
     // HOW LONG YOU ARE GIVING IT, TYPED IN PLACE. Same gesture as the
     // capacity in the front matter: the figure becomes a field, Enter or
@@ -20077,55 +20045,7 @@
     // Enter or leaving with ink commits a source:"user" objective. The FIRST
     // committed hand-written step on a plan with no reality check gets ASKED
     // about candidacy — the person chooses, nothing is auto-marked.
-    mount.querySelectorAll(".rm-write-step").forEach(btn => btn.addEventListener("click", () => {
-      const when = btn.dataset.when;
-      const line = document.createElement("div");
-      line.className = "rm-step rm-step-new";
-      line.contentEditable = "true";
-      btn.replaceWith(line);
-      line.focus();
-      let done = false;
-      const commit = () => {
-        if (done) return;
-        done = true;
-        const text = (line.textContent || "").trim();
-        if (!text) { again(); return; }   // empty = never happened
-        const o = addUserQuarterStep(g, when, text);
-        if (!o) { again(); return; }
-        saveState();
-        renderAll();
-        const ask = !evidenceOf(g);
-        again(ask ? { rcAsk: o.id } : undefined);
-      };
-      line.addEventListener("keydown", e => {
-        if (e.key === "Enter") { e.preventDefault(); line.blur(); }
-        if (e.key === "Escape") { e.stopPropagation(); done = true; again(); }
-      });
-      line.addEventListener("blur", commit);
-    }));
-    // The candidacy ask, when a fresh hand-written step landed on a plan
-    // with no reality check yet.
-    if (opts && opts.rcAsk) {
-      const block = mount.querySelector(`.rm-qblock[data-oid="${CSS.escape(opts.rcAsk)}"]`);
-      if (block && !evidenceOf(g)) {
-        block.insertAdjacentHTML("beforeend",
-          `<div class="rm-rc-confirm rm-rc-ask-row">should the world get to answer here?
-             <button class="wk-quiet" data-rcaskyes="1">make it the reality check</button>
-             <button class="wk-quiet" data-rcaskno="1">not this one</button></div>`);
-        block.querySelector("[data-rcaskyes]").addEventListener("click", () => {
-          if (!markRealityCheck(g, opts.rcAsk)) return;
-          saveState();
-          again();
-          showToast("marked. this is the step where the world gets to answer.");
-        });
-        block.querySelector("[data-rcaskno]").addEventListener("click", () =>
-          block.querySelector(".rm-rc-ask-row").remove());
-      }
-    }
-    // "+ add weekly work": label, the three kinds, a rhythm for habits, the
-    // existing when picker. Commits straight onto This-week.
     mount.querySelectorAll(".rm-add-work").forEach(btn => btn.addEventListener("click", () => {
-      const oid = btn.dataset.oid;
       const row = btn.closest(".rm-add-work-row");
       if (row.querySelector(".rm-work-form")) return;
       const draft = { type: "habit", timesPerWeek: 2, durationMin: 60, estWeeklyHours: 2 };
@@ -20181,7 +20101,7 @@
       });
       form.querySelector(".rm-work-cancel").addEventListener("click", () => form.remove());
       addBtn.addEventListener("click", () => {
-        const m = addUserWork(g, oid, { label: labelIn.value, type: draft.type,
+        const m = addUserWork(g, null, { label: labelIn.value, type: draft.type,
           timesPerWeek: draft.timesPerWeek, estWeeklyHours: draft.estWeeklyHours,
           when: draft.when, schedule: draft.schedule, durationMin: draft.durationMin });
         if (!m) return;
@@ -20191,47 +20111,6 @@
         showToast(`On This week, "${m.label.slice(0, 40)}".`);
       });
     }));
-    // "+ add a quarter": a sketch — its label and one line — on the first
-    // quarter without a step. Firmed at a review like any sketch.
-    const addQ = mount.querySelector(".rm-add-quarter");
-    if (addQ) addQ.addEventListener("click", () => {
-      const row = addQ.closest(".rm-addq-row");
-      if (row.querySelector(".rm-work-form")) return;
-      row.insertAdjacentHTML("beforeend", `<div class="rm-work-form">
-          <input class="rm-work-label rm-addq-label" type="text" maxlength="80" placeholder="what's that quarter about?" aria-label="what's that quarter about?">
-          <input class="rm-work-label rm-addq-note" type="text" maxlength="120" placeholder="one line, if it helps, optional" aria-label="a note, optional">
-          <div class="rm-work-actions">
-            <button type="button" class="btn-solid rm-addq-add" disabled>add it</button>
-            <button type="button" class="rm-quiet-act rm-work-cancel">cancel</button>
-          </div>
-        </div>`);
-      const form = row.querySelector(".rm-work-form");
-      const labelIn = form.querySelector(".rm-addq-label");
-      const noteIn = form.querySelector(".rm-addq-note");
-      const addBtn = form.querySelector(".rm-addq-add");
-      labelIn.focus();
-      labelIn.addEventListener("input", () => { addBtn.disabled = !labelIn.value.trim(); });
-      form.querySelector(".rm-work-cancel").addEventListener("click", () => form.remove());
-      addBtn.addEventListener("click", () => {
-        const o = addUserQuarter(g, labelIn.value, noteIn.value);
-        if (!o) return;
-        saveState();
-        again();
-        showToast(`${o.when} added, it firms up at a check-in.`);
-      });
-    });
-
-    // Marking a step as the reality check is the person's own call — arguably
-    // better ownership than a generated one. It clears the plan's note at once.
-    mount.querySelectorAll(".rm-mark-rc").forEach(btn => btn.addEventListener("click", () => {
-      // Item 84: their mark outranks the client's auto candidate — marking
-      // clears any auto evidence before the person's own lands.
-      if (!markRealityCheck(g, btn.dataset.rc)) return;
-      saveState();
-      again();
-      showToast("marked. this is the step where the world gets to answer.");
-    }));
-
     // Deleting works for any goal, yours or generated. Two clicks instead of a
     // native confirm() — the second click is the confirmation, and it disarms
     // itself if they wander off.
@@ -22352,7 +22231,7 @@
     // THE CATALOGUE IS THE LIBRARY (2026-09-07): every book is listed, and
     // a book that may be put away carries one word saying where it is,
     // which flips it. The essentials carry no word and cannot leave.
-    list.innerHTML = SHELF_BOOKS.map(bk => `<div data-type-area="books/row" class="bs-row${bk.library && !shelfOn(bk.door) ? " bs-away" : ""}">
+    list.innerHTML = SHELF_BOOKS.filter(bk => !bk.retired).map(bk => `<div data-type-area="books/row" class="bs-row${bk.library && !shelfOn(bk.door) ? " bs-away" : ""}">
       ${bookSwatch(bk)}
       ${bk.library ? `<button type="button" class="bs-name bs-open" data-open="${bk.door}">${escHtml(bookTitle(bk))}</button>`
         : `<span class="bs-name">${escHtml(bookTitle(bk))}</span>`}
@@ -25047,7 +24926,7 @@
   let profileShelf = {};
   const shelfOn = door => !(profileShelf && profileShelf[door] === false);
   function shelfSet(door, on) {
-    if (!SHELF_BOOKS.some(b => b.door === door && b.library)) return false;
+    if (!SHELF_BOOKS.some(b => b.door === door && b.library && !b.retired)) return false;
     profileShelf = Object.assign({}, profileShelf);
     if (on) delete profileShelf[door]; else profileShelf[door] = false;
     saveState();
@@ -26948,12 +26827,6 @@
     // a past week's rows are judged against that week's dates rather than
     // against today's.
     const wkW = (opts && opts.wk) || twViewWk();
-    const objs = g.objectives || [];
-    const first = objs.find(o => !o.theme && !o.sketch) || null;
-    const sketchIds = new Set(objs.filter(o => !o.theme && o.sketch).map(o => o.id));
-    // Item 106: hand-added work may drive a LATER committed quarter — it
-    // shows as early prep, same as sketch-driving work, never vanishes.
-    const laterIds = new Set(objs.filter(o => !o.theme && !o.sketch && first && o.id !== first.id).map(o => o.id));
     const rows = [];
     (g.mechanisms || []).forEach(m => {
       // Item 53: a one-off done in an EARLIER week has left the page — the
@@ -26989,19 +26862,20 @@
         const thisWeek = weekDates(wkW);
         if (dates.length && !dates.some(d => thisWeek.indexOf(d) >= 0)) return;
       }
-      if (first && m.drivesObjectiveId === first.id) {
-        rows.push({ m, early: false, forMonth: null, skipped });
-      } else if (sketchIds.has(m.drivesObjectiveId) || laterIds.has(m.drivesObjectiveId)) {
-        const tgt = objs.find(o => o.id === (m.unlocksObjectiveId || m.drivesObjectiveId));
-        // PULLED FORWARD, OR ALREADY BEING DONE. The pull record is the
-        // person's word for one week; a completion in the week is evidence
-        // of the same decision (the owner had ticked one of these before
-        // there was a word for it), so either reads as pulled. Both expire
-        // with the week they live in, returning the row to later.
-        const pulled = isPulled(g.id, m.id, wkW) || doneCountOf(m, g.id, wkW) > 0;
-        rows.push({ m, early: true, skipped, pulled,
-                    forMonth: tgt && tgt.hardDate ? monthOf(tgt.hardDate) : null });
-      }
+      // BY ITS STAGE, NOT BY THE STEP IT DROVE (2026-09-29, the quarters
+      // coming out). `waiting` is the early row (set aside, pullable, a line
+      // at the foot), `letgo` is off the page, and every other stage is this
+      // week's. The fold in applyState gives every habit a stage; one that
+      // somehow has none is read as on the sand.
+      const stage = m.stage == null ? "trying" : m.stage;
+      if (stage === "letgo") return;
+      const early = stage === "waiting";
+      // PULLED FORWARD, OR ALREADY BEING DONE. The pull record is the
+      // person's word for one week; a completion in the week is evidence of
+      // the same decision, so either reads as pulled. Both expire with the
+      // week they live in, returning the row to waiting.
+      rows.push({ m, early, skipped, forMonth: null,
+                  pulled: early && (isPulled(g.id, m.id, wkW) || doneCountOf(m, g.id, wkW) > 0) });
     });
     return rows;
   }
@@ -27958,6 +27832,66 @@
   // and went red the day placement added a rung, reporting a schema fault
   // where there was none.
   const OCC_SCHEMA = 3;
+  // ---- THE QUARTERS FOLD INTO THE GOAL (2026-09-29, the quarters coming out) ----
+  // Once per goal, on the first load that finds it still carrying
+  // `objectives`, and again after the discovery commits a fresh draft (which
+  // never passes through applyState). What the quarters held moves onto the
+  // goal, and nothing the person wrote is lost (law 1):
+  //   · a theme (a direction, read by the keeping book) → g.directions
+  //   · every other objective, its words, its quarter, its obstacle → g.notes
+  //   · the if-then of the step a habit drove → that habit's `ifThen`, unless
+  //     it already has one
+  //   · every habit gets a stage: the work under the first committed step
+  //     (what This Week showed) and under this quarter's step (what the
+  //     chapter showed under "you are here") is on the sand, `trying`;
+  //     everything else (a sketch's, a later step's, or no step at all) is
+  //     `waiting`. Nothing the week showed leaves it.
+  // Keyed by the objective's id, so a board folded twice (an unmigrated copy
+  // coming down from the account after this device folded its own) adds
+  // nothing twice. `drivesObjectiveId` is left on the habits for one round:
+  // the old branch in weeklyWorkFor reads it until every board is folded.
+  function migrateQuartersOut() {
+    let folded = 0;
+    (goals || []).forEach(g => {
+      if (!g) return;
+      const objs = Array.isArray(g.objectives) ? g.objectives : null;
+      const list = objs || [];
+      const first = list.find(o => o && !o.theme && !o.sketch) || null;
+      // THIS QUARTER'S STEP counts as well as the first one listed. The old
+      // rule read only the first committed step in the list, which on a board
+      // that still lists a past quarter is that past step, so work the
+      // chapter showed under "you are here" sat set aside. Both go on the
+      // sand: nothing the week showed leaves it, and this quarter's work
+      // stops hiding.
+      const cur = typeof boardQuarterName === "function" ? boardQuarterName() : null;
+      const nowStep = list.find(o => o && !o.theme && !o.sketch && o.when === cur) || null;
+      const byId = {};
+      list.forEach(o => { if (o && o.id != null) byId[o.id] = o; });
+      (g.mechanisms || []).forEach(m => {
+        if (!m || m.stage != null) return;
+        const onSand = (first && m.drivesObjectiveId === first.id) || (nowStep && m.drivesObjectiveId === nowStep.id);
+        m.stage = onSand ? "trying" : "waiting";
+        const o = byId[m.drivesObjectiveId];
+        if (o && o.obstacle && !m.ifThen) m.ifThen = ifThenSentence(o.obstacle, o.obstaclePlan);
+      });
+      if (!objs) return;
+      g.directions = Array.isArray(g.directions) ? g.directions : [];
+      g.notes = Array.isArray(g.notes) ? g.notes : [];
+      list.forEach(o => {
+        if (!o || !String(o.label || "").trim()) return;
+        if (o.theme) {
+          if (!g.directions.some(d => d && d.id === o.id)) g.directions.push({ id: o.id, label: o.label, source: o.source || null });
+          return;
+        }
+        if (g.notes.some(n => n && n.id === o.id)) return;
+        g.notes.push({ id: o.id, text: o.label, when: o.when || null, source: o.source || null, done: !!o.done,
+          obstacle: o.obstacle || null, obstaclePlan: o.obstaclePlan || null });
+      });
+      delete g.objectives;
+      folded++;
+    });
+    return folded;
+  }
   function migrateOccurrences() {
     let converted = 0;
     (goals || []).forEach(g => {
@@ -30184,10 +30118,9 @@
             // else. No count of weeks, quarters or months; no apology for the
             // person; no welcome back; no remark on the absence. It vanishes
             // the moment the late review is done and is never mentioned again.
-            const cu = quarterCatchUp();
-            const catchup = cu ? `<div class="tw-catchup" data-type-area="thisweek/catchup"
-              >${escHtml(cu.label)} is waiting for its review <button class="tw-catchup-door brushed-link"
-              type="button" id="twCatchup">close it ${DRAWN_ARROW}</button></div>` : ``;
+            // THE CATCH-UP LINE IS GONE (2026-09-29, the quarters coming
+            // out): there is no quarter left to review.
+            const catchup = ``;
             // A THIRD SECTION between today and this week: today → front of
             // mind → this week. AN ITEM APPEARS ONCE — anything held here is
             // removed from this week's list rather than repeated in it.
@@ -30378,7 +30311,7 @@
                 const ahead = twIsNow() && laterRows.length
                   && (twCommitted === 0 || twDoneSum / twCommitted >= TW_PULL_AHEAD_AT);
                 const lineText = ahead ? `you're ahead of your week, pull something forward?`
-                  : `${laterRows.length} set aside for later chapters`;
+                  : `${laterRows.length} waiting for later`;
                 return `<div class="tw-later-line" data-type-area="thisweek/later">
                   <button class="tw-later-link" id="twLaterLink" type="button"
                     aria-expanded="${twLaterOpen ? "true" : "false"}">${escHtml(lineText)}</button>
@@ -31164,13 +31097,6 @@
 
     // The capture note's own undo left with the section pluses (2026-09-05):
     // the corner files, and the pill carries the way back.
-    const catchupBtn = mount.querySelector("#twCatchup");
-    if (catchupBtn) catchupBtn.addEventListener("click", () => {
-      const cu = quarterCatchUp();
-      if (!cu) return;
-      closeThisWeek();
-      openQuarterReview({ lateLabel: cu.label });
-    });
     if (!twRO) mount.querySelectorAll(".tw-tick[data-mech]").forEach(btn => btn.addEventListener("click", () => {
       // A REMINDER'S ROW CARRIES data-goal="", and `Number("")` is 0 — a
       // goal id no board has — so every hand-added row's checkbox looked up
@@ -33857,8 +33783,7 @@
     if (thing && thing.goalId != null && thing.mechId != null) {
       const g = goals.find(x => x.id === thing.goalId);
       const m = g && (g.mechanisms || []).find(x => x.id === thing.mechId);
-      const o = g && m && (g.objectives || []).find(x => x.id === m.drivesObjectiveId);
-      if (o && o.obstacle) out.push("you said what would stop this: " + ifThenSentence(o.obstacle, o.obstaclePlan));
+      if (m && m.ifThen) out.push("you said what would stop this: " + m.ifThen);
     }
     let j = "";
     try { j = ((buildIntake().journals || {}).obstacles || "").trim(); } catch (e) { j = ""; }
@@ -35953,6 +35878,11 @@
           share: typeof g.share === "number" ? g.share : null,
           shareSource: g.share_source || null,
           hardDate: g.hard_date,
+          // THE QUARTERS COMING OUT (0024, 2026-09-29): a goal's directions
+          // and notes ride as JSONB whole, like mechanisms. Read back here
+          // or they would be dropped on every load; the objectives below
+          // stay one round, until 0025 retires the table.
+          directions: g.directions || [], notes: g.notes || [],
           objectives: (byGoal[g.id] || []).map(o => ({
             id: o.ext_id || o.id, label: o.label, kind: o.kind, when: o.when_label,
             theme: o.is_theme, source: o.source, done: o.done, evidence: o.evidence,
@@ -36791,8 +36721,23 @@
       }
     }
 
+    // THE BOARD BEFORE THE QUARTERS CAME OUT, kept once (2026-09-29). The
+    // first load that still finds objectives on a goal writes the incoming
+    // state whole, and no later load ever writes it again. The account's
+    // day-by-day snapshots keep five weeks regardless; this is the device's
+    // own copy, read by nothing, there for a hand to walk back.
+    try {
+      if ((state.goals || []).some(g => g && Array.isArray(g.objectives) && g.objectives.length)
+          && !localStorage.getItem("lifevision.v3backup.v1")) {
+        localStorage.setItem("lifevision.v3backup.v1", JSON.stringify({ at: new Date().toISOString(), state }));
+      }
+    } catch (e) {}
     goals = (state.goals || []).map((g, idx) => ({
       id: idx + 1, category: g.category, title: g.title, status: g.status,
+      // what the quarters held, on the goal (2026-09-29): read here or it is
+      // dropped on every load, because this list is the whole of a goal
+      directions: Array.isArray(g.directions) ? g.directions.map(d => Object.assign({}, d)) : [],
+      notes: Array.isArray(g.notes) ? g.notes.map(n => Object.assign({}, n)) : [],
       // one name, everywhere, forever: the stored handle (and the draft-era
       // barName it derives from) survive every state application
       handle: g.handle || null, barName: g.barName || null,
@@ -36837,6 +36782,7 @@
     // BEFORE the migration and the count repair, both of which address
     // mechanisms by id and would otherwise repair the same object twice.
     repairDuplicateMechIds();
+    migrateQuartersOut();
     migrateOccurrences();
     repairCompletionCounts();
     repairStaleWeekRecords();
@@ -42038,15 +41984,10 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     const pool = [];
 
     active.forEach(g => {
-      const valid = new Set((g.objectives || []).filter(o => !o.theme).map(o => o.id));
+      // NO STEP IS ASKED FOR (2026-09-29, the quarters coming out): every
+      // drafted piece of work enters the pool, and the fold gives it a stage.
       cutByGoal[goalKey(g)] = (g.pendingDeferred || []).slice();
-      (g.pendingMechanisms || []).forEach(m => {
-        if (!m.drivesObjectiveId || !valid.has(m.drivesObjectiveId)) {
-          cutByGoal[goalKey(g)].push({ label: m.label, reason: "no objective named, dropped rather than shown loose" });
-          return;
-        }
-        pool.push({ m, g });
-      });
+      (g.pendingMechanisms || []).forEach(m => { pool.push({ m, g }); });
       delete g.pendingMechanisms;
       delete g.pendingDeferred;
     });
@@ -43381,6 +43322,9 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // which a freshly committed draft never passes through. Without this the
     // field arrives a reload late, and the work most likely to need a day is
     // the work that has just been generated.
+    // The same for the quarters' fold (2026-09-29): a fresh draft's steps
+    // become notes and its work gets a stage here, not a reload later.
+    migrateQuartersOut();
     migrateOccurrences();
     // A NEW PLAN ALWAYS STARTS TOMORROW (2026-09-11, the owner's ruling after
     // finishing the discovery at about eleven at night and being handed five
@@ -43522,7 +43466,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     occurrenceSlotsFor, occurrenceCellsFor, capacityOn,
     scheduledDatesFor, completionsAt, totalCompletionsIn, anyCountOf,
     moveOccurrence, movesFor, moveCompletion, scheduleOriginsFor, pruneMoves, clearMoves,
-    migrateOccurrences, occSchema: () => OCC_SCHEMA,
+    migrateOccurrences, migrateQuartersOut, occSchema: () => OCC_SCHEMA,
     repairCompletionCounts, repairDuplicateMechIds,
     repairStaleWeekRecords, scheduleFloats,
     reminderList, addReminder, removeReminder, remindersInWeek, remindersOn, tickReminder,
@@ -44465,10 +44409,12 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // pinned is not said twice.
     const same = t => String(t || "").trim().toLowerCase();
     const pinned = new Set(keepings.map(k => same(k && k.text)));
-    // keyed by the pair, so a place she dragged it to can find it below
+    // keyed by the pair, so a place she dragged it to can find it below;
+    // a goal's directions live on the goal since the quarters came out
+    // (2026-09-29), where they were theme objectives before
     const dirRows = new Map();
     goals.filter(g => g && g.status !== "parked").forEach(g =>
-      (g.objectives || []).filter(d => d.theme && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
+      (g.directions || []).filter(d => d && d.label && !pinned.has(same(appVoice(d.label, wroteIt(d)))))
         .forEach((d, i) => dirRows.set(d.id != null ? keepPlaceId(g.id, d.id) : "keep-unplaced-" + g.id + "-" + i,
           `<div data-type-area="keep/row" class="kp-item kp-float kp-goal ${(CATS[g.category] || CATS.Other).cls}"${d.id != null
           ? ` data-drop-goal="${escHtml(String(g.id))}" data-drop-dir="${escHtml(String(d.id))}"` : ``}>
@@ -44573,7 +44519,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         twShowUndo("deleted", () => restoreKeeping(gone, at), () => openKeepings());
       } else if (rowEl.dataset.dropDir) {
         const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
-        const gone = g && removeGoalDirection(g.id, (g.objectives || []).map(o => o && o.id)
+        const gone = g && removeGoalDirection(g.id, (g.directions || []).map(o => o && o.id)
           .find(id => String(id) === rowEl.dataset.dropDir));
         if (!gone) return;
         openKeepings();
@@ -44598,7 +44544,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         return k ? k.text : null;
       }
       const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
-      const d = g && (g.objectives || []).find(o => o && String(o.id) === rowEl.dataset.dropDir);
+      const d = g && (g.directions || []).find(o => o && String(o.id) === rowEl.dataset.dropDir);
       return d ? appVoice(d.label, wroteIt(d)) : null;
     };
     const rewrite = (rowEl, v) => {
@@ -44609,8 +44555,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
         return true;
       }
       const g = goals.find(x => x && String(x.id) === rowEl.dataset.dropGoal);
-      const d = g && (g.objectives || []).find(o => o && String(o.id) === rowEl.dataset.dropDir);
-      return !!d && setObjectiveLabel(g, d.id, v);
+      return !!g && setDirectionLabel(g, rowEl.dataset.dropDir, v);
     };
     const caretAt = (el, x, y) => {
       let r = null;
@@ -45703,7 +45648,7 @@ ${opts.map(o => `<button type="button" class="ci-chip rv-h-opt${(!unsure && !unt
     // quarterly review and weekly close each have their own sheet — the
     // old step flows are gone, not just unreachable.
     if (runsAPlan()) {
-      if (quarterlyDue && quarterReviewOpen().open) { openQuarterReview(); return; }
+      // the quarterly review no longer opens from here (2026-09-29)
       const d = weekDoorState();
       if (weeklyDue && d.show) { openWeekSheet(d.week); return; }
       return;
